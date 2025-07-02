@@ -31,7 +31,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_legs_urdf/meshes/base_link.STL" />
+          filename="package://meshes/base_link.STL" />
       </geometry>
       <material
         name="">
@@ -45,7 +45,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_legs_urdf/meshes/base_link.STL" />
+          filename="package://meshes/base_link.STL" />
       </geometry>
     </collision>
   </link>
@@ -70,7 +70,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_legs_urdf/meshes/RLeg.STL" />
+          filename="package://meshes/RLeg.STL" />
       </geometry>
       <material
         name="">
@@ -84,7 +84,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_legs_urdf/meshes/RLeg.STL" />
+          filename="package://meshes/RLeg.STL" />
       </geometry>
     </collision>
   </link>
@@ -126,7 +126,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_legs_urdf/meshes/RHip.STL" />
+          filename="package://meshes/RHip.STL" />
       </geometry>
       <material
         name="">
@@ -140,7 +140,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_legs_urdf/meshes/RHip.STL" />
+          filename="package://meshes/RHip.STL" />
       </geometry>
     </collision>
   </link>
@@ -182,7 +182,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_legs_urdf/meshes/RFemur.STL" />
+          filename="package://meshes/RFemur.STL" />
       </geometry>
       <material
         name="">
@@ -196,7 +196,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_legs_urdf/meshes/RFemur.STL" />
+          filename="package://meshes/RFemur.STL" />
       </geometry>
     </collision>
   </link>
@@ -238,7 +238,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_legs_urdf/meshes/RTibia.STL" />
+          filename="package://meshes/RTibia.STL" />
       </geometry>
       <material
         name="">
@@ -252,7 +252,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_legs_urdf/meshes/RTibia.STL" />
+          filename="package://meshes/RTibia.STL" />
       </geometry>
     </collision>
   </link>
@@ -294,7 +294,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_legs_urdf/meshes/RAnkle.STL" />
+          filename="package://meshes/RAnkle.STL" />
       </geometry>
       <material
         name="">
@@ -308,7 +308,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_legs_urdf/meshes/RAnkle.STL" />
+          filename="package://meshes/RAnkle.STL" />
       </geometry>
     </collision>
   </link>
@@ -350,7 +350,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_legs_urdf/meshes/RFoot.STL" />
+          filename="package://meshes/RFoot.STL" />
       </geometry>
       <material
         name="">
@@ -363,7 +363,7 @@
         xyz="-0.125 0 0.01"
         rpy="0 0 0" />
       <geometry>
-        <mesh filename="package://test_legs_urdf/meshes/RFoot.STL" />
+        <mesh filename="package://meshes/RFoot.STL" />
       </geometry>
     </collision>
   </link>
@@ -405,7 +405,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_legs_urdf/meshes/LLeg.STL" />
+          filename="package://meshes/LLeg.STL" />
       </geometry>
       <material
         name="">
@@ -419,7 +419,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_legs_urdf/meshes/LLeg.STL" />
+          filename="package://meshes/LLeg.STL" />
       </geometry>
     </collision>
   </link>
@@ -461,7 +461,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_legs_urdf/meshes/LHip.STL" />
+          filename="package://meshes/LHip.STL" />
       </geometry>
       <material
         name="">
@@ -475,7 +475,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_legs_urdf/meshes/LHip.STL" />
+          filename="package://meshes/LHip.STL" />
       </geometry>
     </collision>
   </link>
@@ -517,7 +517,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_legs_urdf/meshes/LFemur.STL" />
+          filename="package://meshes/LFemur.STL" />
       </geometry>
       <material
         name="">
@@ -531,7 +531,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_legs_urdf/meshes/LFemur.STL" />
+          filename="package://meshes/LFemur.STL" />
       </geometry>
     </collision>
   </link>
@@ -573,7 +573,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_legs_urdf/meshes/LTibia.STL" />
+          filename="package://meshes/LTibia.STL" />
       </geometry>
       <material
         name="">
@@ -587,7 +587,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_legs_urdf/meshes/LTibia.STL" />
+          filename="package://meshes/LTibia.STL" />
       </geometry>
     </collision>
   </link>
@@ -629,7 +629,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_legs_urdf/meshes/LAnkle.STL" />
+          filename="package://meshes/LAnkle.STL" />
       </geometry>
       <material
         name="">
@@ -643,7 +643,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_legs_urdf/meshes/LAnkle.STL" />
+          filename="package://meshes/LAnkle.STL" />
       </geometry>
     </collision>
   </link>
@@ -685,7 +685,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_legs_urdf/meshes/LFoot.STL" />
+          filename="package://meshes/LFoot.STL" />
       </geometry>
       <material
         name="">
@@ -699,7 +699,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://test_legs_urdf/meshes/LFoot.STL" />
+          filename="package://meshes/LFoot.STL" />
       </geometry>
     </collision>
   </link>
@@ -869,12 +869,7 @@
   </plugin>
   </gazebo>
   -->
-  <gazebo>
-    <plugin name="control"
-    filename="libgazebo_ros_control.so">
-    <robotNamespace>/</robotNamespace>
-    </plugin>
-  </gazebo>
+ 
 
 
    <!-- Add Self Collision tags.
@@ -887,54 +882,6 @@
 
   -->
 
-  <gazebo reference="LLeg">
-    <selfCollide>true</selfCollide>
-  </gazebo>
-
-  <gazebo reference="LHip">
-    <selfCollide>true</selfCollide>
-  </gazebo>
-
-  <gazebo reference="LFemur">
-    <selfCollide>true</selfCollide>
-  </gazebo>
-
-  <gazebo reference="LTibia">
-    <selfCollide>true</selfCollide>
-  </gazebo>
-
-  <gazebo reference="LAnkle">
-    <selfCollide>true</selfCollide>
-  </gazebo>
-
-  <gazebo reference="LFoot">
-    <selfCollide>true</selfCollide>
-  </gazebo>
-
-
-  <gazebo reference="RLeg">
-    <selfCollide>true</selfCollide>
-  </gazebo>
-
-  <gazebo reference="RHip">
-    <selfCollide>true</selfCollide>
-  </gazebo>
-
-  <gazebo reference="RFemur">
-    <selfCollide>true</selfCollide>
-  </gazebo>
-
-  <gazebo reference="RTibia">
-    <selfCollide>true</selfCollide>
-  </gazebo>
-
-  <gazebo reference="RAnkle">
-    <selfCollide>true</selfCollide>
-  </gazebo>
-
-  <gazebo reference="RFoot">
-    <selfCollide>true</selfCollide>
-  </gazebo>
 
   
 
