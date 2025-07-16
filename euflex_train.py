@@ -107,7 +107,7 @@ def get_cfgs():
         "termination_if_pitch_greater_than": 10,
         # base pose
         "base_init_pos": [0.0, 0.0, 0.35],
-        "base_init_quat": [1.0, 0.0, 0.0, 0.0],
+        "base_init_quat": [0.0, 0.0, 0.0, 1.0],  # 90 degrees about z-axis
         "episode_length_s": 20.0,
         "resampling_time_s": 4.0,
         "action_scale": 0.25,
@@ -134,12 +134,13 @@ def get_cfgs():
             "base_height": -50.0,
             "action_rate": -0.005,
             "similar_to_default": -0.1,
+            #"collision": -50.0, # Penalize collisions this number needs tuning
         },
     }
     command_cfg = {
         "num_commands": 3,
         "lin_vel_x_range": [0, 0],
-        "lin_vel_y_range": [0.5, 0.5],
+        "lin_vel_y_range": [-0.5, -0.5],# the base link frame is inverted 
         "ang_vel_range": [0, 0],
     }
 
@@ -179,3 +180,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# python3 euflex_train.py --exp_name euflex-walking --max_iterations 101

@@ -36,7 +36,7 @@ class EuflexEnv:
             sim_options=gs.options.SimOptions(dt=self.dt, substeps=2),
             viewer_options=gs.options.ViewerOptions(
                 max_FPS=int(0.5 / self.dt),
-                camera_pos=(2.0, 0.0, 2.5),
+                camera_pos=(2.0, 0.0, 1.5),
                 camera_lookat=(0.0, 0.0, 0.5),
                 camera_fov=40,
             ),
@@ -266,3 +266,7 @@ class EuflexEnv:
     def _reward_base_height(self):
         # Penalize base height away from target
         return torch.square(self.base_pos[:, 2] - self.reward_cfg["base_height_target"])
+    
+    # def _reward_collision(self):
+    #     self.robot.detect_collision()
+    #     return self.robot.detect_collision()
