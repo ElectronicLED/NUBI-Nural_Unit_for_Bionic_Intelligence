@@ -194,6 +194,10 @@ class EuflexEnv:
 
     def get_privileged_observations(self):
         return None
+    
+    def get_self_collision(self):
+        self_collision = [x  for x in self.robot.detect_collision() if x[0]!=0] # unique collisions between links
+        return self_collision
 
     def reset_idx(self, envs_idx):
         if len(envs_idx) == 0:
@@ -267,6 +271,6 @@ class EuflexEnv:
         # Penalize base height away from target
         return torch.square(self.base_pos[:, 2] - self.reward_cfg["base_height_target"])
     
-    # def _reward_collision(self):
-    #     self.robot.detect_collision()
-    #     return self.robot.detect_collision()
+    def _reward_collision(self):
+        # Penalize self-collision
+        return torch.tensor(len(self.get_self_collision()))

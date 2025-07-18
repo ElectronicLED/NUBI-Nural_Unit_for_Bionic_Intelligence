@@ -124,7 +124,7 @@ def get_cfgs():
         },
     }
     reward_cfg = {
-        "tracking_sigma": 0.25,
+        "tracking_sigma": 0.28,
         "base_height_target": 0.35,
         "feet_height_target": 0.075,
         "reward_scales": {
@@ -134,7 +134,7 @@ def get_cfgs():
             "base_height": -50.0,
             "action_rate": -0.005,
             "similar_to_default": -0.1,
-            #"collision": -50.0, # Penalize collisions this number needs tuning
+            "collision": -0.5, # Penalize collisions this number needs tuning
         },
     }
     command_cfg = {
@@ -182,4 +182,4 @@ if __name__ == "__main__":
     main()
 
 
-# python3 euflex_train.py --exp_name euflex-walking --max_iterations 101
+# python3 euflex_train.py --exp_name euflex-walking-collision --max_iterations 101

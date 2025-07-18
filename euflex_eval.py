@@ -30,6 +30,7 @@ def main():
     log_dir = f"logs/{args.exp_name}"
     env_cfg, obs_cfg, reward_cfg, command_cfg, train_cfg = pickle.load(open(f"logs/{args.exp_name}/cfgs.pkl", "rb"))
     reward_cfg["reward_scales"] = {}
+    print(command_cfg)
 
     env = EuflexEnv(
         num_envs=1,
@@ -48,9 +49,12 @@ def main():
     obs, _ = env.reset()
     with torch.no_grad():
         while True:
+            #print(len(EuflexEnv.get_self_collision(env)))
             actions = policy(obs)
             obs, rews, dones, infos = env.step(actions)
 
 
 if __name__ == "__main__":
     main()
+
+# python3 euflex_eval.py -e euflex-walking-collision --ckpt 300
