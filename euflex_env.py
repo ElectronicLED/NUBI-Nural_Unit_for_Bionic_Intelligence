@@ -198,6 +198,10 @@ class EuflexEnv:
     def get_self_collision(self):
         self_collision = [x  for x in self.robot.detect_collision() if x[0]!=0] # unique collisions between links
         return self_collision
+    
+    def get_joint_torques(self):
+        dofs_idx = [self.robot.get_joint(name).dof_idx_local for name in self.env_cfg["joint_names"]]
+        return self.robot.get_dofs_force(dofs_idx)
 
     def reset_idx(self, envs_idx):
         if len(envs_idx) == 0:
