@@ -124,11 +124,11 @@ def get_cfgs():
         },
     }
     reward_cfg = {
-        "tracking_sigma": 0.28,
+        "tracking_sigma": 0.25,
         "base_height_target": 0.35,
         "feet_height_target": 0.075,
         "reward_scales": {
-            "tracking_lin_vel": 1.0,
+            "tracking_lin_vel": 1.2,
             "tracking_ang_vel": 0.2,
             "lin_vel_z": -1.0,
             "base_height": -50.0,
@@ -140,7 +140,7 @@ def get_cfgs():
     command_cfg = {
         "num_commands": 3,
         "lin_vel_x_range": [0, 0],
-        "lin_vel_y_range": [-0.5, -0.5],# the base link frame is inverted 
+        "lin_vel_y_range": [-0.4, -0.4],# the base link frame is inverted 
         "ang_vel_range": [0, 0],
     }
 
@@ -183,3 +183,4 @@ if __name__ == "__main__":
 
 
 # python3 euflex_train.py --exp_name euflex-walking-collision --max_iterations 101
+# tensorboard --logdir logs
