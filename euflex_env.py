@@ -155,6 +155,9 @@ class EuflexEnv:
         self.reset_buf |= torch.abs(self.base_euler[:, 1]) > self.env_cfg["termination_if_pitch_greater_than"]
         self.reset_buf |= torch.abs(self.base_euler[:, 0]) > self.env_cfg["termination_if_roll_greater_than"]
 
+        # self-collision termination
+        self.reset_buf |= len(self.get_self_collision()) > 0
+
         time_out_idx = (self.episode_length_buf > self.max_episode_length).nonzero(as_tuple=False).flatten()
         self.extras["time_outs"] = torch.zeros_like(self.reset_buf, device=gs.device, dtype=gs.tc_float)
         self.extras["time_outs"][time_out_idx] = 1.0
@@ -276,5 +279,9 @@ class EuflexEnv:
         return torch.square(self.base_pos[:, 2] - self.reward_cfg["base_height_target"])
     
     def _reward_collision(self):
+        num_collisions = len(self.get_self_collision())
+        # reward for no collision
+        if num_collisions == 0:
+            return torch.tensor(-1)
         # Penalize self-collision
         return torch.tensor(len(self.get_self_collision()))
