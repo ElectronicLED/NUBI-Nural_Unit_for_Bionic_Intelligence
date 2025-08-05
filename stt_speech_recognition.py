@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
 # NOTE: this example requires PyAudio because it uses the Microphone class
+# sphinx bad use something else
 
-import os
+
 
 import speech_recognition as sr
 
@@ -14,12 +15,12 @@ with sr.Microphone() as source:
     audio = r.listen(source)
 
 # recognize speech using Sphinx
-try:
-    print("Sphinx thinks you said " + r.recognize_sphinx(audio))
-except sr.UnknownValueError:
-    print("Sphinx could not understand audio")
-except sr.RequestError as e:
-    print("Sphinx error; {0}".format(e))
+# try:
+#     print("Sphinx thinks you said " + r.recognize_sphinx(audio))
+# except sr.UnknownValueError:
+#     print("Sphinx could not understand audio")
+# except sr.RequestError as e:
+#     print("Sphinx error; {0}".format(e))
 
 # recognize speech using Google Speech Recognition
 try:
