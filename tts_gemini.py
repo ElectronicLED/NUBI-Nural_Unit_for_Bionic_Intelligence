@@ -15,7 +15,7 @@ def save_binary_file(file_name, data):
     print(f"File saved to to: {file_name}")
 
 
-def say(line="Hi", voice_name="Fenrir", output_file_name="output_file"):
+def say(line="Hi", voice_name="Umberial", output_file_name="gemini_output"):
     client = genai.Client(
         api_key=os.environ.get("GEMINI_API_KEY"),
     )

@@ -10,18 +10,13 @@ client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))  # Set your API key h
 #     model="gemini-2.5-flash", contents=input("How can I help you today? " + "\n")
 # ).text
 
-# for word in response.splitlines():
-#     print(word)
-#     engine.say(word)
-#     engine.runAndWait()
-
 
 chat = client.chats.create(model="gemini-2.5-flash")
 
 # initial prompt to let it know what it is
 response = chat.send_message('''Your name is NUBI. 
     You are Nour ElDeens Shalaby's graduation project: humanoid bipedal robot. 
-    NUBI stands for Next Unit Bionic Intelligence''').text
+    NUBI stands for Neural Unit for Bionic Intelligence''').text
 while True:
     user_input = input("You: ")
     if user_input.lower() in ["exit", "quit"]:
