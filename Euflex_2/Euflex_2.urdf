@@ -1,0 +1,743 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="Euflex_2">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="0.00198149878278396 -0.0249625190344843 0.00157621882221727"
+        rpy="0 0 0" />
+      <mass
+        value="0.368194750655115" />
+      <inertia
+        ixx="0.000454072095110405"
+        ixy="8.28725312952733E-08"
+        ixz="-3.07500649874695E-08"
+        iyy="0.000843176006602399"
+        iyz="2.2001232940001E-05"
+        izz="0.000459008901134337" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Euflex_2/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Euflex_2/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="RLeg">
+    <inertial>
+      <origin
+        xyz="-0.00969631499435987 0.000873144295986734 0.00957982643630677"
+        rpy="0 0 0" />
+      <mass
+        value="0.0132414789071289" />
+      <inertia
+        ixx="2.85210436910976E-06"
+        ixy="3.51112154341069E-09"
+        ixz="3.04802906211644E-08"
+        iyy="7.63570502638493E-06"
+        iyz="-2.26582226777928E-07"
+        izz="7.37924068866271E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Euflex_2/meshes/RLeg.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Euflex_2/meshes/RLeg.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RHip_yaw"
+    type="revolute">
+    <origin
+      xyz="-0.04575 -0.0153 -0.077419"
+      rpy="3.1416 0 1.5708" />
+    <parent
+      link="base_link" />
+    <child
+      link="RLeg" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="1.3"
+      velocity="5" />
+  </joint>
+  <link
+    name="RHip">
+    <inertial>
+      <origin
+        xyz="-0.0090772577330072 -0.0113708477946232 -0.00483112053858099"
+        rpy="0 0 0" />
+      <mass
+        value="0.0494734546455844" />
+      <inertia
+        ixx="1.10704055059401E-05"
+        ixy="1.92903922818722E-07"
+        ixz="-5.14547748036048E-07"
+        iyy="1.72532726474915E-05"
+        iyz="8.02771322110712E-07"
+        izz="1.69878833831647E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Euflex_2/meshes/RHip.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Euflex_2/meshes/RHip.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RHip_roll"
+    type="revolute">
+    <origin
+      xyz="0 0.0055 0.029"
+      rpy="3.1416 -0.0010731 1.5708" />
+    <parent
+      link="RLeg" />
+    <child
+      link="RHip" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="1.3"
+      velocity="5" />
+  </joint>
+  <link
+    name="RFemur">
+    <inertial>
+      <origin
+        xyz="-0.0191759064178121 -0.000404055130854789 0.00371117071124068"
+        rpy="0 0 0" />
+      <mass
+        value="0.0542758109277786" />
+      <inertia
+        ixx="1.51284804247851E-05"
+        ixy="-7.38252999508394E-07"
+        ixz="-2.47453480120221E-06"
+        iyy="3.04205364709092E-05"
+        iyz="-7.7412727033067E-08"
+        izz="2.30466755339454E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Euflex_2/meshes/RFemur.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Euflex_2/meshes/RFemur.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RHip_pitch"
+    type="revolute">
+    <origin
+      xyz="-0.01271 -0.00665 -0.038994"
+      rpy="0 -1.5708 0" />
+    <parent
+      link="RHip" />
+    <child
+      link="RFemur" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="1.3"
+      velocity="5" />
+  </joint>
+  <link
+    name="RTibia">
+    <inertial>
+      <origin
+        xyz="0.0212515207013594 0.0151020897105685 -0.00467088839588699"
+        rpy="0 0 0" />
+      <mass
+        value="0.0818969811646798" />
+      <inertia
+        ixx="1.84012580043274E-05"
+        ixy="-3.6591697647335E-06"
+        ixz="2.29221351668279E-07"
+        iyy="2.46378887742876E-05"
+        iyz="1.73074211202668E-09"
+        izz="2.61318810922123E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Euflex_2/meshes/RTibia.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Euflex_2/meshes/RTibia.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RKnee_pitch"
+    type="revolute">
+    <origin
+      xyz="-0.072905 -0.0067806 4.0675E-05"
+      rpy="3.1416 0 -3.1416" />
+    <parent
+      link="RFemur" />
+    <child
+      link="RTibia" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="1.3"
+      velocity="5" />
+  </joint>
+  <link
+    name="RAnkle">
+    <inertial>
+      <origin
+        xyz="3.76730334428199E-10 0.00639656779291405 0.0298313415059275"
+        rpy="0 0 0" />
+      <mass
+        value="0.0236803263628535" />
+      <inertia
+        ixx="1.41654337560222E-05"
+        ixy="-1.93003866834713E-14"
+        ixz="-1.22351283920455E-14"
+        iyy="1.29843054508454E-05"
+        iyz="-1.37695078728216E-06"
+        izz="1.53303757935294E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Euflex_2/meshes/RAnkle.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Euflex_2/meshes/RAnkle.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RAnkle_pitch"
+    type="revolute">
+    <origin
+      xyz="0.04856 0.02095 0"
+      rpy="-1.5708 0 -1.5708" />
+    <parent
+      link="RTibia" />
+    <child
+      link="RAnkle" />
+    <axis
+      xyz="0 -1 0" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="1.3"
+      velocity="5" />
+  </joint>
+  <link
+    name="RFoot">
+    <inertial>
+      <origin
+        xyz="0.0044437357632709 0.00974433299026259 -0.00549632667027595"
+        rpy="0 0 0" />
+      <mass
+        value="0.0519939935226972" />
+      <inertia
+        ixx="2.19224463774414E-05"
+        ixy="1.06269520006351E-08"
+        ixz="2.70863770644912E-07"
+        iyy="1.37707826202166E-05"
+        iyz="7.12306750611312E-08"
+        izz="1.26305289174239E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Euflex_2/meshes/RFoot.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Euflex_2/meshes/RFoot.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RAnkle_roll"
+    type="revolute">
+    <origin
+      xyz="0.0058808 0.017589 0.058549"
+      rpy="0.64535 -1.5708 2.4962" />
+    <parent
+      link="RAnkle" />
+    <child
+      link="RFoot" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="1.3"
+      velocity="5" />
+  </joint>
+  <link
+    name="LLeg">
+    <inertial>
+      <origin
+        xyz="0.0103036850056398 0.000873144295986401 0.00957982643630678"
+        rpy="0 0 0" />
+      <mass
+        value="0.0132414789071289" />
+      <inertia
+        ixx="2.85210436910976E-06"
+        ixy="3.51112154342407E-09"
+        ixz="3.04802906211677E-08"
+        iyy="7.63570502638494E-06"
+        iyz="-2.2658222677793E-07"
+        izz="7.37924068866273E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Euflex_2/meshes/LLeg.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Euflex_2/meshes/LLeg.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LHip_yaw"
+    type="revolute">
+    <origin
+      xyz="0.04575 -0.0153 -0.077419"
+      rpy="3.1416 0 -1.5708" />
+    <parent
+      link="base_link" />
+    <child
+      link="LLeg" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="1.3"
+      velocity="5" />
+  </joint>
+  <link
+    name="LHip">
+    <inertial>
+      <origin
+        xyz="-0.00483111629746052 0.00907725773300719 -0.0113708477946229"
+        rpy="0 0 0" />
+      <mass
+        value="0.0494734546455844" />
+      <inertia
+        ixx="1.69878833831647E-05"
+        ixy="5.14549048944303E-07"
+        ixz="8.02768812974481E-07"
+        iyy="1.10704055059401E-05"
+        iyz="-1.92903922818714E-07"
+        izz="1.72532726474915E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Euflex_2/meshes/LHip.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Euflex_2/meshes/LHip.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LHip_roll"
+    type="revolute">
+    <origin
+      xyz="0 0.0055 0.029"
+      rpy="-1.5708 1.5697 1.5708" />
+    <parent
+      link="LLeg" />
+    <child
+      link="LHip" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="1.3"
+      velocity="5" />
+  </joint>
+  <link
+    name="LFemur">
+    <inertial>
+      <origin
+        xyz="-0.000373208724159125 0.0191704024484222 -0.00688173085116523"
+        rpy="0 0 0" />
+      <mass
+        value="0.0542758109277786" />
+      <inertia
+        ixx="3.04205370837339E-05"
+        ixy="7.382479539795E-07"
+        ixz="7.74091932311893E-08"
+        iyy="1.51284798118915E-05"
+        iyz="-2.47453483300712E-06"
+        izz="2.30466755340144E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Euflex_2/meshes/LFemur.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Euflex_2/meshes/LFemur.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LHip_pitch"
+    type="revolute">
+    <origin
+      xyz="-0.039 0.015881 -0.0066192"
+      rpy="1.5719 1.5708 -3.1405" />
+    <parent
+      link="LHip" />
+    <child
+      link="LFemur" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="1.3"
+      velocity="5" />
+  </joint>
+  <link
+    name="LTibia">
+    <inertial>
+      <origin
+        xyz="-0.0212515181372863 0.0151020872625875 -0.00788212303842882"
+        rpy="0 0 0" />
+      <mass
+        value="0.0818969811718048" />
+      <inertia
+        ixx="1.8401258005481E-05"
+        ixy="3.65916976487052E-06"
+        ixz="-2.29223860871182E-07"
+        iyy="2.46378887761717E-05"
+        iyz="1.7332515363113E-09"
+        izz="2.61318810916288E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Euflex_2/meshes/LTibia.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Euflex_2/meshes/LTibia.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LKnee_pitch"
+    type="revolute">
+    <origin
+      xyz="-0.0067497 0.0729 0"
+      rpy="0 0 -1.5708" />
+    <parent
+      link="LFemur" />
+    <child
+      link="LTibia" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="1.3"
+      velocity="5" />
+  </joint>
+  <link
+    name="LAnkle">
+    <inertial>
+      <origin
+        xyz="-1.96953439668412E-10 0.0096078024569069 0.0298313414770444"
+        rpy="0 0 0" />
+      <mass
+        value="0.0236803263628534" />
+      <inertia
+        ixx="1.41654337560222E-05"
+        ixy="-1.37112244561501E-14"
+        ixz="-1.69637660757718E-14"
+        iyy="1.29843054508453E-05"
+        iyz="-1.37695078728216E-06"
+        izz="1.53303757935293E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Euflex_2/meshes/LAnkle.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Euflex_2/meshes/LAnkle.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LAnkle_pitch"
+    type="revolute">
+    <origin
+      xyz="-0.04856 0.02095 0"
+      rpy="-1.5708 0 1.5708" />
+    <parent
+      link="LTibia" />
+    <child
+      link="LAnkle" />
+    <axis
+      xyz="0 -1 0" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="1.3"
+      velocity="5" />
+  </joint>
+  <link
+    name="LFoot">
+    <inertial>
+      <origin
+        xyz="-0.00444373288319161 0.00970449121404581 0.000384507909192922"
+        rpy="0 0 0" />
+      <mass
+        value="0.0519939935227" />
+      <inertia
+        ixx="2.19224463774376E-05"
+        ixy="1.06270159439335E-08"
+        ixz="-2.70866279781629E-07"
+        iyy="1.37707826202195E-05"
+        iyz="8.03216618353415E-08"
+        izz="1.26305289174258E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Euflex_2/meshes/LFoot.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://Euflex_2/meshes/LFoot.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LAnkle_roll"
+    type="revolute">
+    <origin
+      xyz="0 0.0208 0.058549"
+      rpy="0.6438 1.5708 -2.4978" />
+    <parent
+      link="LAnkle" />
+    <child
+      link="LFoot" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="1.3"
+      velocity="5" />
+  </joint>
+</robot>
