@@ -51,18 +51,21 @@ def main():
     obs, _ = env.reset()
     with torch.no_grad():
         while True:
+            # env.commands[0, 0] = 0.0  # Forward velocity
+            # env.commands[0, 1] = 0.0  # Lateral velocity
+            # env.commands[0, 2] = 0.0  # Yaw rate
             #print(len(EuflexEnv.get_self_collision(env)))
             torques = env.get_joint_torques()
             for x in range(len(max_torques)):
                 if abs(torques[0][x].item()) > abs(max_torques[x]):
                     max_torques[x] = torques[0][x].item()
 
-            print(" RHip yaw:",max_torques[0],"\t","LHip yaw:",max_torques[6],"\n",
-                  "RHip roll:", max_torques[1],"\t","LHip roll:",max_torques[7],"\n",
-                  "RHip pitchl:", max_torques[2],"\t","LHip pitch:",max_torques[8],"\n",
-                  "RKnee pitch:", max_torques[3],"\t","LKnee pitch:",max_torques[9],"\n",
-                  "RAnkle roll:", max_torques[4],"\t","LAnkle roll:",max_torques[10],"\n",
-                  "RAnkle pitch:", max_torques[5],"\t","LAnkle pitch:",max_torques[11],"\n",)
+            # print(" RHip yaw:",max_torques[0],"\t","LHip yaw:",max_torques[6],"\n",
+            #       "RHip roll:", max_torques[1],"\t","LHip roll:",max_torques[7],"\n",
+            #       "RHip pitchl:", max_torques[2],"\t","LHip pitch:",max_torques[8],"\n",
+            #       "RKnee pitch:", max_torques[3],"\t","LKnee pitch:",max_torques[9],"\n",
+            #       "RAnkle roll:", max_torques[4],"\t","LAnkle roll:",max_torques[10],"\n",
+            #       "RAnkle pitch:", max_torques[5],"\t","LAnkle pitch:",max_torques[11],"\n",)
             
             
             actions = policy(obs)
@@ -72,4 +75,4 @@ def main():
 if __name__ == "__main__":
     main()
 
-# python3 euflex_eval.py -e euflex-walking-collision --ckpt 300
+# python3 euflex_eval.py -e euflex-walking-collision --ckpt 800
