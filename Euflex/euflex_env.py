@@ -131,18 +131,23 @@ class EuflexEnv:
     def step(self, actions):
 
         # setting ankles to be always parallel to the ground
-        try:
-            joint_name_to_set = 'RAnkle_pitch' # Replace with the name of your joint
-            joint_index = self.env_cfg["joint_names"].index(joint_name_to_set)
-            
-            # Set the action for that joint to a specific value (e.g., 0.5)
-            # This applies the same action value across all environments.
-            actions[:, joint_index] = 0.5 
-        except ValueError:
-            # This will happen if the joint_name_to_set is not in the list.
-            pass
+        # try:
+        #     RHip_pitch_index = self.env_cfg["joint_names"].index('RHip_pitch')
+        #     RKnee_pitch_index = self.env_cfg["joint_names"].index('RKnee_pitch')
+        #     RAnkle_pitch_index = self.env_cfg["joint_names"].index('RAnkle_pitch')
 
-        self.actions = torch.clip(actions, -self.env_cfg["clip_actions"], self.env_cfg["clip_actions"])
+        #     LHip_pitch_index = self.env_cfg["joint_names"].index('LHip_pitch')
+        #     LKnee_pitch_index = self.env_cfg["joint_names"].index('LKnee_pitch')
+        #     LAnkle_pitch_index = self.env_cfg["joint_names"].index('LAnkle_pitch')
+        #     # Set the action for that joint to a specific value (e.g., 0.5)
+        #     # This applies the same action value across all environments.
+        #     actions[:, RAnkle_pitch_index] = -actions[:, RKnee_pitch_index] - actions[:, RHip_pitch_index]
+        #     actions[:, LAnkle_pitch_index] = -actions[:, LKnee_pitch_index] - actions[:, LHip_pitch_index]
+        # except ValueError:
+        #     # This will happen if the joint_name_to_set is not in the list.
+        #     pass
+
+        self.actions = torch.clip(actions, -self.env_cfg["clip_actions"], self.env_cfg["clip_actions"]) #sets a ceil and floor for actions
         exec_actions = self.last_actions if self.simulate_action_latency else self.actions
         target_dof_pos = exec_actions * self.env_cfg["action_scale"] + self.default_dof_pos
         self.robot.control_dofs_position(target_dof_pos, self.motors_dof_idx)
@@ -192,6 +197,7 @@ class EuflexEnv:
             self.episode_sums[name] += rew
 
         # compute observations
+        time_progress = (self.episode_length_buf / self.max_episode_length).unsqueeze(-1)
         self.obs_buf = torch.cat(
             [
                 self.base_ang_vel * self.obs_scales["ang_vel"],  # 3
@@ -200,6 +206,7 @@ class EuflexEnv:
                 (self.dof_pos - self.default_dof_pos) * self.obs_scales["dof_pos"],  # 12
                 self.dof_vel * self.obs_scales["dof_vel"],  # 12
                 self.actions,  # 12
+                time_progress * self.obs_scales["time"], # 1
             ],
             axis=-1,
         )

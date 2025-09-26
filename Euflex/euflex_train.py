@@ -115,12 +115,13 @@ def get_cfgs():
         "clip_actions": 100.0,
     }
     obs_cfg = {
-        "num_obs": 45,# originally was 45
+        "num_obs": 46,# originally was 45
         "obs_scales": {
             "lin_vel": 2.0,
             "ang_vel": 0.25,
             "dof_pos": 1.0,
             "dof_vel": 0.05,
+            "time": 1.0,
         },
     }
     reward_cfg = {
@@ -182,5 +183,5 @@ if __name__ == "__main__":
     main()
 
 
-# python3 euflex_train.py --exp_name euflex-walking-collision --max_iterations 101
+# python3 euflex_train.py --exp_name time_aware_no-ankles --max_iterations 1001
 # tensorboard --logdir logs
