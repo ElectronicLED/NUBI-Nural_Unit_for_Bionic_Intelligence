@@ -183,5 +183,5 @@ if __name__ == "__main__":
     main()
 
 
-# python3 euflex_train.py --exp_name time_aware_no-ankles --max_iterations 1001
+# python3 euflex_train.py --exp_name time_aware_ankles --max_iterations 1001
 # tensorboard --logdir logs

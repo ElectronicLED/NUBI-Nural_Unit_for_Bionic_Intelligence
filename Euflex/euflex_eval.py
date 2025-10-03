@@ -75,4 +75,4 @@ def main():
 if __name__ == "__main__":
     main()
 
-# python3 euflex_eval.py -e euflex-walking-collision --ckpt 800
+# python3 euflex_eval.py -e walking_time_aware --ckpt 1000
