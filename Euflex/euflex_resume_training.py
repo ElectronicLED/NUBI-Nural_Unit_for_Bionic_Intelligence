@@ -43,7 +43,8 @@ if os.path.exists(log_dir):
 
 env_cfg, obs_cfg, reward_cfg, command_cfg, train_cfg = pickle.load(open(f"logs/{args.exp_name}/cfgs.pkl", "rb"))
 
-command_cfg["lin_vel_y_range"] = [-0.3, 0.0]
+#command_cfg["lin_vel_y_range"] = [-0.3, 0.0]
+train_cfg["entropy_coef"] = 0.005# Decrease exploration rate
 
 # Only remove the log directory if we are not resuming
 if not resume_path:

@@ -130,23 +130,6 @@ class EuflexEnv:
 
     def step(self, actions):
 
-        # setting ankles to be always parallel to the ground
-        # try:
-        #     RHip_pitch_index = self.env_cfg["joint_names"].index('RHip_pitch')
-        #     RKnee_pitch_index = self.env_cfg["joint_names"].index('RKnee_pitch')
-        #     RAnkle_pitch_index = self.env_cfg["joint_names"].index('RAnkle_pitch')
-
-        #     LHip_pitch_index = self.env_cfg["joint_names"].index('LHip_pitch')
-        #     LKnee_pitch_index = self.env_cfg["joint_names"].index('LKnee_pitch')
-        #     LAnkle_pitch_index = self.env_cfg["joint_names"].index('LAnkle_pitch')
-        #     # Set the action for that joint to a specific value (e.g., 0.5)
-        #     # This applies the same action value across all environments.
-        #     actions[:, RAnkle_pitch_index] = -actions[:, RKnee_pitch_index] - actions[:, RHip_pitch_index]
-        #     actions[:, LAnkle_pitch_index] = -actions[:, LKnee_pitch_index] - actions[:, LHip_pitch_index]
-        # except ValueError:
-        #     # This will happen if the joint_name_to_set is not in the list.
-        #     pass
-
         self.actions = torch.clip(actions, -self.env_cfg["clip_actions"], self.env_cfg["clip_actions"]) #sets a ceil and floor for actions
         exec_actions = self.last_actions if self.simulate_action_latency else self.actions
         target_dof_pos = exec_actions * self.env_cfg["action_scale"] + self.default_dof_pos
@@ -201,7 +184,9 @@ class EuflexEnv:
         self.obs_buf = torch.cat(
             [
                 self.base_ang_vel * self.obs_scales["ang_vel"],  # 3
+                # remove euler angles or projected gravity later
                 self.projected_gravity,  # 3
+                #self.base_euler * self.obs_scales["euler_angles"], # 3
                 self.commands * self.commands_scale,  # 3
                 (self.dof_pos - self.default_dof_pos) * self.obs_scales["dof_pos"],  # 12
                 self.dof_vel * self.obs_scales["dof_vel"],  # 12
@@ -309,6 +294,6 @@ class EuflexEnv:
         num_collisions = len(self.get_self_collision())
         # reward for no collision
         if num_collisions == 0:
-            return torch.tensor(-1)
+            return torch.tensor(0)
         # Penalize self-collision
         return torch.tensor(len(self.get_self_collision()))
