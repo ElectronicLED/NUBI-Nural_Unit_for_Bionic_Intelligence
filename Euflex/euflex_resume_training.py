@@ -21,9 +21,9 @@ from euflex_env import EuflexEnv
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-e", "--exp_name", type=str, default="walking_time_aware")
-parser.add_argument("-B", "--num_envs", type=int, default=4096)
-parser.add_argument("--max_iterations", type=int, default=1001)
+parser.add_argument("-e", "--exp_name", type=str, default="hyper_param4_reward")
+parser.add_argument("-B", "--num_envs", type=int, default=8)# default was 4096
+parser.add_argument("--max_iterations", type=int, default=501)
 args = parser.parse_args()
 
 gs.init(logging_level="warning")
@@ -44,7 +44,9 @@ if os.path.exists(log_dir):
 env_cfg, obs_cfg, reward_cfg, command_cfg, train_cfg = pickle.load(open(f"logs/{args.exp_name}/cfgs.pkl", "rb"))
 
 #command_cfg["lin_vel_y_range"] = [-0.3, 0.0]
-train_cfg["entropy_coef"] = 0.005# Decrease exploration rate
+#train_cfg["entropy_coef"] = 0.005# Decrease exploration rate
+train_cfg["learning_rate"] = 3e-4  # Adjust learning rate if needed
+train_cfg["schedule"] = "linear"  # Use linear learning rate decay
 
 # Only remove the log directory if we are not resuming
 if not resume_path:

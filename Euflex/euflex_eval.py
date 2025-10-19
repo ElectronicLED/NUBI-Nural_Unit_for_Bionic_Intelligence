@@ -75,4 +75,4 @@ def main():
 if __name__ == "__main__":
     main()
 
-# python3 euflex_eval.py -e walking_time_aware --ckpt 1000
+# python3 euflex_eval.py -e hyper_param2 --ckpt 1000

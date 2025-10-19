@@ -28,11 +28,11 @@ def get_train_cfg(exp_name, max_iterations):
             "entropy_coef": 0.01,
             "gamma": 0.99,
             "lam": 0.95,
-            "learning_rate": 0.001,
+            "learning_rate": 0.005, # Can start slightly higher with a schedule
             "max_grad_norm": 1.0,
             "num_learning_epochs": 5,
             "num_mini_batches": 4,
-            "schedule": "adaptive",
+            "schedule": "adaptive", # Changed from "adaptive" to "linear" for explicit decay could be "constant" or "none"
             "use_clipped_value_loss": True,
             "value_loss_coef": 1.0,
         },
@@ -56,7 +56,7 @@ def get_train_cfg(exp_name, max_iterations):
             "run_name": "",
         },
         "runner_class_name": "OnPolicyRunner",
-        "num_steps_per_env": 24,
+        "num_steps_per_env": 1024, # Increased from 24
         "save_interval": 100,
         "empirical_normalization": None,
         "seed": 1,
@@ -115,10 +115,11 @@ def get_cfgs():
         "clip_actions": 100.0,
     }
     obs_cfg = {
-        "num_obs": 46,# originally was 45
+        "num_obs": 46,# originally was 46
         "obs_scales": {
             "lin_vel": 2.0,
             "ang_vel": 0.25,
+            #"euler_angles": 0.5,
             "dof_pos": 1.0,
             "dof_vel": 0.05,
             "time": 1.0,
@@ -129,10 +130,10 @@ def get_cfgs():
         "base_height_target": 0.35,
         "feet_height_target": 0.075,
         "reward_scales": {
-            "tracking_lin_vel": 1.0,
+            "tracking_lin_vel": 2.5,
             "tracking_ang_vel": 0.2,
             "lin_vel_z": -1.0,
-            "base_height": -50.0,
+            "base_height": -5.0,
             "action_rate": -0.005,
             "similar_to_default": -0.1,
             "collision": -0.5, # Penalize collisions this number needs tuning
@@ -151,7 +152,7 @@ def get_cfgs():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-e", "--exp_name", type=str, default="walking_no_ankles")
-    parser.add_argument("-B", "--num_envs", type=int, default=4096)
+    parser.add_argument("-B", "--num_envs", type=int, default=8)# default was 4096
     parser.add_argument("--max_iterations", type=int, default=1001)
     args = parser.parse_args()
 
@@ -183,5 +184,5 @@ if __name__ == "__main__":
     main()
 
 
-# python3 euflex_train.py --exp_name time_aware_ankles --max_iterations 1001
+# python3 euflex_train.py --exp_name hyper_param3 --max_iterations 1001
 # tensorboard --logdir logs
