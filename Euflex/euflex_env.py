@@ -123,6 +123,10 @@ class EuflexEnv:
         self.extras = dict()  # extra information for logging
         self.extras["observations"] = dict()
 
+    # For alternating feet height reward
+    self.last_rewarded_leg = torch.full((self.num_envs,), -1, dtype=torch.int, device=gs.device)  # -1: none, 0: right, 1: left
+    self.feet_height_threshold = 0.03  # 3cm
+
     def _resample_commands(self, envs_idx):
         self.commands[envs_idx, 0] = gs_rand_float(*self.command_cfg["lin_vel_x_range"], (len(envs_idx),), gs.device)
         self.commands[envs_idx, 1] = gs_rand_float(*self.command_cfg["lin_vel_y_range"], (len(envs_idx),), gs.device)
@@ -217,6 +221,23 @@ class EuflexEnv:
     def get_joint_torques(self):
         dofs_idx = [self.robot.get_joint(name).dof_idx_local for name in self.env_cfg["joint_names"]]
         return self.robot.get_dofs_force(dofs_idx)
+    
+    def get_feet_pos(self):
+        # try name-based lookup first (preferred)
+        # try:
+        r_idx = 11
+        l_idx = 12
+        links_pos = self.robot.get_links_pos().cpu().numpy() # shape: (num_envs, num_links, 3)
+        r_pos = links_pos[:, r_idx]
+        l_pos = links_pos[:, l_idx]
+        return r_pos, l_pos
+    def get_feet_height(self):
+        r_idx = 11
+        l_idx = 12
+        links_pos = self.robot.get_links_pos().cpu().numpy() # shape: (num_envs, num_links, 3)
+        r_height = links_pos[:, r_idx,2]
+        l_height = links_pos[:, l_idx,2]
+        return r_height, l_height
 
     def reset_idx(self, envs_idx):
         if len(envs_idx) == 0:
@@ -247,6 +268,9 @@ class EuflexEnv:
         self.episode_length_buf[envs_idx] = 0
         self.reset_buf[envs_idx] = True
 
+    # Reset last_rewarded_leg for these envs
+    self.last_rewarded_leg[envs_idx] = -1
+
         # fill extras
         self.extras["episode"] = {}
         for key in self.episode_sums.keys():
@@ -261,6 +285,24 @@ class EuflexEnv:
         self.reset_buf[:] = True
         self.reset_idx(torch.arange(self.num_envs, device=gs.device))
         return self.obs_buf, None
+
+    def _reward_feet_height_alternate(self):
+        # Reward when one foot is higher than the other by > 3cm, but only if the other leg was not just rewarded
+        r_height, l_height = self.get_feet_height()
+        reward = torch.zeros(self.num_envs, device=gs.device)
+        threshold = self.feet_height_threshold
+        # 0: right, 1: left
+        right_higher = (r_height - l_height) > threshold
+        left_higher = (l_height - r_height) > threshold
+        # Only reward if the other leg was last rewarded
+        # For right leg: last_rewarded_leg != 0
+        reward[right_higher & (self.last_rewarded_leg != 0)] = 1.0
+        self.last_rewarded_leg[right_higher & (self.last_rewarded_leg != 0)] = 0
+        # For left leg: last_rewarded_leg != 1
+        reward[left_higher & (self.last_rewarded_leg != 1)] = 1.0
+        self.last_rewarded_leg[left_higher & (self.last_rewarded_leg != 1)] = 1
+        # No reward if neither condition
+        return reward
 
 
     # ------------ reward functions----------------
