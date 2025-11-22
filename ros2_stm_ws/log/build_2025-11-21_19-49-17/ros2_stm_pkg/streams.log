@@ -1,0 +1,22 @@
+[0.320s] Invoking command in '/home/mohab/Desktop/grad_proj/ros2_stm_ws/src/ros2_stm_pkg': PYTHONPATH=/home/mohab/Desktop/grad_proj/ros2_stm_ws/build/ros2_stm_pkg/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/mohab/Desktop/grad_proj/ros2_stm_ws/install/ros2_stm_pkg/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/ros2_stm_pkg build --build-base /home/mohab/Desktop/grad_proj/ros2_stm_ws/build/ros2_stm_pkg/build install --record /home/mohab/Desktop/grad_proj/ros2_stm_ws/build/ros2_stm_pkg/install.log --single-version-externally-managed install_data
+[0.447s] running egg_info
+[0.447s] writing ../../build/ros2_stm_pkg/ros2_stm_pkg.egg-info/PKG-INFO
+[0.448s] writing dependency_links to ../../build/ros2_stm_pkg/ros2_stm_pkg.egg-info/dependency_links.txt
+[0.448s] writing entry points to ../../build/ros2_stm_pkg/ros2_stm_pkg.egg-info/entry_points.txt
+[0.448s] writing requirements to ../../build/ros2_stm_pkg/ros2_stm_pkg.egg-info/requires.txt
+[0.448s] writing top-level names to ../../build/ros2_stm_pkg/ros2_stm_pkg.egg-info/top_level.txt
+[0.449s] reading manifest file '../../build/ros2_stm_pkg/ros2_stm_pkg.egg-info/SOURCES.txt'
+[0.449s] writing manifest file '../../build/ros2_stm_pkg/ros2_stm_pkg.egg-info/SOURCES.txt'
+[0.449s] running build
+[0.449s] running build_py
+[0.450s] running install
+[0.450s] running install_lib
+[0.450s] running install_data
+[0.451s] running install_egg_info
+[0.452s] removing '/home/mohab/Desktop/grad_proj/ros2_stm_ws/install/ros2_stm_pkg/lib/python3.10/site-packages/ros2_stm_pkg-0.0.0-py3.10.egg-info' (and everything under it)
+[0.452s] Copying ../../build/ros2_stm_pkg/ros2_stm_pkg.egg-info to /home/mohab/Desktop/grad_proj/ros2_stm_ws/install/ros2_stm_pkg/lib/python3.10/site-packages/ros2_stm_pkg-0.0.0-py3.10.egg-info
+[0.452s] running install_scripts
+[0.464s] Installing publisher_stm script to /home/mohab/Desktop/grad_proj/ros2_stm_ws/install/ros2_stm_pkg/lib/ros2_stm_pkg
+[0.464s] Installing subscriber_stm script to /home/mohab/Desktop/grad_proj/ros2_stm_ws/install/ros2_stm_pkg/lib/ros2_stm_pkg
+[0.464s] writing list of installed files to '/home/mohab/Desktop/grad_proj/ros2_stm_ws/build/ros2_stm_pkg/install.log'
+[0.479s] Invoked command in '/home/mohab/Desktop/grad_proj/ros2_stm_ws/src/ros2_stm_pkg' returned '0': PYTHONPATH=/home/mohab/Desktop/grad_proj/ros2_stm_ws/build/ros2_stm_pkg/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/mohab/Desktop/grad_proj/ros2_stm_ws/install/ros2_stm_pkg/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/ros2_stm_pkg build --build-base /home/mohab/Desktop/grad_proj/ros2_stm_ws/build/ros2_stm_pkg/build install --record /home/mohab/Desktop/grad_proj/ros2_stm_ws/build/ros2_stm_pkg/install.log --single-version-externally-managed install_data

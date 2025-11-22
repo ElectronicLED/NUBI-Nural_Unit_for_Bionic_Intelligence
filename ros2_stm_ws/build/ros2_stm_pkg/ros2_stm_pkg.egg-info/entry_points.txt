@@ -1,0 +1,4 @@
+[console_scripts]
+publisher_stm = ros2_stm_pkg.publisher_stm:main
+subscriber_stm = ros2_stm_pkg.subscriber_stm:main
+
