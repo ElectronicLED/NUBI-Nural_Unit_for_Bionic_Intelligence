@@ -4,7 +4,7 @@
 These libraries are requires to be downloaded from their respective links and built, its recommended to download everything from source
 using their cmakelist
 1. pangolin: https://github.com/stevenlovegrove/Pangolin
-2. Libcpr
+2. Libcpr<br>
 This library gets installed automatically by the depthai prerequisites script that they will ask you to run
 unfortunately they're using a broken link, so you need to manually install it to avoid running its this error<br>
 Steps:<br>
@@ -27,7 +27,7 @@ https://docs.luxonis.com/software/ros/depthai-ros/build/
 
 # Required ROS node
 Install and run colcon-build for the orbslam3_node using<br>
-###colcon build --packages-select orbslam3_node
+### colcon build --packages-select orbslam3_node
 
 ## Steps to run the SLAM:
 We feed the camera output to orb slam3 using ros topics
