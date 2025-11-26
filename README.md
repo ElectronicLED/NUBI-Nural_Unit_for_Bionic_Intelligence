@@ -11,15 +11,15 @@ using their cmakelist
 
 ### 2. Libcpr<br>
 This library gets installed automatically by the depthai prerequisites script that they will ask you to run  
-unfortunately they're using a broken link, so you need to manually install it to avoid running its this error<br>
-Steps:<br>
-git clone https://github.com/libcpr/cpr.git  
+unfortunately they're using a broken link, so you need to manually install it to avoid running its this error by installing it yourself
+
+`git clone https://github.com/libcpr/cpr.git  
 cd cpr  
 git checkout 1.11.0   
 mkdir build && cd build  
 cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON ..  
 make -j$(nproc)  
-sudo make install  
+sudo make install  `
 
 ### 3. Opencv: https://github.com/opencv/opencv
 
@@ -31,9 +31,9 @@ I am not sure about what I'm about to say, but I know there are some other depen
 
 ## BUT NOTE
 this installs I THINK depthai V3 which we cannot use with ROS humble, im not sure about it installing V3 directly but I'm sure about some libraries missing when using the depthai-core installed by this command, so after using it, we delete all the installed depthai libraries using  
-`sudo rm -rf /opt/ros/humble/include/depthai*   
-sudo rm -rf /opt/ros/humble/lib/libdepthai*  
-sudo rm -rf /opt/ros/humble/share/depthai*   `
+`sudo rm -rf /opt/ros/humble/include/depthai*` 
+`sudo rm -rf /opt/ros/humble/lib/libdepthai*`
+`sudo rm -rf /opt/ros/humble/share/depthai* `
 
 Now install depthai-core using  
 
