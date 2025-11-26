@@ -13,13 +13,13 @@ using their cmakelist
 This library gets installed automatically by the depthai prerequisites script that they will ask you to run  
 unfortunately they're using a broken link, so you need to manually install it to avoid running its this error by installing it yourself
 
-`git clone https://github.com/libcpr/cpr.git  
-cd cpr  
-git checkout 1.11.0   
-mkdir build && cd build  
-cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON ..  
-make -j$(nproc)  
-sudo make install  `
+`git clone https://github.com/libcpr/cpr.git`  
+`cd cpr`   
+`git checkout 1.11.0 `  
+`mkdir build && cd build`  
+`cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON ..`  
+`make -j$(nproc) `   
+`sudo make install  `  
 
 ### 3. Opencv: https://github.com/opencv/opencv
 
@@ -31,19 +31,19 @@ I am not sure about what I'm about to say, but I know there are some other depen
 
 ## BUT NOTE
 this installs I THINK depthai V3 which we cannot use with ROS humble, im not sure about it installing V3 directly but I'm sure about some libraries missing when using the depthai-core installed by this command, so after using it, we delete all the installed depthai libraries using  
-`sudo rm -rf /opt/ros/humble/include/depthai*` 
-`sudo rm -rf /opt/ros/humble/lib/libdepthai*`
-`sudo rm -rf /opt/ros/humble/share/depthai* `
+`sudo rm -rf /opt/ros/humble/include/depthai*`   
+`sudo rm -rf /opt/ros/humble/lib/libdepthai* `   
+`sudo rm -rf /opt/ros/humble/share/depthai* `   
 
 Now install depthai-core using  
 
-`git clone -b v2_stable https://github.com/luxonis/depthai-core`
+`git clone -b v2_stable https://github.com/luxonis/depthai-core`    
 
 then run  
-`mkdir build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release  
-sudo make install
-sudo ldconfig  `
+`mkdir build && cd build`  
+`cmake .. -DCMAKE_BUILD_TYPE=Release   `  
+`sudo make install`  
+`sudo ldconfig  `
 
 ### 6. depthai-ros: https://github.com/luxonis/depthai-ros/tree/humble
 
@@ -54,22 +54,22 @@ First we need some dependencies, run:
 
 afterwards install rosdep:
 
-`sudo apt install python3-rosdep  
-sudo rosdep init  
-rosdep update  `
+`sudo apt install python3-rosdep  `   
+`sudo rosdep init`  
+`rosdep update  `  
 
-Afterwards install the drivers:
+Afterwards install the drivers:   
 
-`mkdir -p dai_ws/src
-cd dai_ws/src
-git clone --branch <ros-distro> https://github.com/luxonis/depthai-ros.git
-cd ..
-rosdep install --from-paths src --ignore-src -r -y
-source /opt/ros/humble/setup.bash`
+`mkdir -p dai_ws/src`  
+`cd dai_ws/src`  
+`git clone --branch <ros-distro> https://github.com/luxonis/depthai-ros.git `   
+`cd ..`  
+`rosdep install --from-paths src --ignore-src -r -y`  
+`source /opt/ros/humble/setup.bash`  
 
 Now, replace the depthai_examples cmakeslist with the one provided, this one correctly links the required libraries and ignores some problematic examples that we don't need and were causing brain tickling issues during building
 
-if during building there were issues with depthai_ros_msgs/srv/*.hpp not being found, head to ~/ros2_ws/install/depthai_ros_msgs/include/depthai_ros_msgs and you will find another nested depthai_ros_msgs folder inside of it, COPY the content outstide of the nested folder
+if during building there were issues with `depthai_ros_msgs/srv/*.hpp no such file or directory`, head to `~/ros2_ws/install/depthai_ros_msgs/include/depthai_ros_msgs`and you will find another nested depthai_ros_msgs folder inside of it, COPY the content outstide of the nested folder
 
 Now run `colcon build --symlink-install`
 
