@@ -8,15 +8,19 @@
   <license>TODO: License declaration</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-
+  
+  
   <depend>rclcpp</depend>
   <depend>sensor_msgs</depend>
   <depend>cv_bridge</depend>
+  <depend>rclpy</depend>
+  
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
+
   </export>
 </package>
