@@ -29,7 +29,7 @@ std_msgs__msg__Int16MultiArray legs_feedback;
 
 int n=18;
 
-const uint leg_motor_indecies[12] = {1,2,3,4,5,6,7,8,9,10,11,12};
+const uint leg_motor_indecies[12] = {16,6,7,8,10,9,17,11,12,13,15,14};
 
 
 // macros to check if any function returns anything other than RCL_RET_OK othwerwise stick to error or pass
