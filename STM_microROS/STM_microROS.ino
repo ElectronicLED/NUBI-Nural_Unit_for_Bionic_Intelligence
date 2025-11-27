@@ -127,5 +127,14 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
 
+  for(int i = 0; i < 12; i++) { 
+    legs_feedback.data.data[i] = Herkulex.getPosition(leg_motor_indecies[i]);
+  }
+
+  // 2. Publish the message
+  // We pass NULL as the 3rd argument (allocation) because it's rarely used
+  RCSOFTCHECK(rcl_publish(&leg_pos_feedback_publisher, &legs_feedback, NULL));
+
+
   RCCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100)));
 }
