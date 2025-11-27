@@ -11,28 +11,31 @@
 #include <std_msgs/msg/int16.h>
 #include <std_msgs/msg/int16_multi_array.h>
 
-
-rcl_subscription_t subscriber;
-rcl_publisher_t publisher;
-//std_msgs__msg__Int16 msg;
-std_msgs__msg__Int16MultiArray legs_command;
-std_msgs__msg__Int16MultiArray legs_feedback;
-// int test[12];
-
 rclc_executor_t executor;
 rclc_support_t support;
 rcl_allocator_t allocator;
 rcl_node_t node;
 rcl_timer_t timer;
+rcl_subscription_t leg_command_subscriber;
+rcl_publisher_t leg_pos_feedback_publisher;
 
-#define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){error_loop();}}
-#define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){}}
+
+//std_msgs__msg__Int16 msg;
+std_msgs__msg__Int16MultiArray legs_command;
+std_msgs__msg__Int16MultiArray legs_feedback;
+
+
+
 
 int n=18;
 
 const uint leg_motor_indecies[12] = {1,2,3,4,5,6,7,8,9,10,11,12};
 
 
+// macros to check if any function returns anything other than RCL_RET_OK othwerwise stick to error or pass
+#define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){error_loop();}}
+// same check but without sticking in error loop
+#define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){}}
 
 void error_loop(){
   while(1){
@@ -42,40 +45,31 @@ void error_loop(){
 }
 
 void legs_cmd_callback(const void * msgin){
-  const std_msgs__msg__Int16MultiArray * msg = (const std_msgs__msg__Int16MultiArray *)msgin;
-  
+  //The incoming message is received as a generic void pointer.
+  //the following line casts the void pointer to the specific message type 
+  //so you can access the data.
+  // const std_msgs__msg__Int16MultiArray * msg = (const std_msgs__msg__Int16MultiArray *)msgin;
+  // for(int i = 0; i<12;i++){
+  //   Herkulex.moveOneAngle(leg_motor_indecies[i], msg->data.data[i], 1000, LED_BLUE);
+  // }
   for(int i = 0; i<12;i++){
-    Herkulex.moveOneAngle(leg_motor_indecies[i], msg->data.data[i], 1000, LED_BLUE);
-    // test[0]=msg->data.data[0];
-    // test[1]=msg->data.
-    //Serial.println(test);
+    // Directly accessing the global struct
+    Herkulex.moveOneAngle(leg_motor_indecies[i], legs_command.data.data[i], 1000, LED_BLUE);
   }
 }
 
-// void subscription_callback(const void * msgin)
-// {
-//   const std_msgs__msg__Int16 * msg = (const std_msgs__msg__Int16 *)msgin;
-//   //The print is not working
-//   Serial.println(msg->data);
-//   if (msg->data == 90)
-//   {
-//     digitalWrite(LED_BUILTIN, HIGH);
-//     delay(250);
-//     digitalWrite(LED_BUILTIN, LOW);
-//   }
-//   Herkulex.moveOneAngle(n, msg->data, 1000, LED_BLUE); //move motor  
-//   delay(1000);
-//   Serial.println("Servo angle:");
-//   Serial.println(Herkulex.getAngle(n));
-// }
 
 void setup() {
   pinMode(LED_BUILTIN,OUTPUT);
 
+  // Sets up the serial communication (usually USB-Serial or UART) to 
+  // talk to the micro-ROS Agent on your PC
   set_microros_transports();
   // put your pinMode definitions here
 
   delay(2000);
+
+  // get default memory allocator
   allocator = rcl_get_default_allocator();
 
   //create init_options
@@ -83,30 +77,48 @@ void setup() {
   // create node
   RCCHECK(rclc_node_init_default(&node, "NUBI_STM_NODE", "", &support));
 
+  // Int16MultiArray does not automatically create space to hold the incoming array data.
+  // We need space for 12 integers
+  static int16_t memory_buffer[12]; 
+  legs_command.data.capacity = 12;
+  legs_command.data.data = memory_buffer;
+  legs_command.data.size = 0;
+
+  // Create a static buffer to hold the data you want to send
+  static int16_t feedback_buffer[12]; 
+  // Link the buffer to the message struct
+  legs_feedback.data.capacity = 12;
+  legs_feedback.data.data = feedback_buffer;
+  legs_feedback.data.size = 12; // IMPORTANT: Tell ROS how many items you are sending
+
   // create subscriber
   RCCHECK(rclc_subscription_init_default(
-    &subscriber,
+    &leg_command_subscriber,
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int16MultiArray),
     "legs_command"));
 
   // create publisher
   RCCHECK(rclc_publisher_init_default(
-    &publisher,
+    &leg_pos_feedback_publisher,
     &node,
+    // ROSIDL_GET_MSG_TYPE_SUPPORT(package_name, subfolder, message_name)
+    // fetches the "Instruction Manual" for a specific message_name in package_name/subfolder_name.
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int16MultiArray),
     "legs_feedback"));
 
   // create executor
   RCCHECK(rclc_executor_init(&executor, &support.context, 1, &allocator));  
   //RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &msg, &subscription_callback, ON_NEW_DATA));
-  RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &legs_command, &legs_cmd_callback, ON_NEW_DATA));
+  RCCHECK(rclc_executor_add_subscription(&executor, &leg_command_subscriber, &legs_command, &legs_cmd_callback, ON_NEW_DATA));
 
   //Servo initialization
-  //Serial.begin(115200); //and it works with sirial monitor !!
   delay(2000);  //a delay to have time for serial monitor opening
-  Herkulex.begin(115200,PA9,PA10); //open serial with rx=PB7 and tx=PB6 
-  Herkulex.reboot(n); //reboot first motor
+  Herkulex.begin(115200,PA9,PA10); //open serial 
+  for(int i=1; i<=n; i++){
+    Herkulex.reboot(i); //reboot first motor
+    delay(20);
+  }
   delay(500); 
   Herkulex.initialize(); //initialize motors
   delay(200);  
@@ -115,6 +127,5 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
 
-  delay(100);
   RCCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100)));
 }
