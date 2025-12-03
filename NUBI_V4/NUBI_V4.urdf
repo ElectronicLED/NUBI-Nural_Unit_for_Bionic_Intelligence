@@ -1,0 +1,1149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="NUBI_V4">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="0.00360572903499201 0.00118309605607192 0.00217711576246571"
+        rpy="0 0 0" />
+      <mass
+        value="0.00436456608198951" />
+      <inertia
+        ixx="1.03700098227033E-06"
+        ixy="-1.28086521704872E-07"
+        ixz="-1.24574759195145E-07"
+        iyy="5.23421759609002E-07"
+        iyz="3.00902000693593E-08"
+        izz="1.11895824239186E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/base_lin.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/base_lin.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="R_W_1">
+    <inertial>
+      <origin
+        xyz="0.0106042180672083 -0.0355340948049636 -0.0509859408693827"
+        rpy="0 0 0" />
+      <mass
+        value="0.117514351814221" />
+      <inertia
+        ixx="0.00184091870696687"
+        ixy="-5.27303388220953E-07"
+        ixz="-1.10440211480443E-05"
+        iyy="0.00126752858719316"
+        iyz="1.42918894705524E-05"
+        izz="0.000631858558376624" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/R_W_1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.286274509803922 0.662745098039216 0.329411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/R_W_1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LHip_yaw"
+    type="revolute">
+    <origin
+      xyz="0.0081119 0.034386 -0.0359"
+      rpy="-0.029587 -0.0069813 -0.23166" />
+    <parent
+      link="base_link" />
+    <child
+      link="R_W_1" />
+    <axis
+      xyz="-0.0069813 0.029582 -0.99954" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="R_W_2">
+    <inertial>
+      <origin
+        xyz="0.0348267425697698 -0.000161737999778921 -0.0130790215230767"
+        rpy="0 0 0" />
+      <mass
+        value="0.000534743192016889" />
+      <inertia
+        ixx="3.81196632357271E-09"
+        ixy="4.8202938681329E-12"
+        ixz="1.12935266223978E-11"
+        iyy="4.21629883437099E-09"
+        iyz="-2.45179108456095E-11"
+        izz="5.38948960484967E-09" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/R_W_2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/R_W_2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LHip_roll"
+    type="revolute">
+    <origin
+      xyz="-0.035066 0.0011502 -0.024032"
+      rpy="0 0 0" />
+    <parent
+      link="R_W_1" />
+    <child
+      link="R_W_2" />
+    <axis
+      xyz="0.9999 -0.012361 -0.0073496" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="R_W_3">
+    <inertial>
+      <origin
+        xyz="-0.00366904850142225 0.0206923270145549 -0.0640133111783219"
+        rpy="0 0 0" />
+      <mass
+        value="0.00409019778386988" />
+      <inertia
+        ixx="1.06330826398409E-06"
+        ixy="-3.67296772865533E-09"
+        ixz="-1.27947516464351E-07"
+        iyy="4.91110350366373E-07"
+        iyz="-1.75095801341336E-08"
+        izz="1.11815791511325E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/R_W_3.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/R_W_3.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LHip_pitch"
+    type="revolute">
+    <origin
+      xyz="0.046234 -0.022353 -0.0011124"
+      rpy="0 0 0" />
+    <parent
+      link="R_W_2" />
+    <child
+      link="R_W_3" />
+    <axis
+      xyz="-0.012573 -0.99949 -0.029492" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="R_N_1">
+    <inertial>
+      <origin
+        xyz="0.0180912091674332 0.0174794223988584 -0.015524853055787"
+        rpy="0 0 0" />
+      <mass
+        value="0.00406217575218774" />
+      <inertia
+        ixx="3.58680964390375E-07"
+        ixy="-1.36789139028523E-09"
+        ixz="3.00792691372578E-09"
+        iyy="4.52712724915308E-07"
+        iyz="-9.83119567110104E-09"
+        izz="7.96923604696362E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/R_N_1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/R_N_1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LKnee_pitch"
+    type="revolute">
+    <origin
+      xyz="-0.012234 0.002912 -0.077364"
+      rpy="0 0 0" />
+    <parent
+      link="R_W_3" />
+    <child
+      link="R_N_1" />
+    <axis
+      xyz="0.012573 0.99949 0.029492" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="R_A_1">
+    <inertial>
+      <origin
+        xyz="0.00906400163476218 0.0212996062653623 0.0010982653104894"
+        rpy="0 0 0" />
+      <mass
+        value="0.00272881293242526" />
+      <inertia
+        ixx="1.64229863730979E-07"
+        ixy="2.41480978341029E-10"
+        ixz="-7.4143710328761E-11"
+        iyy="8.86534978387404E-08"
+        iyz="-1.26805437208817E-10"
+        izz="9.18491406874143E-08" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/R_A_1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/R_A_1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LAnkle_pitch"
+    type="revolute">
+    <origin
+      xyz="0.011639 0.0010927 -0.077485"
+      rpy="0 0 0" />
+    <parent
+      link="R_N_1" />
+    <child
+      link="R_A_1" />
+    <axis
+      xyz="0.003219 -0.99956 -0.029605" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="R_A_2">
+    <inertial>
+      <origin
+        xyz="0.0430733733263039 0.00106367841610666 -0.0292045893168975"
+        rpy="0 0 0" />
+      <mass
+        value="0.0107696045304606" />
+      <inertia
+        ixx="2.38069289981098E-06"
+        ixy="-5.73198116303337E-10"
+        ixz="4.95756713287048E-08"
+        iyy="7.30172055621597E-06"
+        iyz="-6.98542012332298E-08"
+        izz="9.65975389557371E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/R_A_2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.286274509803922 0.662745098039216 0.329411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/R_A_2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LAnkle_roll"
+    type="revolute">
+    <origin
+      xyz="-0.0466491656175579 0.0211303826287668 0.000687195180879785"
+      rpy="0 0 0" />
+    <parent
+      link="R_A_1" />
+    <child
+      link="R_A_2" />
+    <axis
+      xyz="0.999970449501151 0.00342421615063682 -0.00688294037608331" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="L_W_1">
+    <inertial>
+      <origin
+        xyz="0.0169989924282692 0.0306369741610124 -0.0500707626292338"
+        rpy="0 0 0" />
+      <mass
+        value="0.117514351814221" />
+      <inertia
+        ixx="0.00182055220398712"
+        ixy="-0.000106359782227656"
+        ixz="-4.2116072868698E-06"
+        iyy="0.00128818464682455"
+        iyz="-8.33541840084238E-06"
+        izz="0.000631569001724984" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/L_W_1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.286274509803922 0.662745098039216 0.329411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/L_W_1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RHip_yaw"
+    type="revolute">
+    <origin
+      xyz="-0.00811115881539393 -0.034382750486029 -0.0359000000000256"
+      rpy="0.00685752129495438 -0.00130889866810499 -0.0430575611663204" />
+    <parent
+      link="base_link" />
+    <child
+      link="L_W_1" />
+    <axis
+      xyz="-0.00130889829658463 -0.00685746167291572 -0.999975630705396" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="L_W_2">
+    <inertial>
+      <origin
+        xyz="0.0349529105405562 0.000637258724841994 0.00110937814475265"
+        rpy="0 0 0" />
+      <mass
+        value="0.000548582459427128" />
+      <inertia
+        ixx="4.20093791478879E-09"
+        ixy="4.5835594674821E-12"
+        ixz="9.19876249750831E-12"
+        iyy="3.9485960114084E-09"
+        iyz="-5.84836288599046E-11"
+        izz="5.4602048976949E-09" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/L_W_2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/L_W_2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RHip_roll"
+    type="revolute">
+    <origin
+      xyz="-0.034434 0.0057069 -0.024295"
+      rpy="-0.036568 -0.0069811 -0.18855" />
+    <parent
+      link="L_W_1" />
+    <child
+      link="L_W_2" />
+    <axis
+      xyz="0.99979 0.0197 -0.0064" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="L_W_3">
+    <inertial>
+      <origin
+        xyz="-0.00368840412625693 -0.0172743724046738 -0.0653797703314001"
+        rpy="0 0 0" />
+      <mass
+        value="0.00416880860873112" />
+      <inertia
+        ixx="1.06373646034498E-06"
+        ixy="1.47090861425676E-08"
+        ixz="-1.27369162273208E-07"
+        iyy="4.92510709048753E-07"
+        iyz="-2.17234806613028E-08"
+        izz="1.11844722918814E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/L_W_3.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/L_W_3.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RHip_pitch"
+    type="revolute">
+    <origin
+      xyz="0.046167 0.021504 4.9952E-05"
+      rpy="0 0 0" />
+    <parent
+      link="L_W_2" />
+    <child
+      link="L_W_3" />
+    <axis
+      xyz="-0.019501 0.99937 0.029713" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="L_N_1">
+    <inertial>
+      <origin
+        xyz="0.0182399426727738 -0.0206609307065666 -0.0166545677098568"
+        rpy="0 0 0" />
+      <mass
+        value="0.00406217499121926" />
+      <inertia
+        ixx="3.58680716015819E-07"
+        ixy="-1.35546556796931E-09"
+        ixz="2.99675206976975E-09"
+        iyy="4.52712810861826E-07"
+        iyz="-9.83132372706509E-09"
+        izz="7.9692375705227E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/L_N_1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/L_N_1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RKnee_pitch"
+    type="revolute">
+    <origin
+      xyz="-0.012229 0.0015873 -0.077403"
+      rpy="0 0 0" />
+    <parent
+      link="L_W_3" />
+    <child
+      link="L_N_1" />
+    <axis
+      xyz="0.019501 -0.99937 -0.029713" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="L_A_1">
+    <inertial>
+      <origin
+        xyz="0.00921712192569246 -0.0200210252255941 0.00261268409508064"
+        rpy="0 0 0" />
+      <mass
+        value="0.00270980906824082" />
+      <inertia
+        ixx="1.64099947129273E-07"
+        ixy="5.8548415921981E-10"
+        ixz="-5.54936056370091E-11"
+        iyy="8.88115950749747E-08"
+        iyz="-1.26594825205163E-10"
+        izz="9.12773083050864E-08" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/L_A_1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/L_A_1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RAnkle_pitch"
+    type="revolute">
+    <origin
+      xyz="0.011662 -0.00076206 -0.077541"
+      rpy="0 0 0" />
+    <parent
+      link="L_N_1" />
+    <child
+      link="L_A_1" />
+    <axis
+      xyz="-0.003219 0.99956 0.029605" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="L_A_2">
+    <inertial>
+      <origin
+        xyz="0.0430733942513947 0.00106370741553263 -0.0292045653589954"
+        rpy="0 0 0" />
+      <mass
+        value="0.0107696045304613" />
+      <inertia
+        ixx="2.38069282742392E-06"
+        ixy="-5.76895170767573E-10"
+        ixz="4.95703457233027E-08"
+        iyy="7.30172055642647E-06"
+        iyz="-6.98541822287184E-08"
+        izz="9.65975396775157E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/L_A_2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.286274509803922 0.662745098039216 0.329411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/L_A_2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RAnkle_roll"
+    type="revolute">
+    <origin
+      xyz="-0.04645 -0.020689 -0.00041486"
+      rpy="0 0 0" />
+    <parent
+      link="L_A_1" />
+    <child
+      link="L_A_2" />
+    <axis
+      xyz="0.99997 0.0034242 -0.0068829" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="Upper_body">
+    <inertial>
+      <origin
+        xyz="0.00100722535936493 -0.0202566857675364 0.015196457190132"
+        rpy="0 0 0" />
+      <mass
+        value="0.0205774766400463" />
+      <inertia
+        ixx="1.6498804942316E-05"
+        ixy="-2.22421726127317E-09"
+        ixz="-2.04398960680073E-08"
+        iyy="2.97052147537646E-06"
+        iyz="-3.13992649129233E-07"
+        izz="1.3571680294212E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/Upper_body.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/Upper_body.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Upper_body_joint"
+    type="revolute">
+    <origin
+      xyz="0.0155859734030666 0.0150977984615721 0.0154999999999887"
+      rpy="-0.0295865830615605 -0.00698131700551125 -0.231656625322495" />
+    <parent
+      link="base_link" />
+    <child
+      link="Upper_body" />
+    <axis
+      xyz="-0.000181925773328471 -0.999562370008579 -0.0295809967013674" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="hL_sh1">
+    <inertial>
+      <origin
+        xyz="0.00131089729093303 -0.0086623504229939 -0.00026552181007844"
+        rpy="0 0 0" />
+      <mass
+        value="0.00373121734305089" />
+      <inertia
+        ixx="4.74256618274321E-07"
+        ixy="9.73366277111318E-08"
+        ixz="7.68570035177194E-09"
+        iyy="1.03510588068506E-06"
+        iyz="-4.44418779170801E-09"
+        izz="1.16211248513822E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/hL_sh1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.286274509803922 0.662745098039216 0.329411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/hL_sh1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Rshoulder_pitch"
+    type="revolute">
+    <origin
+      xyz="0.0010115 -0.10156 0.025026"
+      rpy="0 0 0" />
+    <parent
+      link="Upper_body" />
+    <child
+      link="hL_sh1" />
+    <axis
+      xyz="0.00018193 0.99956 0.029581" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="hL_sh2">
+    <inertial>
+      <origin
+        xyz="0.00138585080680187 -0.0480039721507084 -0.0209539077628652"
+        rpy="0 0 0" />
+      <mass
+        value="0.00726909359748119" />
+      <inertia
+        ixx="1.32655746200597E-06"
+        ixy="-1.52924209184137E-09"
+        ixz="3.02518896160339E-09"
+        iyy="1.34713635376811E-06"
+        iyz="1.03344167826965E-07"
+        izz="6.39611180342588E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/hL_sh2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/hL_sh2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Rshoulder_roll"
+    type="revolute">
+    <origin
+      xyz="0.018996 -0.02159 -0.00077164"
+      rpy="1.5708 0 1.5708" />
+    <parent
+      link="hL_sh1" />
+    <child
+      link="hL_sh2" />
+    <axis
+      xyz="2.4671E-05 -0.0069836 0.99998" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="hL_e">
+    <inertial>
+      <origin
+        xyz="-0.00409935418427199 -0.0614144489553059 -0.0205934071435242"
+        rpy="0 0 0" />
+      <mass
+        value="0.0127692867210094" />
+      <inertia
+        ixx="3.31566307142358E-06"
+        ixy="-4.09669679247364E-07"
+        ixz="2.38906106891264E-09"
+        iyy="1.35779802665662E-06"
+        iyz="-1.31864229117597E-08"
+        izz="3.04971659315155E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/hL_e.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/hL_e.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Relbow_roll"
+    type="revolute">
+    <origin
+      xyz="0.001821 -0.067836 -0.0028528"
+      rpy="0 0 0" />
+    <parent
+      link="hL_sh2" />
+    <child
+      link="hL_e" />
+    <axis
+      xyz="-0.0086977 -0.0072415 0.99994" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="hr_sh1">
+    <inertial>
+      <origin
+        xyz="0.00131407851962373 0.00866239872003893 0.000247182662101331"
+        rpy="0 0 0" />
+      <mass
+        value="0.00373121730714498" />
+      <inertia
+        ixx="4.74185734875676E-07"
+        ixy="-9.74168836873508E-08"
+        ixz="1.92364721746117E-09"
+        iyy="1.03509626735369E-06"
+        iyz="-3.08421998386168E-09"
+        izz="1.16219295785579E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/hr_sh1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.286274509803922 0.662745098039216 0.329411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/hr_sh1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Lshoulder_pitch"
+    type="revolute">
+    <origin
+      xyz="0.0010409 0.060169 0.029812"
+      rpy="0 0 0" />
+    <parent
+      link="Upper_body" />
+    <child
+      link="hr_sh1" />
+    <axis
+      xyz="-0.00018193 -0.99956 -0.029581" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="hr_sh2">
+    <inertial>
+      <origin
+        xyz="-0.0202539512520156 0.00104649293400039 -0.0480188998871105"
+        rpy="0 0 0" />
+      <mass
+        value="0.00726909359748154" />
+      <inertia
+        ixx="6.39611180342091E-07"
+        ixy="3.02518896173742E-09"
+        ixz="1.03344167825271E-07"
+        iyy="1.32655746200598E-06"
+        iyz="-1.52924209182925E-09"
+        izz="1.34713635376862E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/hr_sh2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/hr_sh2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Lshoulder_roll"
+    type="revolute">
+    <origin
+      xyz="0.019003 0.021591 0.00050626"
+      rpy="0 0 0" />
+    <parent
+      link="hr_sh1" />
+    <child
+      link="hr_sh2" />
+    <axis
+      xyz="0.99998 2.4671E-05 -0.0069836" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="hr_e">
+    <inertial>
+      <origin
+        xyz="-0.0209840746321401 0.00791722909014059 -0.0610560698850513"
+        rpy="0 0 0" />
+      <mass
+        value="0.0127693155253569" />
+      <inertia
+        ixx="3.04976676273951E-06"
+        ixy="8.80002837504399E-09"
+        ixz="-9.50771491998646E-09"
+        iyy="3.26045160841057E-06"
+        iyz="5.22298006495044E-07"
+        izz="1.41296240316857E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/hr_e.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://NUBI_V4/meshes/hr_e.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Lelbow_roll"
+    type="revolute">
+    <origin
+      xyz="-0.0021528 0.0018211 -0.067841"
+      rpy="0 0 0" />
+    <parent
+      link="hr_sh2" />
+    <child
+      link="hr_e" />
+    <axis
+      xyz="0.99994 -0.0086977 -0.0072415" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+</robot>
