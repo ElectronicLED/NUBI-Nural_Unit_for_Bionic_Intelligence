@@ -122,10 +122,9 @@ class EuflexEnv:
         )
         self.extras = dict()  # extra information for logging
         self.extras["observations"] = dict()
-
-    # For alternating feet height reward
-    self.last_rewarded_leg = torch.full((self.num_envs,), -1, dtype=torch.int, device=gs.device)  # -1: none, 0: right, 1: left
-    self.feet_height_threshold = 0.03  # 3cm
+        # For alternating feet height reward
+        self.last_rewarded_leg = torch.full((self.num_envs,), -1, dtype=torch.int, device=gs.device)  # -1: none, 0: right, 1: left
+        #self.feet_height_threshold = self.reward_cfg["feet_height_target_difference"]  # default 3 cm
 
     def _resample_commands(self, envs_idx):
         self.commands[envs_idx, 0] = gs_rand_float(*self.command_cfg["lin_vel_x_range"], (len(envs_idx),), gs.device)
@@ -231,6 +230,7 @@ class EuflexEnv:
         r_pos = links_pos[:, r_idx]
         l_pos = links_pos[:, l_idx]
         return r_pos, l_pos
+    
     def get_feet_height(self):
         r_idx = 11
         l_idx = 12
@@ -267,9 +267,8 @@ class EuflexEnv:
         self.last_dof_vel[envs_idx] = 0.0
         self.episode_length_buf[envs_idx] = 0
         self.reset_buf[envs_idx] = True
-
-    # Reset last_rewarded_leg for these envs
-    self.last_rewarded_leg[envs_idx] = -1
+        # Reset last_rewarded_leg for these envs
+        self.last_rewarded_leg[envs_idx] = -1
 
         # fill extras
         self.extras["episode"] = {}
@@ -285,24 +284,6 @@ class EuflexEnv:
         self.reset_buf[:] = True
         self.reset_idx(torch.arange(self.num_envs, device=gs.device))
         return self.obs_buf, None
-
-    def _reward_feet_height_alternate(self):
-        # Reward when one foot is higher than the other by > 3cm, but only if the other leg was not just rewarded
-        r_height, l_height = self.get_feet_height()
-        reward = torch.zeros(self.num_envs, device=gs.device)
-        threshold = self.feet_height_threshold
-        # 0: right, 1: left
-        right_higher = (r_height - l_height) > threshold
-        left_higher = (l_height - r_height) > threshold
-        # Only reward if the other leg was last rewarded
-        # For right leg: last_rewarded_leg != 0
-        reward[right_higher & (self.last_rewarded_leg != 0)] = 1.0
-        self.last_rewarded_leg[right_higher & (self.last_rewarded_leg != 0)] = 0
-        # For left leg: last_rewarded_leg != 1
-        reward[left_higher & (self.last_rewarded_leg != 1)] = 1.0
-        self.last_rewarded_leg[left_higher & (self.last_rewarded_leg != 1)] = 1
-        # No reward if neither condition
-        return reward
 
 
     # ------------ reward functions----------------
@@ -339,3 +320,45 @@ class EuflexEnv:
             return torch.tensor(0)
         # Penalize self-collision
         return torch.tensor(len(self.get_self_collision()))
+    
+    def _reward_feet_height_alternate(self):
+        r_height, l_height = self.get_feet_height()
+
+        # Convert to torch tensors on the right device/dtype if needed
+        if not torch.is_tensor(r_height):
+            r_height = torch.tensor(r_height, device=gs.device, dtype=gs.tc_float)
+        else:
+            r_height = r_height.to(device=gs.device, dtype=gs.tc_float)
+
+        if not torch.is_tensor(l_height):
+            l_height = torch.tensor(l_height, device=gs.device, dtype=gs.tc_float)
+        else:
+            l_height = l_height.to(device=gs.device, dtype=gs.tc_float)
+
+        reward = torch.zeros(self.num_envs, device=gs.device, dtype=gs.tc_float)
+        threshold = float(self.feet_height_threshold)
+
+        # signed and absolute difference
+        diff_signed = r_height - l_height
+        diff_abs = torch.abs(diff_signed)
+
+        # masks for which leg is higher and also not the last rewarded leg
+        mask_right = (diff_signed > 0.0) & (self.last_rewarded_leg != 0)
+        mask_left = (diff_signed < 0.0) & (self.last_rewarded_leg != 1)
+
+        # compute ramped reward (normalized to [0,1] by threshold)
+        # values above threshold are clipped to 1.0
+        # ramp = torch.clamp(diff_abs / threshold, min=0.0, max=1.0)
+        exp = torch.exp(-diff_abs / threshold)
+
+        # # assign ramped rewards only for the eligible envs
+        # reward[mask_right] = ramp[mask_right]
+        # reward[mask_left] = ramp[mask_left]
+        reward[mask_right] = exp[mask_right]
+        reward[mask_left] = exp[mask_left]
+
+        # set 0 for right-rewarded, 1 for left-rewarded
+        self.last_rewarded_leg[mask_right] = 0
+        self.last_rewarded_leg[mask_left] = 1
+
+        return reward

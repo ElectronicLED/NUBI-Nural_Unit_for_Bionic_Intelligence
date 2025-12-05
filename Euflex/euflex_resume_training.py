@@ -45,8 +45,8 @@ env_cfg, obs_cfg, reward_cfg, command_cfg, train_cfg = pickle.load(open(f"logs/{
 
 #command_cfg["lin_vel_y_range"] = [-0.3, 0.0]
 #train_cfg["entropy_coef"] = 0.005# Decrease exploration rate
-train_cfg["learning_rate"] = 3e-4  # Adjust learning rate if needed
-train_cfg["schedule"] = "linear"  # Use linear learning rate decay
+#train_cfg["learning_rate"] = 3e-4  # Adjust learning rate if needed
+#train_cfg["schedule"] = "linear"  # Use linear learning rate decay
 
 # Only remove the log directory if we are not resuming
 if not resume_path:
@@ -64,3 +64,5 @@ if resume_path:
     runner.load(resume_path)
 
 runner.learn(num_learning_iterations=args.max_iterations, init_at_random_ep_len=True)
+
+# python3 euflex_resume_training.py --exp_name feet_height_difference --max_iterations 501

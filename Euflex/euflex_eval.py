@@ -3,6 +3,7 @@ import os
 import pickle
 from importlib import metadata
 
+import inspect
 import torch
 
 try:
@@ -46,7 +47,13 @@ def main():
     runner.load(resume_path)
     policy = runner.get_inference_policy(device=gs.device)
 
+
     max_torques = [0.0] * len(env.get_joint_torques()[0])
+
+    # get feet link indices (names must match your URDF)
+    feet_names = ["RFoot", "LFoot"]  # replace with your actual link names
+    feet_indices = [env.robot.get_link(name).idx for name in feet_names]
+
 
     obs, _ = env.reset()
     with torch.no_grad():
@@ -70,6 +77,16 @@ def main():
             
             actions = policy(obs)
             obs, rews, dones, infos = env.step(actions)
+            
+            # print(env.get_feet_pos())
+            RLeg , LLeg = env.get_feet_height()
+            print(RLeg-LLeg)
+            # links_pos = env.robot.get_links_pos()[0]
+            # print(links_pos)
+            
+            # RFoot_pos = links_pos[12].cpu().numpy()  # shape: (num_feet, 3)
+            # LFoot_pos = links_pos[13].cpu().numpy()  # shape: (num_feet, 3)
+            # print(LFoot_pos,RFoot_pos)
 
 
 if __name__ == "__main__":
