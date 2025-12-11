@@ -13,7 +13,7 @@ void setup()
   Herkulex.begin(115200,PA9,PA10); //open serial with rx=PB7 and tx=PB6 
   for(int i=0; i<n;i++){
   Herkulex.reboot(i); //reboot first motor
-  delay(500);
+  delay(50);
   } 
   Herkulex.initialize(); //initialize motors
   delay(200);  
@@ -30,8 +30,8 @@ void loop(){
   }
   Serial.println("______");
   for(int i=0; i<=n;i++){
-    Serial.print("Moving Servo: ");
-    Serial.println(i);
+    // Serial.print("Moving Servo: ");
+    // Serial.println(i);
     Herkulex.moveOneAngle(i, angle,500,LED_BLUE);
     //delay(200);
   }
