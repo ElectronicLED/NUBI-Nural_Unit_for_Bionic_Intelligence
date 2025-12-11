@@ -10,6 +10,7 @@
 
 #include <std_msgs/msg/int16.h>
 #include <std_msgs/msg/int16_multi_array.h>
+#include <std_msgs/msg/bool.h>
 
 rclc_executor_t executor;
 rclc_support_t support;
@@ -17,6 +18,7 @@ rcl_allocator_t allocator;
 rcl_node_t node;
 rcl_timer_t timer;
 rcl_subscription_t leg_command_subscriber;
+rcl_subscription_t torque_command_subscriber;
 rcl_publisher_t leg_pos_feedback_publisher;
 
 
@@ -24,10 +26,12 @@ rcl_publisher_t leg_pos_feedback_publisher;
 std_msgs__msg__Int16MultiArray legs_command;
 std_msgs__msg__Int16MultiArray legs_feedback;
 
+std_msgs__msg__Bool torque_command;
 
-
-
-int n=18;
+// loops on servos by turn
+int feedback_index = 0;
+// number of motors
+int n=19;
 
 const uint leg_motor_indecies[12] = {16,6,7,8,10,9,17,11,12,13,15,14};
 
@@ -55,6 +59,26 @@ void legs_cmd_callback(const void * msgin){
   for(int i = 0; i<12;i++){
     // Directly accessing the global struct
     Herkulex.moveOneAngle(leg_motor_indecies[i], legs_command.data.data[i], 1000, LED_BLUE);
+  }
+}
+
+void torque_cmd_callback(const void * msgin){
+  //The incoming message is received as a generic void pointer.
+  //the following line casts the void pointer to the specific message type 
+  //so you can access the data.
+  const std_msgs__msg__Bool * msg = (const std_msgs__msg__Bool *)msgin;
+
+  if(msg->data == true){
+    for(int i = 0; i<12;i++){
+  //    Herkulex.moveOneAngle(leg_motor_indecies[i], msg->data.data[i], 1000, LED_BLUE);
+      Herkulex.torqueON(leg_motor_indecies[i]);
+    }
+  }
+  else{
+    for(int i = 0; i<12;i++){
+  //    Herkulex.moveOneAngle(leg_motor_indecies[i], msg->data.data[i], 1000, LED_BLUE);
+      Herkulex.torqueOFF(leg_motor_indecies[i]);
+    }
   }
 }
 
@@ -98,6 +122,12 @@ void setup() {
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int16MultiArray),
     "legs_command"));
 
+  RCCHECK(rclc_subscription_init_default(
+    &torque_command_subscriber,
+    &node,
+    ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Bool),
+    "torque_command"));
+
   // create publisher
   RCCHECK(rclc_publisher_init_default(
     &leg_pos_feedback_publisher,
@@ -108,15 +138,17 @@ void setup() {
     "legs_feedback"));
 
   // create executor
-  RCCHECK(rclc_executor_init(&executor, &support.context, 1, &allocator));  
+  // make sure you change the number to the number of subscribers
+  RCCHECK(rclc_executor_init(&executor, &support.context, 2, &allocator));  
   //RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &msg, &subscription_callback, ON_NEW_DATA));
   RCCHECK(rclc_executor_add_subscription(&executor, &leg_command_subscriber, &legs_command, &legs_cmd_callback, ON_NEW_DATA));
+  RCCHECK(rclc_executor_add_subscription(&executor, &torque_command_subscriber, &torque_command, &torque_cmd_callback, ON_NEW_DATA));
 
   //Servo initialization
   delay(2000);  //a delay to have time for serial monitor opening
   Herkulex.begin(115200,PA9,PA10); //open serial 
-  for(int i=1; i<=n; i++){
-    Herkulex.reboot(i); //reboot first motor
+  for(int i=0; i<12; i++){
+    Herkulex.reboot(leg_motor_indecies[i]); //reboot first motor
     delay(20);
   }
   delay(500); 
@@ -124,17 +156,29 @@ void setup() {
   delay(200);  
 }
 
+
+
+
 void loop() {
   // put your main code here, to run repeatedly:
+  digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 
-  for(int i = 0; i < 12; i++) { 
-    legs_feedback.data.data[i] = Herkulex.getPosition(leg_motor_indecies[i]);
+  legs_feedback.data.data[feedback_index] = Herkulex.getAngle(leg_motor_indecies[feedback_index]);
+
+  // 2. Increment index for the next loop (Wrap around at 12)
+  feedback_index++;
+  if (feedback_index >= 12) {
+    feedback_index = 0;
   }
+
+  // for(int i = 0; i < 12; i++) { 
+  //   legs_feedback.data.data[i] = Herkulex.getAngle(leg_motor_indecies[i]);
+  // }
 
   // 2. Publish the message
   // We pass NULL as the 3rd argument (allocation) because it's rarely used
   RCSOFTCHECK(rcl_publish(&leg_pos_feedback_publisher, &legs_feedback, NULL));
 
 
-  RCCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100)));
+  RCCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(2)));
 }
