@@ -1,0 +1,5 @@
+Here's a short scientific fact:
+
+**The human brain generates about 20 watts of power, enough to power a low-wattage LED light bulb.**
+
+This energy is produced through the metabolic activity of neurons, which communicate via electrical and chemical signals. Despite its relatively low power consumption, the brain is one of the most complex and energy-efficient organs in the body.
