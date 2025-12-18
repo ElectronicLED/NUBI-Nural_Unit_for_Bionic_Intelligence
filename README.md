@@ -2,6 +2,6 @@
 
 First you must run
 
-`ros2 launch depthai_examples yolov4_publisher.launch.py`
+`ros2 launch depthai_examples yolov4_publisher.launch.py spatial_camera:=true` 
 
 then run the python file and it should start outputting the detections when they're detected
