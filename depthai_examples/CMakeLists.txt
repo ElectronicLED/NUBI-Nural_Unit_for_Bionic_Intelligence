@@ -143,11 +143,11 @@ install(TARGETS
         rgb_stereo_node
         stereo_inertial_node
         stereo_node
-        #yolov4_spatial_node
-        #yolov4_node
+        yolov4_spatial_node
+        yolov4_node
         feature_tracker
-        #tracker_yolov4_node
-        #tracker_yolov4_spatial_node
+        tracker_yolov4_node
+        tracker_yolov4_spatial_node
         DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
