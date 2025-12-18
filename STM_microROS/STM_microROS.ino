@@ -21,6 +21,7 @@ rcl_subscription_t leg_command_subscriber;
 rcl_subscription_t upperbody_command_subscriber;
 rcl_subscription_t torque_command_subscriber;
 rcl_publisher_t leg_pos_feedback_publisher;
+rcl_publisher_t upperbody_pos_feedback_publisher;
 
 
 //std_msgs__msg__Int16 msg;
@@ -82,15 +83,15 @@ void torque_cmd_callback(const void * msgin){
   const std_msgs__msg__Bool * msg = (const std_msgs__msg__Bool *)msgin;
 
   if(msg->data == true){
-    for(int i = 0; i<12;i++){
+    for(int i = 0; i<n;i++){
   //    Herkulex.moveOneAngle(leg_motor_indecies[i], msg->data.data[i], 1000, LED_BLUE);
-      Herkulex.torqueON(leg_motor_indecies[i]);
+      Herkulex.torqueON(i);
     }
   }
   else{
-    for(int i = 0; i<12;i++){
+    for(int i = 0; i<n;i++){
   //    Herkulex.moveOneAngle(leg_motor_indecies[i], msg->data.data[i], 1000, LED_BLUE);
-      Herkulex.torqueOFF(leg_motor_indecies[i]);
+      Herkulex.torqueOFF(i);
     }
   }
 }
@@ -133,6 +134,12 @@ void setup() {
   legs_feedback.data.data = feedback_buffer;
   legs_feedback.data.size = 12; // IMPORTANT: Tell ROS how many items you are sending
 
+  static int16_t feedback_buffer1[7]; 
+  // Link the buffer to the message struct
+  upperbody_feedback.data.capacity = 7;
+  upperbody_feedback.data.data = feedback_buffer1;
+  upperbody_feedback.data.size = 7; 
+
   // create subscriber
   RCCHECK(rclc_subscription_init_default(
     &leg_command_subscriber,
@@ -160,6 +167,14 @@ void setup() {
     // fetches the "Instruction Manual" for a specific message_name in package_name/subfolder_name.
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int16MultiArray),
     "legs_feedback"));
+
+  RCCHECK(rclc_publisher_init_default(
+    &upperbody_pos_feedback_publisher,
+    &node,
+    // ROSIDL_GET_MSG_TYPE_SUPPORT(package_name, subfolder, message_name)
+    // fetches the "Instruction Manual" for a specific message_name in package_name/subfolder_name.
+    ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int16MultiArray),
+    "upperbody_feedback"));
 
   // create executor
   // make sure you change the number to the number of subscribers
@@ -200,9 +215,14 @@ void loop() {
   //   legs_feedback.data.data[i] = Herkulex.getAngle(leg_motor_indecies[i]);
   // }
 
+  for(int i = 0; i < 7; i++) { 
+    upperbody_feedback.data.data[i] = Herkulex.getAngle(upper_motor_indecies[i]);
+  }
+
   // 2. Publish the message
   // We pass NULL as the 3rd argument (allocation) because it's rarely used
   RCSOFTCHECK(rcl_publish(&leg_pos_feedback_publisher, &legs_feedback, NULL));
+  RCSOFTCHECK(rcl_publish(&upperbody_pos_feedback_publisher, &upperbody_feedback, NULL));
 
 
   RCCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(2)));
