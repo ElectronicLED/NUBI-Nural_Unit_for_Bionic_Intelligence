@@ -2,7 +2,6 @@
 
 import rclpy
 import threading  # <--- Import threading
-from rclpy.node import Node
 from std_msgs.msg import Int16MultiArray
 from std_msgs.msg import Bool
 import time
@@ -70,7 +69,10 @@ def main():
                 
                 for i in range(len(upper_acc_arr)):
                     upperbody_command(upper_acc_arr[i])
+                    legs_command(legs_acc_arr[i])
                     print(f"Playing Step {i+1}: {upper_acc_arr[i]}")
+                    print(f"Playing Step {i+1}: {legs_acc_arr[i]}")
+                    
                     time.sleep(2)
                 
                 # Clear arrays after playing? (Optional, based on your logic)
@@ -81,11 +83,13 @@ def main():
 
             elif x.lower() == "r":
                 # Create a copy of the current list so we don't save a reference
-                current_pos = list(upperbody_pos_feedback)
-                upper_acc_arr.append(current_pos)
+                current_upperbody_pos = list(upperbody_pos_feedback)
+                current_legs_pos = list(legs_pos_feedback)
+                upper_acc_arr.append(current_upperbody_pos)
+                legs_acc_arr.append(current_legs_pos)
                 
                 print("Recorded Frame!")
-                print(f"Captured: {current_pos}")
+                print(f"Captured: {current_upperbody_pos}")
 
             elif x.lower() == "q":
                 break
