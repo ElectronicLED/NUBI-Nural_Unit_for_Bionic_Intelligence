@@ -1,6 +1,6 @@
 #include <micro_ros_arduino.h>
 
-#include <Herkulex.h>
+#include "Herkulex.h"
 
 #include <stdio.h>
 #include <rcl/rcl.h>
