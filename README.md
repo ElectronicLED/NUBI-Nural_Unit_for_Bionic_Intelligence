@@ -1,3 +1,9 @@
+## 1. Prerequisites
+### 1.1 PyQt6
+`pip install PyQt6`
+### 1.2 libxcb-cursor0
+`sudo apt install libxcb-cursor0`
+
 ## Running camera_ros_handler
 
 First you must run
