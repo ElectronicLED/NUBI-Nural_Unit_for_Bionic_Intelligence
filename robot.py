@@ -22,8 +22,8 @@ publisher_upperbody = node.create_publisher(Int16MultiArray,"upperbody_command",
 def default_stance():
     upper_cmd =  Int16MultiArray()
     lower_cmd = Int16MultiArray()
-    upper_cmd.data = data["upper_body"]["default"]
-    lower_cmd.data = data["lower_body"]["default"]
+    upper_cmd.data = data["default"]["upper_body"]
+    lower_cmd.data = data["default"]["lower_body"]
 
     publisher_upperbody.publish(upper_cmd)
     time.sleep(0.1)
@@ -32,8 +32,8 @@ def default_stance():
 def fight_stance():
     upper_cmd =  Int16MultiArray()
     lower_cmd = Int16MultiArray()
-    upper_cmd.data = data["upper_body"]["fight0"]
-    lower_cmd.data = data["lower_body"]["fight0"]
+    upper_cmd.data = data["fight0"]["upper_body"]
+    lower_cmd.data = data["fight0"]["lower_body"]
 
     publisher_upperbody.publish(upper_cmd)
     time.sleep(0.2)
@@ -45,8 +45,8 @@ def jab():
     time.sleep(0.5)
     upper_cmd =  Int16MultiArray()
     lower_cmd = Int16MultiArray()
-    upper_cmd.data = data["upper_body"]["jab"]
-    lower_cmd.data = data["lower_body"]["jab"]
+    upper_cmd.data = data["jab"]["upper_body"]
+    lower_cmd.data = data["jab"]["lower_body"]
 
     publisher_upperbody.publish(upper_cmd)
     time.sleep(0.1)
@@ -62,3 +62,5 @@ time.sleep(3)
 fight_stance()
 time.sleep(2)
 jab()
+# time.sleep(2)
+# default_stance()
