@@ -56,6 +56,19 @@ def jab():
 
     fight_stance()
 
+def cross():
+    fight_stance()
+    time.sleep(0.5)
+    upper_cmd =  Int16MultiArray()
+    lower_cmd = Int16MultiArray()
+    upper_cmd.data = data["cross"]["upper_body"]
+    lower_cmd.data = data["cross"]["lower_body"]
+    publisher_upperbody.publish(upper_cmd)
+    time.sleep(0.1)
+    publisher_legs.publish(lower_cmd)
+    time.sleep(1.8)
+    fight_stance()
+
 def wave(i=1):
     default_stance()
     time.sleep(0.5)
@@ -121,14 +134,49 @@ def wave(i=1):
     
     default_stance()
 
+def squat():
+    default_stance()
+    time.sleep(0.5)
+    upper_cmd =  Int16MultiArray()
+    lower_cmd = Int16MultiArray()
+    lower_cmd.data = data["squat0"]["lower_body"]
+    publisher_legs.publish(lower_cmd)
+    time.sleep(1.5)
+    lower_cmd.data = data["squat1"]["lower_body"]
+    publisher_legs.publish(lower_cmd)
+    time.sleep(1.5)
+    lower_cmd.data = data["squat2"]["lower_body"]
+    publisher_legs.publish(lower_cmd)
+    time.sleep(1.5)
+    lower_cmd.data = data["squat3"]["lower_body"]
+    publisher_legs.publish(lower_cmd)
+    time.sleep(1.5)
+    lower_cmd.data = data["squat2"]["lower_body"]
+    publisher_legs.publish(lower_cmd)
+    time.sleep(1.5)
+    lower_cmd.data = data["squat1"]["lower_body"]
+    publisher_legs.publish(lower_cmd)
+    time.sleep(2)
+    lower_cmd.data = data["squat0"]["lower_body"]
+    publisher_legs.publish(lower_cmd)
+    time.sleep(2)
+    default_stance()
 
 
 
-default_stance()
 
-wave(4)
+
+# default_stance()
+
+# squat()
+
+# wave(4)
 # time.sleep(3)
-# fight_stance()
+fight_stance()
+time.sleep(2)
+jab()
+time.sleep(2)
+cross()
 # time.sleep(2)
 # jab()
 # time.sleep(2)
