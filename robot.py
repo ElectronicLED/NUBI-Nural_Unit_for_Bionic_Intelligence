@@ -166,18 +166,16 @@ def squat():
 
 
 
-# default_stance()
-
-# squat()
-
-# wave(4)
-# time.sleep(3)
+default_stance()
+time.sleep(1)
+wave(2)
+default_stance()
+time.sleep(1)
 fight_stance()
-time.sleep(2)
+time.sleep(1)
 jab()
-time.sleep(2)
+time.sleep(1)
 cross()
-# time.sleep(2)
-# jab()
-# time.sleep(2)
-# default_stance()
+time.sleep(1)
+default_stance()
+time.sleep(2)
