@@ -56,11 +56,80 @@ def jab():
 
     fight_stance()
 
+def wave(i=1):
+    default_stance()
+    time.sleep(0.5)
+    upper_cmd =  Int16MultiArray()
+    lower_cmd = Int16MultiArray()
+    upper_cmd.data = data["wave0"]["upper_body"]
+    publisher_upperbody.publish(upper_cmd)
+    time.sleep(0.5)
+
+    while i>0:
+        #wave center
+        upper_cmd.data = data["wave1"]["upper_body"]
+        publisher_upperbody.publish(upper_cmd)
+        time.sleep(0.5)
+        upper_cmd.data = data["wave0"]["upper_body"]
+        publisher_upperbody.publish(upper_cmd)
+        time.sleep(0.5)
+        upper_cmd.data = data["wave1"]["upper_body"]
+        publisher_upperbody.publish(upper_cmd)
+        time.sleep(0.5)
+        upper_cmd.data = data["wave0"]["upper_body"]
+        publisher_upperbody.publish(upper_cmd)
+        time.sleep(0.5)
+
+        #wave right
+        lower_cmd.data = data["wave0"]["lower_body"]
+        publisher_legs.publish(lower_cmd)
+        upper_cmd.data = data["wave1"]["upper_body"]
+        publisher_upperbody.publish(upper_cmd)
+        time.sleep(0.5)
+        upper_cmd.data = data["wave0"]["upper_body"]
+        publisher_upperbody.publish(upper_cmd)
+        time.sleep(0.5)
+        upper_cmd.data = data["wave1"]["upper_body"]
+        publisher_upperbody.publish(upper_cmd)
+        time.sleep(0.5)
+
+        upper_cmd.data = data["wave0"]["upper_body"]
+        publisher_upperbody.publish(upper_cmd)
+        time.sleep(0.5)
+
+        #wave left
+        lower_cmd.data = data["wave1"]["lower_body"]
+        publisher_legs.publish(lower_cmd)
+
+        upper_cmd.data = data["wave1"]["upper_body"]
+        publisher_upperbody.publish(upper_cmd)
+        time.sleep(0.5)
+
+        upper_cmd.data = data["wave0"]["upper_body"]
+        publisher_upperbody.publish(upper_cmd)
+        time.sleep(0.5)
+
+        upper_cmd.data = data["wave1"]["upper_body"]
+        publisher_upperbody.publish(upper_cmd)
+        time.sleep(0.5)
+
+        upper_cmd.data = data["wave0"]["upper_body"]
+        publisher_upperbody.publish(upper_cmd)
+        time.sleep(0.5)
+
+        i-=1
+    
+    default_stance()
+
+
+
 
 default_stance()
-time.sleep(3)
-fight_stance()
-time.sleep(2)
-jab()
+
+wave(4)
+# time.sleep(3)
+# fight_stance()
+# time.sleep(2)
+# jab()
 # time.sleep(2)
 # default_stance()
