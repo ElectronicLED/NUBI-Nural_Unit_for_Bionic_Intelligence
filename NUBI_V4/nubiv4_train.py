@@ -30,7 +30,7 @@ def get_train_cfg(exp_name, max_iterations):
             "entropy_coef": 0.01,
             "gamma": 0.99,
             "lam": 0.95,
-            "learning_rate": 0.005, # Can start slightly higher with a schedule
+            "learning_rate": 0.001, # Can start slightly higher with a schedule
             "max_grad_norm": 1.0,
             "num_learning_epochs": 5,
             "num_mini_batches": 4,
@@ -58,7 +58,7 @@ def get_train_cfg(exp_name, max_iterations):
             "run_name": "",
         },
         "runner_class_name": "OnPolicyRunner",
-        "num_steps_per_env": 1024, # Increased from 24 standard is 1024
+        "num_steps_per_env": 24, # Increased from 24 standard is 1024
         "save_interval": 100,
         "empirical_normalization": None,
         "seed": 1,
@@ -130,12 +130,12 @@ def get_cfgs():
     reward_cfg = {
         "tracking_sigma": 0.25,
         "base_height_target": 0.2,
-        #"feet_height_target_difference": 0.025,
+        "feet_height_target_difference": 0.025,
         "reward_scales": {
-            "tracking_lin_vel": 2.5,
+            "tracking_lin_vel": 1.0,
             "tracking_ang_vel": 0.2,
             "lin_vel_z": -1.0,
-            "base_height": -5.0,
+            "base_height": -50.0,
             "action_rate": -0.005,
             "similar_to_default": -0.1,
             "collision": -0.5, # Penalize collisions this number needs tuning
@@ -144,8 +144,8 @@ def get_cfgs():
     }
     command_cfg = {
         "num_commands": 3,
-        "lin_vel_x_range": [0, 0],
-        "lin_vel_y_range": [-0.4, -0.4],# the base link frame is inverted 
+        "lin_vel_x_range": [0.3, 0.3],
+        "lin_vel_y_range": [0.0, 0.0],
         "ang_vel_range": [0, 0],
     }
 
@@ -155,7 +155,7 @@ def get_cfgs():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-e", "--exp_name", type=str, default="first_try")
-    parser.add_argument("-B", "--num_envs", type=int, default=8)# default was 4096
+    parser.add_argument("-B", "--num_envs", type=int, default=4096)# default was 4096
     parser.add_argument("--max_iterations", type=int, default=101)
     args = parser.parse_args()
 
