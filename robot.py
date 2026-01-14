@@ -4,178 +4,175 @@ from std_msgs.msg import Bool,Int16MultiArray
 import json
 import time
 
-filename = "data.json"
+class robot_actions_controller():
+    def __init__(self):
+        filename = "data.json"
 
-with open(filename, "r") as f:
-    data = json.load(f)
+        with open(filename, "r") as f:
+            self.data = json.load(f)
+        self.node = rclpy.create_node("LAPTOP_NODE")
 
-rclpy.init()
-node = rclpy.create_node("LAPTOP_NODE")
+        # --- Publishers ---
+        self.publisher_legs = self.node.create_publisher(Int16MultiArray,"legs_command",10)
+        self.publisher_upperbody = self.node.create_publisher(Int16MultiArray,"upperbody_command",10)
 
-# --- Publishers ---
-publisher_legs = node.create_publisher(Int16MultiArray,"legs_command",10)
-publisher_upperbody = node.create_publisher(Int16MultiArray,"upperbody_command",10)
-#publisher_torque = node.create_publisher(Bool,"torque_command",10)
+    def default_stance(self):
+        upper_cmd =  Int16MultiArray()
+        lower_cmd = Int16MultiArray()
+        upper_cmd.data = self.data["default"]["upper_body"]
+        lower_cmd.data = self.data["default"]["lower_body"]
 
+        self.publisher_upperbody.publish(upper_cmd)
+        time.sleep(0.1)
+        self.publisher_legs.publish(lower_cmd)
 
+    def fight_stance(self):
+        upper_cmd =  Int16MultiArray()
+        lower_cmd = Int16MultiArray()
+        upper_cmd.data = self.data["fight0"]["upper_body"]
+        lower_cmd.data = self.data["fight0"]["lower_body"]
 
-def default_stance():
-    upper_cmd =  Int16MultiArray()
-    lower_cmd = Int16MultiArray()
-    upper_cmd.data = data["default"]["upper_body"]
-    lower_cmd.data = data["default"]["lower_body"]
-
-    publisher_upperbody.publish(upper_cmd)
-    time.sleep(0.1)
-    publisher_legs.publish(lower_cmd)
-
-def fight_stance():
-    upper_cmd =  Int16MultiArray()
-    lower_cmd = Int16MultiArray()
-    upper_cmd.data = data["fight0"]["upper_body"]
-    lower_cmd.data = data["fight0"]["lower_body"]
-
-    publisher_upperbody.publish(upper_cmd)
-    time.sleep(0.2)
-    publisher_legs.publish(lower_cmd)
+        self.publisher_upperbody.publish(upper_cmd)
+        time.sleep(0.2)
+        self.publisher_legs.publish(lower_cmd)
 
 
-def jab():
-    fight_stance()
-    time.sleep(0.5)
-    upper_cmd =  Int16MultiArray()
-    lower_cmd = Int16MultiArray()
-    upper_cmd.data = data["jab"]["upper_body"]
-    lower_cmd.data = data["jab"]["lower_body"]
-
-    publisher_upperbody.publish(upper_cmd)
-    time.sleep(0.1)
-    publisher_legs.publish(lower_cmd)
-
-    time.sleep(1.5)
-
-    fight_stance()
-
-def cross():
-    fight_stance()
-    time.sleep(0.5)
-    upper_cmd =  Int16MultiArray()
-    lower_cmd = Int16MultiArray()
-    upper_cmd.data = data["cross"]["upper_body"]
-    lower_cmd.data = data["cross"]["lower_body"]
-    publisher_upperbody.publish(upper_cmd)
-    time.sleep(0.1)
-    publisher_legs.publish(lower_cmd)
-    time.sleep(1.8)
-    fight_stance()
-
-def wave(i=1):
-    default_stance()
-    time.sleep(0.5)
-    upper_cmd =  Int16MultiArray()
-    lower_cmd = Int16MultiArray()
-    upper_cmd.data = data["wave0"]["upper_body"]
-    publisher_upperbody.publish(upper_cmd)
-    time.sleep(0.5)
-
-    while i>0:
-        #wave center
-        upper_cmd.data = data["wave1"]["upper_body"]
-        publisher_upperbody.publish(upper_cmd)
+    def jab(self):
+        self.fight_stance()
         time.sleep(0.5)
-        upper_cmd.data = data["wave0"]["upper_body"]
-        publisher_upperbody.publish(upper_cmd)
+        upper_cmd =  Int16MultiArray()
+        lower_cmd = Int16MultiArray()
+        upper_cmd.data = self.data["jab"]["upper_body"]
+        lower_cmd.data = self.data["jab"]["lower_body"]
+
+        self.publisher_upperbody.publish(upper_cmd)
+        time.sleep(0.1)
+        self.publisher_legs.publish(lower_cmd)
+
+        time.sleep(1.5)
+
+        self.fight_stance()
+
+    def cross(self):
+        self.fight_stance()
         time.sleep(0.5)
-        upper_cmd.data = data["wave1"]["upper_body"]
-        publisher_upperbody.publish(upper_cmd)
+        upper_cmd =  Int16MultiArray()
+        lower_cmd = Int16MultiArray()
+        upper_cmd.data = self.data["cross"]["upper_body"]
+        lower_cmd.data = self.data["cross"]["lower_body"]
+        self.publisher_upperbody.publish(upper_cmd)
+        time.sleep(0.1)
+        self.publisher_legs.publish(lower_cmd)
+        time.sleep(1.8)
+        self.fight_stance()
+
+    def wave(self,i=1):
+        self.default_stance()
         time.sleep(0.5)
-        upper_cmd.data = data["wave0"]["upper_body"]
-        publisher_upperbody.publish(upper_cmd)
+        upper_cmd =  Int16MultiArray()
+        lower_cmd = Int16MultiArray()
+        upper_cmd.data = self.data["wave0"]["upper_body"]
+        self.publisher_upperbody.publish(upper_cmd)
         time.sleep(0.5)
 
-        #wave right
-        lower_cmd.data = data["wave0"]["lower_body"]
-        publisher_legs.publish(lower_cmd)
-        upper_cmd.data = data["wave1"]["upper_body"]
-        publisher_upperbody.publish(upper_cmd)
-        time.sleep(0.5)
-        upper_cmd.data = data["wave0"]["upper_body"]
-        publisher_upperbody.publish(upper_cmd)
-        time.sleep(0.5)
-        upper_cmd.data = data["wave1"]["upper_body"]
-        publisher_upperbody.publish(upper_cmd)
-        time.sleep(0.5)
+        while i>0:
+            #wave center
+            upper_cmd.data = self.data["wave1"]["upper_body"]
+            self.publisher_upperbody.publish(upper_cmd)
+            time.sleep(0.5)
+            upper_cmd.data = self.data["wave0"]["upper_body"]
+            self.publisher_upperbody.publish(upper_cmd)
+            time.sleep(0.5)
+            upper_cmd.data = self.data["wave1"]["upper_body"]
+            self.publisher_upperbody.publish(upper_cmd)
+            time.sleep(0.5)
+            upper_cmd.data = self.data["wave0"]["upper_body"]
+            self.publisher_upperbody.publish(upper_cmd)
+            time.sleep(0.5)
 
-        upper_cmd.data = data["wave0"]["upper_body"]
-        publisher_upperbody.publish(upper_cmd)
+            #wave right
+            lower_cmd.data = self.data["wave0"]["lower_body"]
+            self.publisher_legs.publish(lower_cmd)
+            upper_cmd.data = self.data["wave1"]["upper_body"]
+            self.publisher_upperbody.publish(upper_cmd)
+            time.sleep(0.5)
+            upper_cmd.data = self.data["wave0"]["upper_body"]
+            self.publisher_upperbody.publish(upper_cmd)
+            time.sleep(0.5)
+            upper_cmd.data = self.data["wave1"]["upper_body"]
+            self.publisher_upperbody.publish(upper_cmd)
+            time.sleep(0.5)
+
+            upper_cmd.data = self.data["wave0"]["upper_body"]
+            self.publisher_upperbody.publish(upper_cmd)
+            time.sleep(0.5)
+
+            #wave left
+            lower_cmd.data = self.data["wave1"]["lower_body"]
+            self.publisher_legs.publish(lower_cmd)
+
+            upper_cmd.data = self.data["wave1"]["upper_body"]
+            self.publisher_upperbody.publish(upper_cmd)
+            time.sleep(0.5)
+
+            upper_cmd.data = self.data["wave0"]["upper_body"]
+            self.publisher_upperbody.publish(upper_cmd)
+            time.sleep(0.5)
+
+            upper_cmd.data = self.data["wave1"]["upper_body"]
+            self.publisher_upperbody.publish(upper_cmd)
+            time.sleep(0.5)
+
+            upper_cmd.data = self.data["wave0"]["upper_body"]
+            self.publisher_upperbody.publish(upper_cmd)
+            time.sleep(0.5)
+
+            i-=1
+        
+        self.default_stance()
+
+    def squat(self):
+        self.default_stance()
         time.sleep(0.5)
+        upper_cmd =  Int16MultiArray()
+        lower_cmd = Int16MultiArray()
+        lower_cmd.data = self.data["squat0"]["lower_body"]
+        self.publisher_legs.publish(lower_cmd)
+        time.sleep(1.5)
+        lower_cmd.data = self.data["squat1"]["lower_body"]
+        self.publisher_legs.publish(lower_cmd)
+        time.sleep(1.5)
+        lower_cmd.data = self.data["squat2"]["lower_body"]
+        self.publisher_legs.publish(lower_cmd)
+        time.sleep(1.5)
+        lower_cmd.data = self.data["squat3"]["lower_body"]
+        self.publisher_legs.publish(lower_cmd)
+        time.sleep(1.5)
+        lower_cmd.data = self.data["squat2"]["lower_body"]
+        self.publisher_legs.publish(lower_cmd)
+        time.sleep(1.5)
+        lower_cmd.data = self.data["squat1"]["lower_body"]
+        self.publisher_legs.publish(lower_cmd)
+        time.sleep(2)
+        lower_cmd.data = self.data["squat0"]["lower_body"]
+        self.publisher_legs.publish(lower_cmd)
+        time.sleep(2)
+        self.default_stance()
 
-        #wave left
-        lower_cmd.data = data["wave1"]["lower_body"]
-        publisher_legs.publish(lower_cmd)
 
-        upper_cmd.data = data["wave1"]["upper_body"]
-        publisher_upperbody.publish(upper_cmd)
-        time.sleep(0.5)
-
-        upper_cmd.data = data["wave0"]["upper_body"]
-        publisher_upperbody.publish(upper_cmd)
-        time.sleep(0.5)
-
-        upper_cmd.data = data["wave1"]["upper_body"]
-        publisher_upperbody.publish(upper_cmd)
-        time.sleep(0.5)
-
-        upper_cmd.data = data["wave0"]["upper_body"]
-        publisher_upperbody.publish(upper_cmd)
-        time.sleep(0.5)
-
-        i-=1
-    
-    default_stance()
-
-def squat():
-    default_stance()
-    time.sleep(0.5)
-    upper_cmd =  Int16MultiArray()
-    lower_cmd = Int16MultiArray()
-    lower_cmd.data = data["squat0"]["lower_body"]
-    publisher_legs.publish(lower_cmd)
-    time.sleep(1.5)
-    lower_cmd.data = data["squat1"]["lower_body"]
-    publisher_legs.publish(lower_cmd)
-    time.sleep(1.5)
-    lower_cmd.data = data["squat2"]["lower_body"]
-    publisher_legs.publish(lower_cmd)
-    time.sleep(1.5)
-    lower_cmd.data = data["squat3"]["lower_body"]
-    publisher_legs.publish(lower_cmd)
-    time.sleep(1.5)
-    lower_cmd.data = data["squat2"]["lower_body"]
-    publisher_legs.publish(lower_cmd)
-    time.sleep(1.5)
-    lower_cmd.data = data["squat1"]["lower_body"]
-    publisher_legs.publish(lower_cmd)
+if __name__ == "__main__":
+    rclpy.init()
+    robot_actions_controller = robot_actions_controller()
+    robot_actions_controller.default_stance()
+    time.sleep(1)
+    robot_actions_controller.wave(2)
+    robot_actions_controller.default_stance()
+    time.sleep(1)
+    robot_actions_controller.fight_stance()
+    time.sleep(1)
+    robot_actions_controller.jab()
+    time.sleep(1)
+    robot_actions_controller.cross()
+    time.sleep(1)
+    robot_actions_controller.default_stance()
     time.sleep(2)
-    lower_cmd.data = data["squat0"]["lower_body"]
-    publisher_legs.publish(lower_cmd)
-    time.sleep(2)
-    default_stance()
-
-
-
-
-
-default_stance()
-time.sleep(1)
-wave(2)
-default_stance()
-time.sleep(1)
-fight_stance()
-time.sleep(1)
-jab()
-time.sleep(1)
-cross()
-time.sleep(1)
-default_stance()
-time.sleep(2)

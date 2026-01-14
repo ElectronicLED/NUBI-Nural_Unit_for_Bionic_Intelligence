@@ -5,15 +5,16 @@ import sys
 import threading
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Int32,Int16MultiArray
+from std_msgs.msg import Int32,Int16MultiArray,Bool
 
 servo_sub_topic = "/legs_feedback"
 servo_pub_topic = "/legs_command"
-class RosInterface(Node, QObject):
+torque_pub_topic = "/torque_command"
+class ServoControlROSNode(Node, QObject):
     int_received = pyqtSignal(list)
 
     def __init__(self):
-        rclpy.init()
+        # must run rclpy.init() before it, here we run it in name == main
         Node.__init__(self, 'servo_gui_ros_node')
         QObject.__init__(self)
 
@@ -28,14 +29,21 @@ class RosInterface(Node, QObject):
             servo_pub_topic,
             10
         )
+
+        self.torque_pub = self.create_publisher(
+            Bool,torque_pub_topic,10
+        )
+
     def callback(self, msg):
         self.int_received.emit(msg.data)
     
-
     def publish_angle(self,num:list[int]):
         msg = Int16MultiArray()
         msg.data = num   
         self.pub.publish(msg)
+
+    def publish_torque(self,torque_lock:bool):
+        self.torque_pub.publish(Bool(data=torque_lock)) 
 
 def ros_spin(node):
     rclpy.spin(node)
@@ -88,10 +96,67 @@ class servo_control_widget(QWidget):
         self.count -= 1
         self.angle_label.setText(str(self.count))
 
+class torque_control_widget(QWidget):
+    parent = None
+    def __init__(self,toggle_key,name=None):
+        super().__init__(torque_control_widget.parent) 
+        self.torque_lock_status = True
+        self.toggle_key = toggle_key
+        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
+        self.setStyleSheet("""
+                           background: rgba(235, 174, 52, 255);
+                           border-radius: 8px;
+                            """)
+        self.setStyleSheet("""
+                           background: rgba(235, 174, 52, 255);
+                           border-radius: 8px;
+                            """)
+        self.setFixedWidth(100)
+        if self.torque_lock_status:
+            self.turn_green()
+        else:
+            self.turn_red() 
+        self.vlayout = QVBoxLayout(self)
+        self.vlayout.setContentsMargins(3,3,3,3)
+        self.vlayout.setSpacing(0)
+        self.torque_lock_label = QLabel("Torque Lock")
+        self.torque_lock_label.setStyleSheet("""
+                                 color: white;
+                                 """)
+        self.torque_lock_status_label = QLabel('On' if self.torque_lock_status else 'Off')
+        self.torque_lock_status_label.setStyleSheet("""
+                                        color: white;
+                                        """)
+        self.torque_lock_label.setAlignment(Qt.AlignmentFlag.AlignCenter)        
+        self.torque_lock_status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)        
+        self.toggle_btn = QPushButton(f"Toggle")
+        # Connect logic (Signals & Slots)
+        self.toggle_btn.clicked.connect(self.toggle_torque)
+        self.vlayout.addWidget(self.torque_lock_label)
+        self.vlayout.addWidget(self.torque_lock_status_label)
+        self.vlayout.addWidget(self.toggle_btn)
+
+    def toggle_torque(self):
+        self.torque_lock_status = not self.torque_lock_status
+        self.torque_lock_status_label.setText("On" if self.torque_lock_status else "Off")
+        if self.torque_lock_status:
+            self.turn_green()
+        else:
+            self.turn_red()
+    def turn_red(self):
+        self.setStyleSheet("""
+                           background: rgba(255, 0, 0, 255);
+                           border-radius: 8px;
+                            """)
+    def turn_green(self):
+        self.setStyleSheet("""
+                           background: rgba(0, 255, 0, 255);
+                           border-radius: 8px;
+                            """)
 class servoGUI(QWidget):
-    def __init__(self,rosinterface:RosInterface):
+    def __init__(self):
         super().__init__()
-        self.ros_node:RosInterface =rosinterface
+        self.ros_node = ServoControlROSNode()
         #self.setGeometry(QRect(100,100,200,300))
         # ===== Load background image =====
         bg = QPixmap("robot.jpg")
@@ -111,6 +176,8 @@ class servoGUI(QWidget):
         servo_widget_width = 35
         servo_control_widget.width = servo_widget_width
 
+        xTorque,Ytorque = 50,50
+
         shift17 = 56
         x16,x17 = centerx-shift17-servo_widget_width, centerx+shift17
         y16 = y17 = 255
@@ -129,6 +196,7 @@ class servoGUI(QWidget):
         y10 = y15 = 519
         
         servo_control_widget.parent=self
+        torque_control_widget.parent = self
         self.servo16_widget = servo_control_widget("q","16")
         self.servo6_widget  = servo_control_widget("w","6 ")
         self.servo7_widget  = servo_control_widget("e","7 ")
@@ -141,6 +209,7 @@ class servoGUI(QWidget):
         self.servo13_widget = servo_control_widget("p","13")
         self.servo15_widget = servo_control_widget("[","15")
         self.servo14_widget = servo_control_widget("]","14")
+        self.torque_lock_widget = torque_control_widget("z")
         self.allservoslayouts:list[servo_control_widget] =[
                             self.servo16_widget,
                             self.servo6_widget ,
@@ -167,11 +236,11 @@ class servoGUI(QWidget):
         self.servo13_widget.move(x13,y13)
         self.servo15_widget.move(x15,y15)
         self.servo14_widget.move(x14,y14)
-        
-        ros_node.int_received.connect(self.subscriber_callback)
+        self.torque_lock_widget.move(xTorque,Ytorque)
+        self.ros_node.int_received.connect(self.subscriber_callback)
         #used for shifting incrementing/decrementing
         self.increment = True
-    def subscriber_callback(self,angles_list:list[int]):
+    def subscriber_callback(self,angles_list:Int16MultiArray):
         for i in range(len(self.allservoslayouts)):
             self.allservoslayouts[i].set_angle(angles_list[i])
 
@@ -179,6 +248,7 @@ class servoGUI(QWidget):
         return [int(servolayout.get_angle()) for servolayout in self.allservoslayouts]
 
     def keyPressEvent(self,event):
+        print("yes")
         #always returns higher case
         key_pressed = QKeySequence(event.key()).toString().lower()
         if key_pressed == "shift":
@@ -186,32 +256,44 @@ class servoGUI(QWidget):
             for servo_widget in self.allservoslayouts:
                 servo_widget.switch_sign()
             return
+        if key_pressed == self.torque_lock_widget.toggle_key:
+            self.torque_lock_widget.toggle_torque()
+            self.ros_node.publish_torque(self.torque_lock_widget.torque_lock_status)
+            print(f"Torque Lock: {self.torque_lock_widget.torque_lock_status}")
         for servo_widget in self.allservoslayouts:
+            sign = 1
+            if servo_widget in [self.servo17_widget,self.servo12_widget, self.servo13_widget, self.servo14_widget,
+                                self.servo15_widget]:
+                sign = -1 
             if key_pressed == servo_widget.upkey:
                 if self.increment:
-                    servo_widget.increment()
+                    if sign == 1:
+                        servo_widget.increment()
+                    else: servo_widget.decrement()
                     all_angles = self.get_all_angles()
                     print(all_angles)
                     self.ros_node.publish_angle(all_angles)
                 else:
-                    servo_widget.decrement()
+                    if sign == 1:
+                        servo_widget.decrement()
+                    else: servo_widget.increment()
                     all_angles = self.get_all_angles()
                     print(all_angles)
                     self.ros_node.publish_angle(all_angles)
 
 
 if __name__ == "__main__":
-    ros_node = RosInterface()
+    rclpy.init()
     app = QApplication(sys.argv)
-    window = servoGUI(ros_node)
-    window.show()
+    servogui_window = servoGUI()
+    servogui_window.show()
     ros_thread = threading.Thread(
         target=ros_spin,
-        args=(ros_node,),
+        args=(servogui_window.ros_node,),
         daemon=True
     )
     ros_thread.start()
     app.exec()
-    ros_node.destroy_node()
+    servogui_window.ros_node.destroy_node()
     rclpy.shutdown()
     sys.exit(0)
