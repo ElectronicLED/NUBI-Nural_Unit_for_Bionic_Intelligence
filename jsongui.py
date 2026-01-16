@@ -9,6 +9,16 @@ from rclpy.node import Node
 from std_msgs.msg import Bool,Int16MultiArray
 import time
 
+def make_lists_inline(obj):
+    """Recursively convert lists to compact JSON strings"""
+    if isinstance(obj, list):
+        return json.dumps(obj, separators=(', ', ': '))  # inline array
+    elif isinstance(obj, dict):
+        return {k: make_lists_inline(v) for k, v in obj.items()}
+    else:
+        return obj
+
+
 class jsonGUI(QWidget):
     def __init__(self):
         super().__init__()
@@ -90,8 +100,10 @@ class jsonGUI(QWidget):
     def save_changes(self):
         """Save current data to JSON file"""
         try:
+            data_to_save = make_lists_inline(self.data)
             with open(self.filename, "w") as f:
-                json.dump(self.data, f, indent=4)
+
+                json.dump(data_to_save, f,separators=(",",": ") ,indent=4)
             QMessageBox.information(self, "Saved", "All changes saved successfully!")
             print("Data saved to", self.filename)
         except Exception as e:
