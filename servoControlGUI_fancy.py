@@ -104,32 +104,44 @@ class torque_control_widget(QWidget):
         self.toggle_key = toggle_key
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self.setStyleSheet("""
-                           background: rgba(235, 174, 52, 255);
-                           border-radius: 8px;
-                            """)
-        self.setStyleSheet("""
-                           background: rgba(235, 174, 52, 255);
-                           border-radius: 8px;
-                            """)
-        self.setFixedWidth(100)
+            QWidget {
+                border-radius: 5px;
+            }
+
+            QWidget[state="green"] {
+                background: rgb(0, 170, 0);
+            }
+
+            QWidget[state="red"] {
+                background: rgb(255, 0, 0);
+            }
+
+            QLabel {
+                color: white;
+                font-size: 20px;
+                font-weight: bold;
+            }
+            QPushButton {
+                color: white;
+                font-size: 20px;
+                font-weight: bold;
+            }
+            """)
+        self.setFixedWidth(170)
         if self.torque_lock_status:
             self.turn_green()
         else:
             self.turn_red() 
         self.vlayout = QVBoxLayout(self)
-        self.vlayout.setContentsMargins(3,3,3,3)
+        self.vlayout.setContentsMargins(3,10,3,10)
         self.vlayout.setSpacing(0)
         self.torque_lock_label = QLabel("Torque Lock")
-        self.torque_lock_label.setStyleSheet("""
-                                 color: white;
-                                 """)
+
         self.torque_lock_status_label = QLabel('On' if self.torque_lock_status else 'Off')
-        self.torque_lock_status_label.setStyleSheet("""
-                                        color: white;
-                                        """)
+
         self.torque_lock_label.setAlignment(Qt.AlignmentFlag.AlignCenter)        
         self.torque_lock_status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)        
-        self.toggle_btn = QPushButton(f"Toggle")
+        self.toggle_btn = QPushButton(f"Toggle with {toggle_key}",self)
         # Connect logic (Signals & Slots)
         self.toggle_btn.clicked.connect(self.toggle_torque)
         self.vlayout.addWidget(self.torque_lock_label)
@@ -143,16 +155,17 @@ class torque_control_widget(QWidget):
             self.turn_green()
         else:
             self.turn_red()
-    def turn_red(self):
-        self.setStyleSheet("""
-                           background: rgba(255, 0, 0, 255);
-                           border-radius: 8px;
-                            """)
+
     def turn_green(self):
-        self.setStyleSheet("""
-                           background: rgba(0, 255, 0, 255);
-                           border-radius: 8px;
-                            """)
+        self.setProperty("state", "green")
+        self.style().unpolish(self)
+        self.style().polish(self)
+
+    def turn_red(self):
+        self.setProperty("state", "red")
+        self.style().unpolish(self)
+        self.style().polish(self)
+
 class servoGUI(QWidget):
     def __init__(self):
         super().__init__()
