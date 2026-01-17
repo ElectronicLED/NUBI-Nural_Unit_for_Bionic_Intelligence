@@ -212,6 +212,20 @@ class robot_actions_controller():
         self.default_stance()
 
 
+    def bow(self):
+        self.default_stance()
+        time.sleep(0.5)
+        upper_cmd =  Int16MultiArray()
+        lower_cmd = Int16MultiArray()
+        upper_cmd.data = self.data["bow"]["upper_body"]
+        lower_cmd.data = self.data["bow"]["lower_body"]
+
+        self.publisher_upperbody.publish(upper_cmd)
+        time.sleep(0.1)
+        self.publisher_legs.publish(lower_cmd)
+        time.sleep(2)
+        self.default_stance()
+
 
 
 
@@ -222,16 +236,19 @@ if __name__ == "__main__":
 
     robot_actions_controller.default_stance()
     time.sleep(1)
+    robot_actions_controller.wave(2)
+    robot_actions_controller.default_stance()
+    time.sleep(1)
     robot_actions_controller.floss(2)
-    # time.sleep(1)
-    # robot_actions_controller.wave(2)
-    # robot_actions_controller.default_stance()
-    # time.sleep(1)
-    # robot_actions_controller.fight_stance()
-    # time.sleep(1)
-    # robot_actions_controller.jab()
-    # time.sleep(1)
-    # robot_actions_controller.cross()
-    # time.sleep(1)
-    # robot_actions_controller.default_stance()
-    # time.sleep(2)
+    time.sleep(1)
+    robot_actions_controller.fight_stance()
+    time.sleep(1)
+    robot_actions_controller.jab()
+    time.sleep(1)
+    robot_actions_controller.jab()
+    time.sleep(1)
+    robot_actions_controller.cross()
+    time.sleep(1)
+    robot_actions_controller.default_stance()
+    time.sleep(1)
+    robot_actions_controller.bow()
