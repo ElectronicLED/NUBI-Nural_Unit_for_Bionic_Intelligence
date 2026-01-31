@@ -8,15 +8,19 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Bool,Int16MultiArray
 import time
+import re
 
-def make_lists_inline(obj):
-    """Recursively convert lists to compact JSON strings"""
-    if isinstance(obj, list):
-        return json.dumps(obj, separators=(', ', ': '))  # inline array
-    elif isinstance(obj, dict):
-        return {k: make_lists_inline(v) for k, v in obj.items()}
-    else:
-        return obj
+def inline_lists(json_text):
+    pattern = re.compile(
+        r"\[\s*(?:-?\d+(?:\.\d+)?(?:,\s*)?)+\s*\]",
+        re.MULTILINE
+    )
+
+    def replacer(match):
+        nums = re.findall(r"-?\d+(?:\.\d+)?", match.group())
+        return "[" + ", ".join(nums) + "]"
+
+    return pattern.sub(replacer, json_text)
 
 
 class jsonGUI(QWidget):
@@ -98,14 +102,20 @@ class jsonGUI(QWidget):
         self.main_layout.addWidget(save_btn)
 
     def save_changes(self):
-        """Save current data to JSON file"""
         try:
-            data_to_save = make_lists_inline(self.data)
-            with open(self.filename, "w") as f:
+            # 1) Serialize ONCE
+            json_text = json.dumps(self.data, indent=4)
 
-                json.dump(data_to_save, f,separators=(",",": ") ,indent=4)
+            # 2) Inline lists (still just text)
+            json_text = inline_lists(json_text)
+
+            # 3) Save ONCE
+            with open(self.filename, "w") as f:
+                f.write(json_text)
+
             QMessageBox.information(self, "Saved", "All changes saved successfully!")
             print("Data saved to", self.filename)
+
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to save data: {e}")
             print("Failed to save:", e)
