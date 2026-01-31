@@ -26,7 +26,7 @@ def inline_lists(json_text):
 class jsonGUI(QWidget):
     def __init__(self):
         super().__init__()
-        self.main_layout = QVBoxLayout()
+        self.main_vlayout = QVBoxLayout()
         self.filename = "data.json"
         self.load_data()
         self.initLayout()
@@ -54,18 +54,18 @@ class jsonGUI(QWidget):
         self.current_arms_angles = angles_list.data
 
     def initLayout(self):
-        self.main_layout.setSpacing(10)
+        self.main_vlayout.setSpacing(10)
         self.current_arms_angles = [0, 0, 0, 0, 0, 0, 0]
         self.current_legs_angles = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         self.refresh_gui()
         # Big "+" button at the end to create a new main action
-        self.setLayout(self.main_layout)
+        self.setLayout(self.main_vlayout)
         
     def refresh_gui(self):
         """Rebuilds the GUI based on current self.sequences"""
         # First, clear everything in layout
-        while self.main_layout.count():
-            child = self.main_layout.takeAt(0)
+        while self.main_vlayout.count():
+            child = self.main_vlayout.takeAt(0)
             if child.widget():
                 child.widget().deleteLater()
             elif child.layout():
@@ -76,30 +76,36 @@ class jsonGUI(QWidget):
             seq_layout = QHBoxLayout()
             seq_label = QLabel(seq_name)
             seq_label.setStyleSheet("font-weight: bold; font-size: 14px;")
-            seq_layout.addWidget(seq_label)
 
             record_sub_btn = QPushButton("Record Sub-action")
             record_sub_btn.clicked.connect(lambda checked, s=seq_name: self.add_sub_action(s))
+            
+            seq_layout.addWidget(seq_label)
             seq_layout.addWidget(record_sub_btn)
-            self.main_layout.addLayout(seq_layout)
+            self.main_vlayout.addLayout(seq_layout)
 
             # Add existing sub-actions
             for item in items:
                 item_layout = QHBoxLayout()
+
                 index_label = QLabel(item[-1])
-                item_layout.addWidget(index_label)
 
                 do_button = QPushButton("Do")
                 do_button.clicked.connect(lambda checked, k=item: self.do_action(k))
+
+                item_layout.addWidget(index_label)
                 item_layout.addWidget(do_button)
-                self.main_layout.addLayout(item_layout)
+
+                self.main_vlayout.addLayout(item_layout)
+
         add_main_btn = QPushButton("+ New Action")
         add_main_btn.clicked.connect(self.add_new_action)
-        self.main_layout.addWidget(add_main_btn)
         # Save button below everything
         save_btn = QPushButton("💾 Save Changes")
         save_btn.clicked.connect(self.save_changes)
-        self.main_layout.addWidget(save_btn)
+        
+        self.main_vlayout.addWidget(add_main_btn)
+        self.main_vlayout.addWidget(save_btn)
 
     def save_changes(self):
         try:

@@ -54,17 +54,12 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     robot_control_gui= robotGUI()
     robot_control_gui.show()
-    ros_thread = threading.Thread(
-        target=ros_spin,
-        args=(robot_control_gui.servo_control_gui.ros_node,),
-        daemon=True
-    )
+
     ros_thread2 = threading.Thread(
         target=ros_spin,
         args=(robot_control_gui.jsonGUI.node,),
         daemon=True
     )
-    ros_thread.start()
     ros_thread2.start()
     app.exec()
     robot_control_gui.servo_control_gui.ros_node.destroy_node()
