@@ -7,14 +7,14 @@ from std_msgs.msg import Int32,Int16MultiArray,Bool
 
 servo_legs_sub_topic = "/legs_feedback"
 servo_legs_pub_topic = "/legs_command"
+Legs = "Legs"
 servo_upperbody_sub_topic = "/upperbody_feedback"
 servo_upperbody_pub_topic = "/upperbody_command"
+Upperbody = "Upperbody"
 torque_pub_topic = "/torque_command"
 
 class ServoControlROSNode(Node, QObject):
-    legs_callback_signal = pyqtSignal(list)
-    upperbody_callback_signal = pyqtSignal(list)
-
+    angles_callback_signal = pyqtSignal(str, list)
     def __init__(self):
         # must run rclpy.init() before it, here we run it in name == main
         Node.__init__(self, 'servo_gui_ros_node')
@@ -46,11 +46,11 @@ class ServoControlROSNode(Node, QObject):
             Bool,torque_pub_topic,10
         )
 
-    def legs_callback(self, msg):
-        self.legs_callback_signal.emit(msg.data)
+    def legs_callback(self, msg: Int16MultiArray):
+        self.angles_callback_signal.emit(Legs,msg.data)
     
-    def upperbody_callback(self, msg):
-        self.upperbody_callback_signal.emit(msg.data)
+    def upperbody_callback(self, msg: Int16MultiArray):
+        self.angles_callback_signal.emit(Upperbody,msg.data)
 
     def publish_legs_angles(self,num:list[int]):
         msg = Int16MultiArray()
@@ -66,6 +66,7 @@ class ServoControlROSNode(Node, QObject):
         self.torque_pub.publish(Bool(data=torque_lock)) 
 
 font_size = 14
+servo_widget_width = 57
 class servo_control_subWidget(QWidget):
     parent = None
     width = None
@@ -75,7 +76,8 @@ class servo_control_subWidget(QWidget):
         self.id = id
         self.angle = 0
         self.hotkey = hotkey
-        self.initLayoutHor()
+        self.initLayoutVer()
+
     def initLayoutHor(self):
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self.setFixedWidth(servo_control_subWidget.width) 
@@ -85,7 +87,7 @@ class servo_control_subWidget(QWidget):
         self.vlayout.setSpacing(1)
 
         self.name_label = QLabel(f"Id: {str(self.id)}")
-        self.angle_label = QLabel("θ: 0")
+        self.angle_label = QLabel("θ: None")
         
         self.hlayout = QHBoxLayout()
         self.hotkey_label = QLabel(f"{self.hotkey}")
@@ -129,12 +131,12 @@ class servo_control_subWidget(QWidget):
         self.setFixedWidth(servo_control_subWidget.width) 
 
         self.vlayout = QVBoxLayout(self)
-        self.vlayout.setContentsMargins(3,3,3,3)
-        self.vlayout.setSpacing(1)
+        self.vlayout.setContentsMargins(2,0,0,0)
+        self.vlayout.setSpacing(3)
 
-        self.angle_label = QLabel("θ: None")
+        self.angle_label = QLabel("θ: 0")
         
-        self.hotkey_label = QLabel(f"Id:{self.id} | {self.hotkey}")
+        self.hotkey_label = QLabel(f"Id:{self.id} | {self.hotkey} ")
         self.up_btn = QPushButton("^")
         self.down_btn = QPushButton("v")
 
@@ -179,9 +181,10 @@ class servo_control_subWidget(QWidget):
 
     def increment(self):
         self.update_angle_signal.emit(self,1)
-
+        print("Signal to increment servo id:",self.id)
     def decrement(self):
         self.update_angle_signal.emit(self,-1)
+        print("Signal to decrement servo id:",self.id)
 
 class torque_control_subWidget(QWidget):
     parent = None
@@ -253,17 +256,17 @@ class torque_control_subWidget(QWidget):
         self.style().unpolish(self)
         self.style().polish(self)
 
+#can be much better but good enough for now
 def return_servo_subWidgets_positions(bg:QPixmap)->dict[int,tuple[int,int]]:
     centerx = int(bg.size().width()/2)-15
-    servo_widget_width = 55
     servo_control_subWidget.width = servo_widget_width
     #shift is the pixel distance from center to the start of servo widgets on the right side
     shift3 =  79
     shift4 = 164
     shift5 = 127
-    shift11 = 338
-    shift12 = 69
-    shift17 = 50
+    shift11 = 330
+    shift12 = 60
+    shift17 = 45
     shift19 = 18
 
     x0  = -shift3-servo_widget_width
@@ -281,19 +284,22 @@ def return_servo_subWidgets_positions(bg:QPixmap)->dict[int,tuple[int,int]]:
     x16 = -shift17-servo_widget_width
     x17 = shift17
     x19 = shift19
-    x_shifts = [x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,x17,0,x19]
+    x20 = x5+20
+    x21 = -x20-servo_widget_width
+                                                            #servo 18 not implemented in low level
+    x_shifts = [x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,x17,0,x19,x20,x21]
 
     y0  = 140
     y1  = 166
-    y2  = 270
+    y2  = 260
     y3  = y0
     y4  = y1
     y5  = y2
-    y6  = 320
-    y7  = 360
-    y8  = 450
-    y9  = 540
-    y10 = 519
+    y6  = 310
+    y7  = 345
+    y8  = 435
+    y9  = 525
+    y10 = 510
     y11 = y6
     y12 = y7
     y13 = y8
@@ -301,7 +307,9 @@ def return_servo_subWidgets_positions(bg:QPixmap)->dict[int,tuple[int,int]]:
     y15 = y10
     y16 = y17 = 255
     y19 = 175
-    y_values = [y0,y1,y2,y3,y4,y5,y6,y7,y8,y9,y10,y11,y12,y13,y14,y15,y16,y17,0,y19]
+    y20 = y12
+    y21 = y7
+    y_values = [y0,y1,y2,y3,y4,y5,y6,y7,y8,y9,y10,y11,y12,y13,y14,y15,y16,y17,0,y19,y20,y21]
     
     # combine into dict
     positions = {i: (centerx + x_shifts[i], y_values[i]) for i in range(len(x_shifts))}
