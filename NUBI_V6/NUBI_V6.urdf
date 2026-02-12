@@ -1,0 +1,1154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="NUBI_V6">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="-0.0011229 0.0156 0.0"
+        rpy="0 0 0" />
+      <mass
+        value="0.0040904" />
+      <inertia
+        ixx="4.9053E-07"
+        ixy="6.0147E-10"
+        ixz="2.3857E-10"
+        iyy="1.1169E-06"
+        iyz="-1.2816E-07"
+        izz="1.0652E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 -0.035 0"
+        rpy="0 0 0" />
+      <geometry>
+        <!--<mesh
+          filename="package://meshes/base_link.STL" />-->
+          <box size="0.1 0.04 0.035" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="RPelvis">
+    <inertial>
+      <origin
+        xyz="0.007807 0.042111 0.034485"
+        rpy="0 0 0" />
+      <mass
+        value="0.086268" />
+      <inertia
+        ixx="0.0014953"
+        ixy="4.4207E-05"
+        ixz="-6.2784E-07"
+        iyy="0.00029184"
+        iyz="5.9389E-06"
+        izz="0.0012571" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://meshes/RPelvis.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.28627 0.66275 0.32941 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0.002 0"
+        rpy="0 0 0" />
+      <geometry>
+        <!--<mesh
+          filename="package://meshes/RPelvis.STL" />-->
+        <box size="0.071 0.005 0.02" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RHip_yaw"
+    type="revolute">
+    <origin
+      xyz="-0.036449 -0.034878 -0.021648"
+      rpy="-1.5708 0 -1.5708" />
+    <parent
+      link="base_link" />
+    <child
+      link="RPelvis" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="RHip">
+    <inertial>
+      <origin
+        xyz="-0.00451761476637914 0.00584714342826777 0.00680018700790237"
+        rpy="0 0 0" />
+      <mass
+        value="1.70246844377124E-07" />
+      <inertia
+        ixx="4.81320151753972E-15"
+        ixy="-5.2724123999253E-19"
+        ixz="1.53704432844156E-17"
+        iyy="5.58786310270594E-15"
+        iyz="-4.59919752371307E-21"
+        izz="5.58755848883629E-15" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://meshes/RHip.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="-0.013 0 -0.005"
+        rpy="0 0 0" />
+      <geometry>
+        <!--<mesh filename="package://meshes/RHip.STL" />-->
+        <box size="0.045 0.03 0.055" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RHip_roll"
+    type="revolute">
+    <origin
+      xyz="0 0.027574 0"
+      rpy="-1.571 -0.0089705 -1.5503" />
+    <parent
+      link="RPelvis" />
+    <child
+      link="RHip" />
+    <axis
+      xyz="0.020518 0 0.99979" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="RFemur">
+    <inertial>
+      <origin
+        xyz="-0.00183904205907645 0.0648853474629884 0.00822618813618843"
+        rpy="0 0 0" />
+      <mass
+        value="0.00409019740627706" />
+      <inertia
+        ixx="4.9052660253765E-07"
+        ixy="-6.01449797473191E-10"
+        ixz="2.38569635610515E-10"
+        iyy="1.11685778701071E-06"
+        iyz="1.28159298171889E-07"
+        izz="1.06519177168035E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://meshes/RFemur.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0.0 0.06 0.012"
+        rpy="0 0 0" />
+      <geometry>
+        <!--<mesh filename="package://meshes/RFemur.STL" />-->
+        <box size="0.045 0.005 0.03" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RHip_pitch"
+    type="revolute">
+    <origin
+      xyz="0 0 0"
+      rpy="0.020519 0 1.5708" />
+    <parent
+      link="RHip" />
+    <child
+      link="RFemur" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="RTibia">
+    <inertial>
+      <origin
+        xyz="-0.0173130779741609 -0.00105513938424677 0.0160961049827325"
+        rpy="0 0 0" />
+      <mass
+        value="0.00392507494301407" />
+      <inertia
+        ixx="3.57287629143056E-07"
+        ixy="9.92188943827006E-10"
+        ixz="1.02285991871695E-11"
+        iyy="4.51665003932787E-07"
+        iyz="-5.45733481889898E-09"
+        izz="7.95962407014054E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://meshes/RTibia.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="-0.013 0 0.006"
+        rpy="0 0 0" />
+      <geometry>
+        <!--<mesh filename="package://meshes/RTibia.STL" />-->
+        <box size="0.045 0.04 0.03" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RKnee_pitch"
+    type="revolute">
+    <origin
+      xyz="0 0.077764 -1.9824E-05"
+      rpy="-1.5887 1.5708 0" />
+    <parent
+      link="RFemur" />
+    <child
+      link="RTibia" />
+    <axis
+      xyz="0 -0.99984 -0.017944" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="RAnkle">
+    <inertial>
+      <origin
+        xyz="-0.00449028466436133 0.0119293253361759 0.00720707713936298"
+        rpy="0 0 0" />
+      <mass
+        value="1.70246844377129E-07" />
+      <inertia
+        ixx="4.81291429076785E-15"
+        ixy="-5.27172003746948E-19"
+        ixz="-3.70836153132245E-18"
+        iyy="5.58786310270829E-15"
+        iyz="4.60010199804965E-21"
+        izz="5.58784571563678E-15" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://meshes/RAnkle.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="-0.014 0 0.015"
+        rpy="0 0 0" />
+      <geometry>
+        <!-- <mesh filename="package://meshes/RAnkle.STL" />-->
+        <box size="0.045 0.04 0.055" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RAnkle_pitch"
+    type="revolute">
+    <origin
+      xyz="-0.01173 -0.0013874 0.077438"
+      rpy="-1.2754 -1.552 -1.8665" />
+    <parent
+      link="RTibia" />
+    <child
+      link="RAnkle" />
+    <axis
+      xyz="0 -1 0" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="RFoot">
+    <inertial>
+      <origin
+        xyz="-0.00435902671287343 0.0135169491657929 -0.0286669430773389"
+        rpy="0 0 0" />
+      <mass
+        value="0.0107696045379167" />
+      <inertia
+        ixx="7.29965318243794E-06"
+        ixy="-5.1820771440685E-12"
+        ixz="4.9650184023105E-13"
+        iyy="2.38035548946643E-06"
+        iyz="1.2693294854091E-09"
+        izz="9.66215869492412E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://meshes/RFoot.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="-0.005 0.013 -0.028"
+        rpy="0 0 0" />
+      <geometry>
+        <!--<mesh
+          filename="package://meshes/RFoot.STL" />-->
+        <box size="0.054 0.09 0.004"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RAnkle_roll"
+    type="revolute">
+    <origin
+      xyz="0 0 0"
+      rpy="1.5763 4.9037E-05 -1.5798" />
+    <parent
+      link="RAnkle" />
+    <child
+      link="RFoot" />
+    <axis
+      xyz="0 -1 0" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="LPelvis">
+    <inertial>
+      <origin
+        xyz="0.00818363217680887 -0.0421111591303299 0.0360880670320481"
+        rpy="0 0 0" />
+      <mass
+        value="0.0862681975072362" />
+      <inertia
+        ixx="0.00149525639847843"
+        ixy="-4.41422236988219E-05"
+        ixz="-1.85534809455636E-06"
+        iyy="0.000291844636294533"
+        iyz="6.39935439485888E-06"
+        izz="0.00125706639903616" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://meshes/LPelvis.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.286274509803922 0.662745098039216 0.329411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 -0.002 0"
+        rpy="0 0 0" />
+      <geometry>
+        <!--<mesh
+          filename="package://meshes/LPelvis.STL" />-->
+        <box size="0.071 0.005 0.02" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LHip_yaw"
+    type="revolute">
+    <origin
+      xyz="0.034208 -0.034878 -0.021648"
+      rpy="1.5708 0 -1.5812" />
+    <parent
+      link="base_link" />
+    <child
+      link="LPelvis" />
+    <axis
+      xyz="0 -1 0" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="LHip">
+    <inertial>
+      <origin
+        xyz="-0.00455469275155299 0.00757125437183945 -0.00440684812499183"
+        rpy="0 0 0" />
+      <mass
+        value="1.70246844377133E-07" />
+      <inertia
+        ixx="4.81291443653173E-15"
+        ixy="-5.27113784228387E-19"
+        ixz="-3.70842020117524E-18"
+        iyy="5.58786313708632E-15"
+        iyz="4.59117589418392E-21"
+        izz="5.58784576416702E-15" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://meshes/LHip.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="-0.013 0 0.005"
+        rpy="0 0 0" />
+      <geometry>
+        <!-- <mesh filename="package://meshes/LHip.STL" /> -->
+        <box size="0.045 0.03 0.055" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LHip_roll"
+    type="revolute">
+    <origin
+      xyz="0 -0.027574 0"
+      rpy="-1.5707 -0.0087265 1.5653" />
+    <parent
+      link="LPelvis" />
+    <child
+      link="LHip" />
+    <axis
+      xyz="0.0054654 0 -0.99999" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="LFemur">
+    <inertial>
+      <origin
+        xyz="-2.38765980619879E-06 0.0751214614518778 0.00345398772154254"
+        rpy="0 0 0" />
+      <mass
+        value="0.00409019781377434" />
+      <inertia
+        ixx="4.90526680071979E-07"
+        ixy="6.0116223855972E-10"
+        ixz="2.38559697605889E-10"
+        iyy="1.11685786555513E-06"
+        iyz="-1.28159281679745E-07"
+        izz="1.06519190103583E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://meshes/LFemur.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0.0 0.07 0"
+        rpy="0 0 0" />
+      <geometry>
+        <!-- <mesh filename="package://meshes/LFemur.STL" /> -->
+        <box size="0.045 0.005 0.03" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LHip_pitch"
+    type="revolute">
+    <origin
+      xyz="0.010435 -0.003043 -0.011557"
+      rpy="-0.00542 0 1.5708" />
+    <parent
+      link="LHip" />
+    <child
+      link="LFemur" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="LTibia">
+    <inertial>
+      <origin
+        xyz="-0.0173120228873035 0.00260477147371434 0.0161131420556066"
+        rpy="0 0 0" />
+      <mass
+        value="0.00392507523860521" />
+      <inertia
+        ixx="3.57287232737218E-07"
+        ixy="-9.73235865878929E-10"
+        ixz="7.57556321216367E-12"
+        iyy="4.51580439615843E-07"
+        iyz="-7.147252028704E-10"
+        izz="7.96047369466914E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://meshes/LTibia.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="-0.013 0 0.006"
+        rpy="0 0 0" />
+      <geometry>
+        <!-- <mesh filename="package://meshes/LTibia.STL" /> -->
+        <box size="0.045 0.04 0.03" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LKnee_pitch"
+    type="revolute">
+    <origin
+      xyz="0 0.088 0.0117"
+      rpy="-2.794 -1.5708 1.2232" />
+    <parent
+      link="LFemur" />
+    <child
+      link="LTibia" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="LAnkle">
+    <inertial>
+      <origin
+        xyz="-0.00449343292030352 0.00928857917825272 -0.00488294292516624"
+        rpy="0 0 0" />
+      <mass
+        value="1.70246844377126E-07" />
+      <inertia
+        ixx="4.81320163952594E-15"
+        ixy="-5.27299733767046E-19"
+        ixz="1.53704160000801E-17"
+        iyy="5.58786308251843E-15"
+        iyz="-4.61641554304117E-21"
+        izz="5.5875584336926E-15" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://meshes/LAnkle.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="-0.014 0 -0.015"
+        rpy="0 0 0" />
+      <geometry>
+        <!-- <mesh filename="package://meshes/LAnkle.STL" /> -->
+        <box size="0.045 0.04 0.055" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LAnkle_pitch"
+    type="revolute">
+    <origin
+      xyz="-0.013028 0 0.07745"
+      rpy="-3.1416 -1.559 3.1416" />
+    <parent
+      link="LTibia" />
+    <child
+      link="LAnkle" />
+    <axis
+      xyz="0 -1 0" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="LFoot">
+    <inertial>
+      <origin
+        xyz="-0.0135837238910629 0.028811856690581 0.00344363344977459"
+        rpy="0 0 0" />
+      <mass
+        value="0.0107696045359165" />
+      <inertia
+        ixx="2.38035548898604E-06"
+        ixy="1.2693297127951E-09"
+        ixz="5.18295195337904E-12"
+        iyy="9.66215869303042E-06"
+        iyz="-4.96827122301971E-13"
+        izz="7.29965318111973E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://meshes/LFoot.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.286274509803922 0.662745098039216 0.329411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="-0.013 0.028 0.005"
+        rpy="0 0 0" />
+      <geometry>
+        <!-- <mesh filename="package://meshes/LFoot.STL" /> -->
+        <box size="0.09 0.004 0.054"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LAnkle_roll"
+    type="revolute">
+    <origin
+      xyz="0 0 0"
+      rpy="-1.5796 -1.5503 0" />
+    <parent
+      link="LAnkle" />
+    <child
+      link="LFoot" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="chest">
+    <inertial>
+      <origin
+        xyz="0.0237249897108021 -0.00161285767837157 0.000103876383980663"
+        rpy="0 0 0" />
+      <mass
+        value="0.019754850289291" />
+      <inertia
+        ixx="1.35726363313461E-05"
+        ixy="2.01706703132909E-09"
+        ixz="7.1942744093926E-13"
+        iyy="2.95518232438337E-06"
+        iyz="-3.53804812374107E-10"
+        izz="1.64927734681762E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://meshes/chest.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0.02 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <!--<mesh
+          filename="package://meshes/chest.STL" />-->
+        <box size="0.05 0.135 0.05" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="core"
+    type="revolute">
+    <origin
+      xyz="0 -0.046578 0.028478"
+      rpy="0 -1.5706 -1.5708" />
+    <parent
+      link="base_link" />
+    <child
+      link="chest" />
+    <axis
+      xyz="0 -1 0" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="RShoulder">
+    <inertial>
+      <origin
+        xyz="-0.00131251801905741 -0.00856617061476235 -7.4121992016396E-09"
+        rpy="0 0 0" />
+      <mass
+        value="0.00373121795815298" />
+      <inertia
+        ixx="4.74187701709523E-07"
+        ixy="-9.74216465073022E-08"
+        ixz="-4.78831228136915E-13"
+        iyy="1.03498980667421E-06"
+        iyz="-6.08479258745578E-14"
+        izz="1.16229790204739E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://meshes/RShoulder.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.286274509803922 0.662745098039216 0.329411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0.0 -0.0025 0"
+        rpy="0 0 0" />
+      <geometry>
+        <!-- <mesh filename="package://meshes/RShoulder.STL" />-->
+        <box size="0.045 0.005 0.02"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RShoulder_pitch"
+    type="revolute">
+    <origin
+      xyz="0.036528 -0.073721 5E-05"
+      rpy="-3.1416 -1.5622 3.1416" />
+    <parent
+      link="chest" />
+    <child
+      link="RShoulder" />
+    <axis
+      xyz="0 -1 0" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="RHumerus">
+    <inertial>
+      <origin
+        xyz="-0.0474046769456795 0.00155517659340047 0.000688160199369223"
+        rpy="0 0 0" />
+      <mass
+        value="0.00754330562120907" />
+      <inertia
+        ixx="1.35059258913153E-06"
+        ixy="1.98589890930802E-12"
+        ixz="9.74682773418352E-08"
+        iyy="1.32836078103108E-06"
+        iyz="3.65779121777481E-11"
+        izz="6.41156971559717E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://meshes/RHumerus.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="-0.021 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <!--<mesh filename="package://meshes/RHumerus.STL" />-->
+        <box size="0.06 0.03 0.024"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RShoulder_roll"
+    type="revolute">
+    <origin
+      xyz="0 -0.0215 0"
+      rpy="0 1.5708 -1.5708" />
+    <parent
+      link="RShoulder" />
+    <child
+      link="RHumerus" />
+    <axis
+      xyz="0 -1 0" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="RForearm">
+    <inertial>
+      <origin
+        xyz="-0.00451109742739187 0.015874999998887 0.00232500000771064"
+        rpy="0 0 0" />
+      <mass
+        value="8.51234221885612E-08" />
+      <inertia
+        ixx="2.40644845183368E-15"
+        ixy="-5.27146857560122E-19"
+        ixz="-2.53201239416612E-28"
+        iyy="3.18141465089577E-15"
+        iyz="3.72235843526948E-25"
+        izz="2.40644845183368E-15" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://meshes/RForearm.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="-0.012 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <!--<mesh filename="package://meshes/RForearm.STL" />-->
+        <box size="0.045 0.033 0.024"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RElbow_pitch"
+    type="revolute">
+    <origin
+      xyz="-0.067878 0.0016 0"
+      rpy="-1.5708 0 0" />
+    <parent
+      link="RHumerus" />
+    <child
+      link="RForearm" />
+    <axis
+      xyz="0 -1 0" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="LShoulder">
+    <inertial>
+      <origin
+        xyz="-0.00131251793049279 -0.00856617075058032 -7.45284087222409E-09"
+        rpy="0 0 0" />
+      <mass
+        value="0.00373121799749922" />
+      <inertia
+        ixx="4.74187710433775E-07"
+        ixy="-9.74216438686639E-08"
+        ixz="-4.78925256868171E-13"
+        iyy="1.03498981091377E-06"
+        iyz="-6.25540013129958E-14"
+        izz="1.16229791550356E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://meshes/LShoulder.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.286274509803922 0.662745098039216 0.329411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 -0.0025 0"
+        rpy="0 0 0" />
+      <geometry>
+        <!-- <mesh filename="package://meshes/LShoulder.STL" /> -->
+        <box size="0.045 0.005 0.02"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LShoulder_pitch"
+    type="revolute">
+    <origin
+      xyz="0.036528 0.070779 5E-05"
+      rpy="0 -1.5622 3.1416" />
+    <parent
+      link="chest" />
+    <child
+      link="LShoulder" />
+    <axis
+      xyz="0 -1 0" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="LHumerus">
+    <inertial>
+      <origin
+        xyz="-0.0474049058467981 0.00145882683656838 -0.000615197606809698"
+        rpy="0 0 0" />
+      <mass
+        value="0.00754332256882732" />
+      <inertia
+        ixx="1.35058863483034E-06"
+        ixy="-9.12738294217045E-14"
+        ixz="-9.74140049944188E-08"
+        iyy="1.32836079504817E-06"
+        iyz="-4.50231975295122E-13"
+        izz="6.41161104802831E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://meshes/LHumerus.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="-0.021 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <!-- <mesh filename="package://meshes/LHumerus.STL" /> -->
+        <box size="0.06 0.03 0.024"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LShoulder_roll"
+    type="revolute">
+    <origin
+      xyz="0 -0.0215 0"
+      rpy="1.5708 -1.5708 0" />
+    <parent
+      link="LShoulder" />
+    <child
+      link="LHumerus" />
+    <axis
+      xyz="0 -1 0" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="LForearm">
+    <inertial>
+      <origin
+        xyz="-0.00451109742745594 0.0159250000002262 0.00232499999843686"
+        rpy="0 0 0" />
+      <mass
+        value="8.51234221885626E-08" />
+      <inertia
+        ixx="2.40644845183375E-15"
+        ixy="-5.27146860709674E-19"
+        ixz="5.45808546239343E-29"
+        iyy="3.18141465089579E-15"
+        iyz="-8.02412794930831E-26"
+        izz="2.40644845183375E-15" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://meshes/LForearm.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="-0.012 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <!-- <mesh filename="package://meshes/LForearm.STL" /> -->
+        <box size="0.045 0.033 0.024"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LElbow_pitch"
+    type="revolute">
+    <origin
+      xyz="-0.067878 0.0015 0"
+      rpy="1.5708 0 0" />
+    <parent
+      link="LHumerus" />
+    <child
+      link="LForearm" />
+    <axis
+      xyz="0 -1 0" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+</robot>
