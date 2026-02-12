@@ -54,7 +54,6 @@ class NubiEnv:
                 enable_collision=True,
                 enable_joint_limit=True,
                 enable_self_collision=True,
-                contact_offset=0.0001,
             ),
             show_viewer=show_viewer,
         )
@@ -114,6 +113,16 @@ class NubiEnv:
         self.prev_target_dof_pos[:] = self.default_dof_pos
         #######################################################################
         
+        
+        # Per-joint weights for similar_to_default reward (optional, defaults to 1.0 for all joints)
+        if "similar_to_default_weights" in reward_cfg:
+            self.similar_to_default_weights = torch.tensor(
+                reward_cfg["similar_to_default_weights"],
+                device=gs.device,
+                dtype=gs.tc_float
+            )
+        else:
+            self.similar_to_default_weights = torch.ones(self.num_actions, device=gs.device, dtype=gs.tc_float)
         
         # prepare reward functions and multiply reward scales by dt
         self.reward_functions, self.episode_sums = dict(), dict()
@@ -362,8 +371,8 @@ class NubiEnv:
         return torch.sum(torch.square(self.last_actions - self.actions), dim=1)
 
     def _reward_similar_to_default(self):
-        # Penalize joint poses far away from default pose
-        return torch.sum(torch.abs(self.dof_pos - self.default_dof_pos), dim=1)
+        # Penalize joint poses far away from default pose (with per-joint weights)
+        return torch.sum(self.similar_to_default_weights * torch.abs(self.dof_pos - self.default_dof_pos), dim=1)
 
     def _reward_base_height(self):
         # Penalize base height away from target

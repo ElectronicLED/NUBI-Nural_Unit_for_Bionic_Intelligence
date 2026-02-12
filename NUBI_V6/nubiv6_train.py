@@ -150,11 +150,18 @@ def get_cfgs():
             "collision": -0.5, # Penalize collisions this number needs tuning
             #"feet_height_alternate": 1.3
         },
+        # Per-joint weights for similar_to_default reward (optional)
+        # Order: RHip_yaw, RHip_roll, RHip_pitch, RKnee_pitch, RAnkle_roll, RAnkle_pitch,
+        #        LHip_yaw, LHip_roll, LHip_pitch, LKnee_pitch, LAnkle_roll, LAnkle_pitch
+        "similar_to_default_weights": [
+            1.0, 0.9, 0.8, 0.8, 0.9, 0.85,  # Right leg joints
+            1.0, 0.9, 0.8, 0.8, 0.9, 0.85,  # Left leg joints
+        ],
     }
     command_cfg = {
         "num_commands": 3,
-        "lin_vel_x_range": [0.3, 0.3],
-        "lin_vel_y_range": [0.0, 0.0],
+        "lin_vel_x_range": [0.0, 0.0],
+        "lin_vel_y_range": [-0.3, -0.3],
         "ang_vel_range": [0, 0],
     }
 
@@ -164,8 +171,8 @@ def get_cfgs():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-e", "--exp_name", type=str, default="first_try")
-    parser.add_argument("-B", "--num_envs", type=int, default=4096)# default was 4096
-    parser.add_argument("--max_iterations", type=int, default=101)
+    parser.add_argument("-B", "--num_envs", type=int, default=2048)# default was 4096
+    parser.add_argument("--max_iterations", type=int, default=1001)
     args = parser.parse_args()
 
     gs.init(logging_level="warning")
@@ -196,5 +203,5 @@ if __name__ == "__main__":
     main()
 
 
-# python3 nubiv4_train.py --exp_name time_aware_PID --max_iterations 1001
+# python3 nubiv6_train.py --exp_name JR_P254_D15 --max_iterations 1001
 # tensorboard --logdir logs
