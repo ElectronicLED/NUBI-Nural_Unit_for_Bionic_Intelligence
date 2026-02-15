@@ -9,7 +9,10 @@ class command_array:
     all_commands_dict: ClassVar[Dict[str, "command_array"]] = {}
     name: str
     ids_array: List[int]
-    hotkey_array: List[str] 
+    hotkey_array: List[str]
+    # optional publisher information for this command array
+    pub_topic: Optional[str] = None
+    pub_type: Optional[type] = None
 
     def __post_init__(self) -> None:
         cls = type(self)

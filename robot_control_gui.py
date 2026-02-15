@@ -8,26 +8,8 @@ class robot_control_buttons(QWidget):
         self.initlayout()
     
     def initlayout(self):
+        # Removed hard-coded stance buttons; actions now available in `jsonGUI` via "Do All"
         self.vlayout = QVBoxLayout()
-        self.default_stance_button = QPushButton("Default Stance")
-        self.default_stance_button.pressed.connect(self.robot_controller.default_stance)
-        self.fight_stance_button = QPushButton("Fight Stance")
-        self.fight_stance_button.pressed.connect(self.robot_controller.fight_stance)
-        self.jab_stance_button = QPushButton("Jab Stance")
-        self.jab_stance_button.pressed.connect(self.robot_controller.jab)
-        self.cross_stance_button = QPushButton("Cross Stance")
-        self.cross_stance_button.pressed.connect(self.robot_controller.cross)
-        self.wave_stance_button = QPushButton("Wave Stance")
-        self.wave_stance_button.pressed.connect(self.robot_controller.wave)
-        self.squat_stance_button = QPushButton("Squat Stance")
-        self.squat_stance_button.pressed.connect(self.robot_controller.squat)
-
-        self.vlayout.addWidget(self.default_stance_button)
-        self.vlayout.addWidget(self.fight_stance_button)
-        self.vlayout.addWidget(self.jab_stance_button)
-        self.vlayout.addWidget(self.cross_stance_button)
-        self.vlayout.addWidget(self.wave_stance_button)
-        self.vlayout.addWidget(self.squat_stance_button)
         self.setLayout(self.vlayout)
 
 class robotGUI(QWidget):
@@ -49,19 +31,38 @@ class robotGUI(QWidget):
         QApplication.sendEvent(self.servo_control_gui, event)
         # Optionally, also call default behavior
         super().keyPressEvent(event)
+
+
+def ros_spin(node):
+    # Use a per-node executor if this helper is used; matches other modules.
+    executor = rclpy.executors.SingleThreadedExecutor()
+    try:
+        executor.add_node(node)
+        executor.spin()
+    finally:
+        try:
+            executor.remove_node(node)
+        except Exception:
+            pass
+
 if __name__ == "__main__":
     rclpy.init()
     app = QApplication(sys.argv)
     robot_control_gui= robotGUI()
     robot_control_gui.show()
 
-    ros_thread2 = threading.Thread(
-        target=ros_spin,
-        args=(robot_control_gui.jsonGUI.node,),
-        daemon=True
-    )
-    ros_thread2.start()
     app.exec()
-    robot_control_gui.servo_control_gui.ros_node.destroy_node()
-    rclpy.shutdown()
+    # Clean up nodes (each GUI class spins its own node thread)
+    try:
+        robot_control_gui.servo_control_gui.ros_node.destroy_node()
+    except Exception:
+        pass
+    try:
+        robot_control_gui.jsonGUI.node.destroy_node()
+    except Exception:
+        pass
+    try:
+        rclpy.shutdown()
+    except Exception:
+        pass
     sys.exit(0)

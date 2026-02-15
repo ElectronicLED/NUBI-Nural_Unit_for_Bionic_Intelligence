@@ -29,8 +29,17 @@ class jsonGUI(QWidget):
         self.main_vlayout = QVBoxLayout()
         self.filename = "data.json"
         self.load_data()
+        # delay between actions when doing "Do All"
+        self.do_all_delay = 2
         self.initLayout()
         self.node = rclpy.create_node("jsonGUI")
+        # Start a dedicated spin thread for this node so the class is self-contained
+        self.ros_thread = threading.Thread(
+            target=ros_spin,
+            args=(self.node,),
+            daemon=True
+        )
+        self.ros_thread.start()
         # --- Publishers ---
         self.publisher_legs = self.node.create_publisher(Int16MultiArray,"legs_command",10)
         self.publisher_upperbody = self.node.create_publisher(Int16MultiArray,"upperbody_command",10)
@@ -54,7 +63,9 @@ class jsonGUI(QWidget):
         self.current_arms_angles = angles_list.data
 
     def initLayout(self):
-        self.main_vlayout.setSpacing(10)
+        # Reduce overall spacing to minimize clutter
+        self.main_vlayout.setSpacing(2)
+        self.main_vlayout.setContentsMargins(2, 2, 2, 2)
         self.current_arms_angles = [0, 0, 0, 0, 0, 0, 0]
         self.current_legs_angles = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         self.refresh_gui()
@@ -74,6 +85,20 @@ class jsonGUI(QWidget):
         for seq_name, items in self.sequences.items():
             # Sequence label with a "Record Sub-action" button
             seq_layout = QHBoxLayout()
+            seq_layout.setSpacing(4)
+            seq_layout.setContentsMargins(0, 0, 0, 0)
+            # collapse/expand toggle button
+            collapsed = self.collapsed.get(seq_name, True)
+            toggle_text = "v" if collapsed else "^"
+            toggle_btn = QPushButton(toggle_text)
+            toggle_btn.setFixedWidth(28)
+            toggle_btn.clicked.connect(lambda checked, s=seq_name: self.toggle_collapse(s))
+            # Do All button to perform every sub-action in sequence
+            do_all_btn = QPushButton("Do All")
+            do_all_btn.setFixedWidth(64)
+            do_all_btn.clicked.connect(lambda checked, s=seq_name: self.do_all(s))
+            seq_layout.addWidget(do_all_btn)
+            seq_layout.addWidget(toggle_btn)
             seq_label = QLabel(seq_name)
             seq_label.setStyleSheet("font-weight: bold; font-size: 14px;")
 
@@ -85,18 +110,21 @@ class jsonGUI(QWidget):
             self.main_vlayout.addLayout(seq_layout)
 
             # Add existing sub-actions
-            for item in items:
-                item_layout = QHBoxLayout()
+            if not self.collapsed.get(seq_name, True):
+                for item in items:
+                    item_layout = QHBoxLayout()
+                    item_layout.setSpacing(2)
+                    item_layout.setContentsMargins(8, 0, 0, 0)
 
-                index_label = QLabel(item[-1])
+                    index_label = QLabel(item[-1])
 
-                do_button = QPushButton("Do")
-                do_button.clicked.connect(lambda checked, k=item: self.do_action(k))
+                    do_button = QPushButton("Do")
+                    do_button.clicked.connect(lambda checked, k=item: self.do_action(k))
 
-                item_layout.addWidget(index_label)
-                item_layout.addWidget(do_button)
+                    item_layout.addWidget(index_label)
+                    item_layout.addWidget(do_button)
 
-                self.main_vlayout.addLayout(item_layout)
+                    self.main_vlayout.addLayout(item_layout)
 
         add_main_btn = QPushButton("+ New Action")
         add_main_btn.clicked.connect(self.add_new_action)
@@ -135,6 +163,23 @@ class jsonGUI(QWidget):
                 self.clear_layout(child.layout())
 
 
+    def toggle_collapse(self, seq_name):
+        """Toggle collapsed state for a sequence and refresh GUI."""
+        self.collapsed[seq_name] = not self.collapsed.get(seq_name, True)
+        self.refresh_gui()
+
+
+    def do_all(self, seq_name):
+        """Perform every sub-action in `seq_name` in order with delay between them."""
+        items = self.sequences.get(seq_name, [])
+        for item in items:
+            try:
+                self.do_action(item)
+            except Exception as e:
+                print(f"Error performing {item}: {e}")
+            time.sleep(self.do_all_delay)
+
+
     def load_data(self):
         with open(self.filename, "r") as f:
             self.data = json.load(f)
@@ -150,6 +195,9 @@ class jsonGUI(QWidget):
         # Sort items in each sequence
         for k in self.sequences:
             self.sequences[k] = sorted(self.sequences[k])
+        # Initialize collapsed state for sequences (default: collapsed)
+        existing = getattr(self, 'collapsed', {}) if hasattr(self, 'collapsed') else {}
+        self.collapsed = {k: existing.get(k, True) for k in self.sequences}
 
     def do_action(self, item_name):
         # Extract the base name (without trailing number) if needed
@@ -194,6 +242,9 @@ class jsonGUI(QWidget):
         self.data[new_item_name] = positions
         self.sequences[seq_name].append(new_item_name)
         self.sequences[seq_name] = sorted(self.sequences[seq_name])
+        # ensure collapsed state exists for this sequence
+        if seq_name not in self.collapsed:
+            self.collapsed[seq_name] = True
         self.refresh_gui()
         print(f"Added sub-action {new_item_name} to {seq_name}")
 
@@ -209,21 +260,38 @@ class jsonGUI(QWidget):
             sub_action_name = name + "0"
             self.data[sub_action_name] = positions
             self.sequences[name] = [sub_action_name]
+            # initialize collapsed state for the new sequence
+            self.collapsed[name] = True
             self.refresh_gui()
             print(f"Created new action {name} with sub-action 0")
 
 def ros_spin(node):
-    rclpy.spin(node)
+    """Spin a single-threaded executor for the given node.
+
+    Using a per-node executor avoids conflicts from multiple calls to
+    rclpy.spin() sharing internal generators.
+    """
+    executor = rclpy.executors.SingleThreadedExecutor()
+    try:
+        executor.add_node(node)
+        executor.spin()
+    finally:
+        try:
+            executor.remove_node(node)
+        except Exception:
+            pass
 
 if __name__ == "__main__":
     rclpy.init()
     app = QApplication([])
     window = jsonGUI()
     window.show()
-    ros_thread = threading.Thread(
-        target=ros_spin,
-        args=(window.node,),
-        daemon=True
-    )
-    ros_thread.start()
     app.exec()
+    try:
+        window.node.destroy_node()
+    except Exception:
+        pass
+    try:
+        rclpy.shutdown()
+    except Exception:
+        pass

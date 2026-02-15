@@ -4,6 +4,7 @@ from PyQt6.QtCore import Qt,pyqtSignal,QObject
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Int32,Int16MultiArray,Bool
+from rclpy.publisher import Publisher
 
 servo_legs_sub_topic = "/legs_feedback"
 servo_legs_pub_topic = "/legs_command"
@@ -19,6 +20,9 @@ class ServoControlROSNode(Node, QObject):
         # must run rclpy.init() before it, here we run it in name == main
         Node.__init__(self, 'servo_gui_ros_node')
         QObject.__init__(self)
+
+        # dynamic publisher cache: topic_name -> publisher
+        self._dynamic_publishers: dict[str, Publisher] = {}
 
         self.legs_sub = self.create_subscription(
             Int16MultiArray,
@@ -46,6 +50,21 @@ class ServoControlROSNode(Node, QObject):
             Bool,torque_pub_topic,10
         )
 
+    def publish_generic(self, topic_name: str, data_type: type, msg) -> None:
+        """Publish `msg` to `topic_name` using `data_type`, creating a cached publisher as needed."""
+        if topic_name not in self._dynamic_publishers:
+            try:
+                pub = self.create_publisher(data_type, topic_name, 10)
+            except Exception as e:
+                print(f"Failed to create publisher for {topic_name}: {e}")
+                return
+            self._dynamic_publishers[topic_name] = pub
+        pub = self._dynamic_publishers[topic_name]
+        try:
+            pub.publish(msg)
+        except Exception as e:
+            print(f"Failed to publish to {topic_name}: {e}")
+
     def legs_callback(self, msg: Int16MultiArray):
         self.angles_callback_signal.emit(Legs,msg.data)
     
@@ -71,13 +90,78 @@ class servo_control_subWidget(QWidget):
     parent = None
     width = None
     update_angle_signal = pyqtSignal(object,int)  # servo_id, angle
-    def __init__(self,hotkey,id):
-        super().__init__(servo_control_subWidget.parent) 
+    def __init__(self,hotkey,id,command_name: str = None):
+        super().__init__(servo_control_subWidget.parent)
         self.id = id
         self.angle = 0
         self.hotkey = hotkey
+        # name of the command_array/group this servo belongs to
+        self.command_name = command_name
+        # Backward/ergonomic alias: some code refers to `servo_widget.name`
+        self.name = command_name
         self.initLayoutVer()
 
+    def initLayoutVer(self):
+        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
+        self.setFixedWidth(servo_control_subWidget.width) 
+        self.vlayout = QVBoxLayout(self)
+        self.vlayout.setContentsMargins(2,0,0,0)
+        self.vlayout.setSpacing(3)
+
+        self.angle_label = QLabel("θ: None")
+        
+        self.hotkey_label = QLabel(f"Id:{self.id} | {self.hotkey} ")
+        self.up_btn = QPushButton("^")
+        self.down_btn = QPushButton("v")
+
+        # Connect logic (Signals & Slots)
+        self.up_btn.clicked.connect(self.increment)
+        self.down_btn.clicked.connect(self.decrement)
+        self.vlayout.addWidget(self.up_btn)
+        self.vlayout.addWidget(self.hotkey_label)
+        self.vlayout.addWidget(self.angle_label)
+        self.vlayout.addWidget(self.down_btn)
+        self.setStyleSheet(f"""
+            QWidget {{
+            background: rgba(235, 174, 52, 180);
+            border: 2px solid black;   /* outer border only */
+            border-radius: 8px;
+            }}
+            QLabel {{
+                color: white;
+                font-weight: bold;
+                font-size: {font_size}px;
+                qproperty-alignment: AlignCenter;
+                background: transparent;   /* important! */
+                border: 0px solid black;
+            }}
+            QPushButton {{
+                color: white;
+                font-weight: bold;
+                font-size: {font_size}px;
+                background: transparent;   /* important! */
+                border: 2px solid black;
+            }}
+            """)
+    def switch_sign(self):
+        self.up_btn.setText(f"{'+' if self.up_btn.text()[0] == '-' else '-'} {self.hotkey}")
+
+    def get_angle(self) -> str:
+        return self.angle_label.text()[3:]
+
+    def set_angle(self,num:int):
+        if type(num) != int:
+            print(f"Error: angle must be int, got {type(num)}")
+            return
+        self.angle = num
+        self.angle_label.setText(f"θ: {num}")
+
+    def increment(self):
+        self.update_angle_signal.emit(self,1)
+        print("Signal to increment servo id:",self.id)
+    def decrement(self):
+        self.update_angle_signal.emit(self,-1)
+        print("Signal to decrement servo id:",self.id)
     def initLayoutHor(self):
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self.setFixedWidth(servo_control_subWidget.width) 
@@ -106,7 +190,7 @@ class servo_control_subWidget(QWidget):
         #self.vlayout.addWidget(self.down_btn)
         self.setStyleSheet(f"""
             QWidget {{
-            background: rgba(235, 174, 52, 255);
+            background: rgba(235, 174, 52, 150);
             border: 2px solid black;   /* outer border only */
             border-radius: 8px;
             }}
@@ -126,66 +210,7 @@ class servo_control_subWidget(QWidget):
                 border: 2px solid black;
             }}
             """)
-    def initLayoutVer(self):
-        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
-        self.setFixedWidth(servo_control_subWidget.width) 
-
-        self.vlayout = QVBoxLayout(self)
-        self.vlayout.setContentsMargins(2,0,0,0)
-        self.vlayout.setSpacing(3)
-
-        self.angle_label = QLabel("θ: 0")
-        
-        self.hotkey_label = QLabel(f"Id:{self.id} | {self.hotkey} ")
-        self.up_btn = QPushButton("^")
-        self.down_btn = QPushButton("v")
-
-        # Connect logic (Signals & Slots)
-        self.up_btn.clicked.connect(self.increment)
-        self.down_btn.clicked.connect(self.decrement)
-        self.vlayout.addWidget(self.up_btn)
-        self.vlayout.addWidget(self.hotkey_label)
-        self.vlayout.addWidget(self.angle_label)
-        self.vlayout.addWidget(self.down_btn)
-        self.setStyleSheet(f"""
-            QWidget {{
-            background: rgba(235, 174, 52, 255);
-            border: 2px solid black;   /* outer border only */
-            border-radius: 8px;
-            }}
-            QLabel {{
-                color: white;
-                font-weight: bold;
-                font-size: {font_size}px;
-                qproperty-alignment: AlignCenter;
-                background: transparent;   /* important! */
-                border: 0px solid black;
-            }}
-            QPushButton {{
-                color: white;
-                font-weight: bold;
-                font-size: {font_size}px;
-                background: transparent;   /* important! */
-                border: 2px solid black;
-            }}
-            """)
-    def switch_sign(self):
-        self.up_btn.setText(f"{'+' if self.up_btn.text()[0] == '-' else '-'} {self.hotkey}")
-
-    def get_angle(self) -> str:
-        return self.angle_label.text()[3:]
-
-    def set_angle(self,num):
-        self.angle = num
-        self.angle_label.setText(f"θ: {num}")
-
-    def increment(self):
-        self.update_angle_signal.emit(self,1)
-        print("Signal to increment servo id:",self.id)
-    def decrement(self):
-        self.update_angle_signal.emit(self,-1)
-        print("Signal to decrement servo id:",self.id)
-
+    
 class torque_control_subWidget(QWidget):
     parent = None
     def __init__(self,toggle_key,name=None):
@@ -290,7 +315,7 @@ def return_servo_subWidgets_positions(bg:QPixmap)->dict[int,tuple[int,int]]:
     x_shifts = [x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,x17,0,x19,x20,x21]
 
     y0  = 140
-    y1  = 166
+    y1  = 136
     y2  = 260
     y3  = y0
     y4  = y1
