@@ -154,8 +154,8 @@ def get_cfgs():
         # Order: RHip_yaw, RHip_roll, RHip_pitch, RKnee_pitch, RAnkle_roll, RAnkle_pitch,
         #        LHip_yaw, LHip_roll, LHip_pitch, LKnee_pitch, LAnkle_roll, LAnkle_pitch
         "similar_to_default_weights": [
-            1.0, 0.9, 0.8, 0.8, 0.9, 0.85,  # Right leg joints
-            1.0, 0.9, 0.8, 0.8, 0.9, 0.85,  # Left leg joints
+            1.0, 0.9, 0.7, 0.65, 0.9, 0.7,  # Right leg joints
+            1.0, 0.9, 0.7, 0.65, 0.9, 0.7,  # Left leg joints
         ],
     }
     command_cfg = {
@@ -170,8 +170,8 @@ def get_cfgs():
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-e", "--exp_name", type=str, default="first_try")
-    parser.add_argument("-B", "--num_envs", type=int, default=2048)# default was 4096
+    parser.add_argument("-e", "--exp_name", type=str, default="test")
+    parser.add_argument("-B", "--num_envs", type=int, default=4096)# default was 4096
     parser.add_argument("--max_iterations", type=int, default=1001)
     args = parser.parse_args()
 
