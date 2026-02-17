@@ -31,9 +31,11 @@ class NubiEnv:
         self.reward_scales = reward_cfg["reward_scales"]
 
 
+        # set gravity from env_cfg if provided, else default
+        gravity = self.env_cfg.get("gravity", (0.0, 0.0, -9.81))
         # create scene
         self.scene = gs.Scene(
-            sim_options=gs.options.SimOptions(dt=self.dt, substeps=2),
+            sim_options=gs.options.SimOptions(dt=self.dt, substeps=2, gravity=gravity),
             viewer_options=gs.options.ViewerOptions(
                 max_FPS=int(0.5 / self.dt),
                 camera_pos=(-2.0, 1.0, 1.0),
