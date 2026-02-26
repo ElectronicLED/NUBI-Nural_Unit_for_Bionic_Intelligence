@@ -100,19 +100,56 @@ class NubiEnv:
         # self.robot.set_dofs_kp([self.env_cfg["kp"]] * self.num_actions, self.motors_dof_idx)
         # self.robot.set_dofs_kv([self.env_cfg["kd"]] * self.num_actions, self.motors_dof_idx)
         ###############################ChatGPT Added###############################
-        # 1. Disable internal PD (set to 0 so physics engine doesn't interfere)
-        self.robot.set_dofs_kp([0.0] * self.num_actions, self.motors_dof_idx)
-        self.robot.set_dofs_kv([0.0] * self.num_actions, self.motors_dof_idx)
+        # # 1. Disable internal PD (set to 0 so physics engine doesn't interfere)
+        # self.robot.set_dofs_kp([0.0] * self.num_actions, self.motors_dof_idx)
+        # self.robot.set_dofs_kv([0.0] * self.num_actions, self.motors_dof_idx)
 
-        # 2. Store your config gains for manual calculation
-        # We create tensors of shape (num_envs, num_actions) for easy multiplication later
-        self.kp = torch.tensor([self.env_cfg["kp"]] * self.num_actions, device=gs.device)
-        self.kd = torch.tensor([self.env_cfg["kd"]] * self.num_actions, device=gs.device)
+        # # 2. Store your config gains for manual calculation
+        # # We create tensors of shape (num_envs, num_actions) for easy multiplication later
+        # self.kp = torch.tensor([self.env_cfg["kp"]] * self.num_actions, device=gs.device)
+        # self.kd = torch.tensor([self.env_cfg["kd"]] * self.num_actions, device=gs.device)
 
-        # 3. Buffer to store previous target position (needed to calculate target velocity)
-        self.prev_target_dof_pos = torch.zeros((self.num_envs, self.num_actions), device=gs.device, dtype=gs.tc_float)
-        # Initialize it to the default pose
-        self.prev_target_dof_pos[:] = self.default_dof_pos
+        # # 3. Buffer to store previous target position (needed to calculate target velocity)
+        # self.prev_target_dof_pos = torch.zeros((self.num_envs, self.num_actions), device=gs.device, dtype=gs.tc_float)
+        # # Initialize it to the default pose
+        # self.prev_target_dof_pos[:] = self.default_dof_pos
+
+        # --- Herkulex DRS-0101 Sim-to-Real Parameters ---
+        self.max_torque = 1.2  # Max physical torque in Nm
+        self.pTime_ms = 200    # Target time for a full trajectory in milliseconds
+        
+        # Every tick is 11.2ms. We cast to int to mimic the microcontroller's discrete registers.
+        self.pTime_ticks = int(self.pTime_ms / 11.2) if self.pTime_ms > 0 else 89
+        
+        # Genesis physics require time in SECONDS
+        self.tick_s = 0.0112   
+        
+        # Total Play Time (T) in seconds
+        self.T = self.pTime_ticks * self.tick_s
+        
+        # Acceleration time (t_acc) in seconds
+        self.accel_ratio = 20.0  # 20% acceleration ratio
+        self.t_acc = self.T * (self.accel_ratio / 100.0)
+        # Raw values read directly from the Herkulex registers
+        self.raw_Kp = 254.0
+        self.raw_Kd = 6500.0
+        
+        # Scaling factors to convert Microcontroller Units to SI Units (Nm)
+        # We start very small to prevent physics explosions.
+        self.kp_scale = 3   # TODO Tune this
+        self.kd_scale = 0.00002 # TODO Tune this
+        
+        # Final Gains used by Genesis
+        self.herk_Kp = self.raw_Kp * self.kp_scale
+        self.herk_Kd = self.raw_Kd * self.kd_scale
+        self.herk_Kff = 1.05  # NEW: Velocity Feedforward Gain
+
+        # State Tracking Tensors (Shape: [num_envs, num_actions])
+        self.herk_goal_pos = torch.zeros((self.num_envs, self.num_actions), device=self.device, dtype=gs.tc_float)
+        self.herk_start_pos = torch.zeros_like(self.herk_goal_pos)
+        self.herk_time_elapsed = torch.zeros_like(self.herk_goal_pos)
+        self.herk_current_pos = torch.zeros_like(self.herk_goal_pos)
+        self.herk_current_vel = torch.zeros_like(self.herk_goal_pos)
         #######################################################################
         
         
@@ -170,36 +207,90 @@ class NubiEnv:
         # self.scene.step()
 
         #################################ChatGPT Added###############################
-        self.actions = torch.clip(actions, -self.env_cfg["clip_actions"], self.env_cfg["clip_actions"])
-        exec_actions = self.last_actions if self.simulate_action_latency else self.actions
         
-        # 1. Calculate Target Position
+        # 1. Calculate the new target positions from the RL policy
+        # (Ensure self.default_dof_pos and self.action_scale are defined in your env)
+        self.actions = torch.clip(actions, -self.env_cfg["clip_actions"], self.env_cfg["clip_actions"]) #sets a ceil and floor for actions
+        exec_actions = self.last_actions if self.simulate_action_latency else self.actions
+
         target_dof_pos = exec_actions * self.env_cfg["action_scale"] + self.default_dof_pos
 
-        # 2. Calculate Target Velocity (Finite Difference)
-        # This is the "Velocity Feedforward" / "Derivative on Error" term your motor has
-        target_dof_vel = (target_dof_pos - self.prev_target_dof_pos) / self.dt
+        # 2. Detect if the RL policy issued a NEW command
+        # Using 1e-4 epsilon to ignore tiny floating-point noise from the neural net
+        new_cmd_mask = torch.abs(target_dof_pos - self.herk_goal_pos) > 1e-4
+
+        # 3. Update trajectory state tensors where a new command was received
+        self.herk_start_pos = torch.where(new_cmd_mask, self.herk_current_pos, self.herk_start_pos)
+        self.herk_goal_pos = torch.where(new_cmd_mask, target_dof_pos, self.herk_goal_pos)
+        self.herk_time_elapsed = torch.where(new_cmd_mask, torch.zeros_like(self.herk_time_elapsed), self.herk_time_elapsed)
         
-        # 3. Get Current State
-        current_dof_pos = self.robot.get_dofs_position(self.motors_dof_idx)
-        current_dof_vel = self.robot.get_dofs_velocity(self.motors_dof_idx)
+        # 4. Advance time for the internal servo trajectory generator
+        self.herk_time_elapsed += self.dt
+        t = self.herk_time_elapsed
 
-        # 4. Calculate Custom Torques
-        # Formula: Torque = Kp * (pos_err) + Kd * (vel_err)
-        pos_error = target_dof_pos - current_dof_pos
-        vel_error = target_dof_vel - current_dof_vel  # <--- The key difference!
-        
-        torques = (self.kp * pos_error) + (self.kd * vel_error)
+        # 5. Calculate Trapezoidal Kinematics
+        D = self.herk_goal_pos - self.herk_start_pos
+        v_max = D / (self.T - self.t_acc)
+        accel = v_max / self.t_acc
 
-        # Optional: Clamp torques to real motor limits (e.g., 1.2 Nm for DRS-0101)
-        # torques = torch.clamp(torques, -1.2, 1.2) 
+        # 6. Create Boolean masks for the four phases of the trajectory
+        mask_acc = t <= self.t_acc
+        mask_cruise = (t > self.t_acc) & (t <= (self.T - self.t_acc))
+        mask_dec = (t > (self.T - self.t_acc)) & (t < self.T)
+        mask_done = t >= self.T
 
-        # 5. Apply Force
-        self.robot.control_dofs_force(torques, self.motors_dof_idx)
-        
-        # 6. Update History
-        self.prev_target_dof_pos[:] = target_dof_pos
+        # --- Phase 1: Accelerating ---
+        pos_acc = self.herk_start_pos + (0.5 * accel * t**2)
+        vel_acc = accel * t
 
+        # --- Phase 2: Cruising ---
+        pos_at_accel_end = self.herk_start_pos + (0.5 * accel * self.t_acc**2)
+        pos_cruise = pos_at_accel_end + (v_max * (t - self.t_acc))
+        vel_cruise = v_max  # Constant velocity
+
+        # --- Phase 3: Decelerating ---
+        pos_at_cruise_end = pos_at_accel_end + (v_max * (self.T - 2 * self.t_acc))
+        time_in_decel = t - (self.T - self.t_acc)
+        pos_dec = pos_at_cruise_end + (v_max * time_in_decel) - (0.5 * accel * time_in_decel**2)
+        vel_dec = v_max - (accel * time_in_decel)
+
+        # --- Phase 4: Done ---
+        pos_done = self.herk_goal_pos
+        vel_done = torch.zeros_like(pos_done)
+
+        # 7. Apply the piecewise POSITIONS based on the masks
+        self.herk_current_pos = torch.where(mask_acc, pos_acc, self.herk_current_pos)
+        self.herk_current_pos = torch.where(mask_cruise, pos_cruise, self.herk_current_pos)
+        self.herk_current_pos = torch.where(mask_dec, pos_dec, self.herk_current_pos)
+        self.herk_current_pos = torch.where(mask_done, pos_done, self.herk_current_pos)
+
+        # 8. Apply the piecewise VELOCITIES based on the masks
+        self.herk_current_vel = torch.where(mask_acc, vel_acc, self.herk_current_vel)
+        self.herk_current_vel = torch.where(mask_cruise, vel_cruise, self.herk_current_vel)
+        self.herk_current_vel = torch.where(mask_dec, vel_dec, self.herk_current_vel)
+        self.herk_current_vel = torch.where(mask_done, vel_done, self.herk_current_vel)
+
+        # 9. Fetch the actual joint states from the Genesis simulator
+        actual_pos = self.robot.get_dofs_position(self.motors_dof_idx)
+        actual_vel = self.robot.get_dofs_velocity(self.motors_dof_idx)
+
+        # 10. Calculate the True PD Error against the moving "ghost" target
+        pos_error = self.herk_current_pos - actual_pos
+        vel_error = self.herk_current_vel - actual_vel
+
+        # Feedforward Torque: Proactively push based on desired speed
+        tau_ff = self.herk_Kff * self.herk_current_vel
+
+        # 11. Calculate custom torque
+        tau = (self.herk_Kp * pos_error) + (self.herk_Kd * vel_error) + tau_ff
+        #print("Calculated torque:\n",tau)
+        # 12. Clip torque to hardware limits to prevent simulation explosions
+        tau = torch.clamp(tau, min=-self.max_torque, max=self.max_torque)
+        print("Clipped torque:\n",tau)
+        # 13. Apply raw forces to Genesis
+        self.robot.control_dofs_force(tau, self.motors_dof_idx)
+
+        # --- Step the Physics Scene ---
         self.scene.step()
         #############################################################################
         # update buffers
@@ -312,7 +403,7 @@ class NubiEnv:
         self.dof_vel[envs_idx] = 0.0
         ### new addition by ChatGPT ###
         # Reset previous target to default (so velocity target starts at 0)
-        self.prev_target_dof_pos[envs_idx] = self.default_dof_pos
+        #self.prev_target_dof_pos[envs_idx] = self.default_dof_pos
         ###############################
         self.robot.set_dofs_position(
             position=self.dof_pos[envs_idx],
