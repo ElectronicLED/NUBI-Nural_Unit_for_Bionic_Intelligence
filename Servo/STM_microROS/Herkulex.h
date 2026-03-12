@@ -65,12 +65,12 @@
 
 // HERKULEX LED - See Manual p29
 static int LED_GREEN1 =	 0x01;
-static int LED_BLUE  =   0x02;
-static int LED_CYAN  =   0x03;
-static int LED_RED   = 	 0x04;
-static int LED_GREEN2= 	 0x05;
-static int LED_PINK  =   0x06;
-static int LED_WHITE =   0x07;
+static int LED_BLUE   =   0x02;
+static int LED_CYAN   =   0x03;
+static int LED_RED    = 	 0x04;
+static int LED_GREEN2 = 	 0x05;
+static int LED_PINK   =   0x06;
+static int LED_WHITE  =   0x07;
 
 // HERKULEX STATUS ERROR - See Manual p39
 static byte H_STATUS_OK					= 0x00;

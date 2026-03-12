@@ -8,11 +8,13 @@ from std_msgs.msg import Int16MultiArray
 def main():
     rclpy.init()
     node = rclpy.create_node("LAPTOP_PUB_NODE")
-    publisher = node.create_publisher(Int16MultiArray,"legs_command",10)
+    publisher = node.create_publisher(Int16MultiArray,"gripper_command",10)
 
     def timer_callback():
         msg = Int16MultiArray()
-        msg.data = [0,0,0,0,0,0,0,0,5,5,5,5]
+        msg.data = [0,0]
+        for i in range(len(msg.data)):
+            msg.data[i] = int(input(f"Enter the angle of index {i}: "))
         publisher.publish(msg)
         node.get_logger().info(f"\n---------------------")
         for i in range (len(msg.data)):

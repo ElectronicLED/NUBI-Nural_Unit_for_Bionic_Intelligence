@@ -12,17 +12,37 @@
 #include <std_msgs/msg/int16_multi_array.h>
 #include <std_msgs/msg/bool.h>
 
+#include <std_srvs/srv/set_bool.h> // Service type library
+
+#include <Servo.h>
+
+#include <string.h>
+
+#define NUM_SERVOS 2
+
+Servo gripper[NUM_SERVOS];
+
+// ------------------- micro-ROS objects defined once -------------------
 rclc_executor_t executor;
 rclc_support_t support;
 rcl_allocator_t allocator;
 rcl_node_t node;
 rcl_timer_t timer;
+
+// ------------------- micro-ROS Subscribers object -------------------
 rcl_subscription_t leg_command_subscriber;
 rcl_subscription_t upperbody_command_subscriber;
 rcl_subscription_t torque_command_subscriber;
+rcl_subscription_t gripper_command_subscriber;
+
+// ------------------- micro-ROS Publishers object -------------------
 rcl_publisher_t leg_pos_feedback_publisher;
 rcl_publisher_t upperbody_pos_feedback_publisher;
 
+// ------------------- micro-ROS Service object -------------------
+rcl_client_t color_client;
+std_srvs__srv__SetBool_Request color_client_req;
+std_srvs__srv__SetBool_Response color_client_res;
 
 //std_msgs__msg__Int16 msg;
 std_msgs__msg__Int16MultiArray legs_command;
@@ -31,21 +51,42 @@ std_msgs__msg__Int16MultiArray legs_feedback;
 std_msgs__msg__Int16MultiArray upperbody_command;
 std_msgs__msg__Int16MultiArray upperbody_feedback;
 
+std_msgs__msg__Int16MultiArray gripper_command;
+
 std_msgs__msg__Bool torque_command;
+
+#define left_gripper_pin PB9
+#define right_gripper_pin PB13
 
 // loops on servos by turn
 int feedback_index = 0;
 // number of motors
 int n=19;
 
+bool torque_state = true;
+
 const uint leg_motor_indecies[12] = {16,6,7,8,10,9,17,11,12,13,15,14};
 const uint upper_motor_indecies[7] = {0,1,2,3,4,5,19};
+int color = 2;
 
 
 // macros to check if any function returns anything other than RCL_RET_OK othwerwise stick to error or pass
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){error_loop();}}
 // same check but without sticking in error loop
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){}}
+
+
+//void color_assign(const char* clr) {
+//
+//  if (!strcmp(clr, "green1")) color = LED_GREEN1;
+//  else if (!strcmp(clr, "blue")) color = LED_BLUE;
+//  else if (!strcmp(clr, "cyan")) color = LED_CYAN;
+//  else if (!strcmp(clr, "red")) color = LED_RED;
+//  else if (!strcmp(clr, "green2")) color = LED_GREEN2;
+//  else if (!strcmp(clr, "pink")) color = LED_PINK;
+//  else if (!strcmp(clr, "white")) color = LED_WHITE;
+//}
+
 
 void error_loop(){
   while(1){
@@ -87,18 +128,96 @@ void torque_cmd_callback(const void * msgin){
   //    Herkulex.moveOneAngle(leg_motor_indecies[i], msg->data.data[i], 1000, LED_BLUE);
       Herkulex.torqueON(i);
     }
+    torque_state = true;
   }
   else{
     for(int i = 0; i<n;i++){
   //    Herkulex.moveOneAngle(leg_motor_indecies[i], msg->data.data[i], 1000, LED_BLUE);
       Herkulex.torqueOFF(i);
     }
+    torque_state = false;
   }
 }
 
+void gripper_callback(const void* msgin) {
+  const std_msgs__msg__Int16MultiArray* msg = 
+  (const std_msgs__msg__Int16MultiArray*)msgin;
+  for (int i = 0; i < NUM_SERVOS; i++) {
+
+    gripper[i].write(msg->data.data[i]);
+    
+  }
+}
+
+void gripper_sub_setup() {
+  // Allocate memory for incoming Float64MultiArray
+  static int16_t memory_buffer2[2]; 
+  gripper_command.data.capacity = 2;
+  gripper_command.data.size = 0;
+  gripper_command.data.data = memory_buffer2;
+
+  rclc_subscription_init_default(
+    &gripper_command_subscriber,
+    &node,
+    ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int16MultiArray),
+    "gripper_command");
+
+  rclc_executor_add_subscription(
+    &executor,
+    &gripper_command_subscriber,
+    &gripper_command,
+    &gripper_callback,
+    ON_NEW_DATA);
+
+}
+
+void color_client_callback(const void * msg)
+{
+  const std_srvs__srv__SetBool_Response * response =
+    (const std_srvs__srv__SetBool_Response *) msg;
+
+  //Serial.print("Success: ");
+  //Serial.println(response->success ? "true" : "false");
+  // Success is the response bool type
+
+  //Serial.print("Message: ");
+  //Serial.println(response->message.data);
+  // Message is the response string type
+
+  if (response->success == true){
+    Herkulex.setLed(1, color);
+  }
+
+  
+}
+
+void color_client_request(bool value)
+{
+  color_client_req.data = value;
+
+  int64_t sequence_number;
+  rcl_send_request(&color_client, &color_client_req, &sequence_number);
+}
+
+void color_client_setup() {
+  rclc_client_init_default(
+    &color_client,
+    &node,
+    ROSIDL_GET_SRV_TYPE_SUPPORT(std_srvs, srv, SetBool),
+    "Color_Service_Code");
+
+  rclc_executor_add_client(
+    &executor,
+    &color_client,
+    &color_client_res,
+    color_client_callback);
+}
 
 void setup() {
   pinMode(LED_BUILTIN,OUTPUT);
+
+  gripper[0].attach(right_gripper_pin);
+  gripper[1].attach(left_gripper_pin);
 
   // Sets up the serial communication (usually USB-Serial or UART) to 
   // talk to the micro-ROS Agent on your PC
@@ -178,11 +297,13 @@ void setup() {
 
   // create executor
   // make sure you change the number to the number of subscribers
-  RCCHECK(rclc_executor_init(&executor, &support.context, 3, &allocator));  
+  RCCHECK(rclc_executor_init(&executor, &support.context, 5, &allocator));  
   //RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &msg, &subscription_callback, ON_NEW_DATA));
   RCCHECK(rclc_executor_add_subscription(&executor, &leg_command_subscriber, &legs_command, &legs_cmd_callback, ON_NEW_DATA));
   RCCHECK(rclc_executor_add_subscription(&executor, &upperbody_command_subscriber, &upperbody_command, &upperbody_cmd_callback, ON_NEW_DATA));
   RCCHECK(rclc_executor_add_subscription(&executor, &torque_command_subscriber, &torque_command, &torque_cmd_callback, ON_NEW_DATA));
+  gripper_sub_setup();
+  color_client_setup();
 
   //Servo initialization
   delay(2000);  //a delay to have time for serial monitor opening
@@ -201,7 +322,8 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+  //digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+  //color_client_request(true);
 
   legs_feedback.data.data[feedback_index] = Herkulex.getAngle(leg_motor_indecies[feedback_index]);
 
