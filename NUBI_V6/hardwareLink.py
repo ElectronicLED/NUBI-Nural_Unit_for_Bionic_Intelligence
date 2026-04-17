@@ -1,5 +1,6 @@
 import argparse
 import os
+import time
 import pickle
 from importlib import metadata
 import numpy as np
@@ -41,8 +42,8 @@ from nubiv6_env import NubiEnv
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-e", "--exp_name", type=str, default="time_aware_P254_D25")
-    parser.add_argument("--ckpt", type=int, default=900)
+    parser.add_argument("-e", "--exp_name", type=str, default="trapezoidel_200ms")
+    parser.add_argument("--ckpt", type=int, default=200)
     args = parser.parse_args()
 
     gs.init()
@@ -73,10 +74,12 @@ def main():
     # feet_names = ["RFoot", "LFoot"]  # replace with your actual link names
     # feet_indices = [env.robot.get_link(name).idx for name in feet_names]
 
-
+    realtime= time.time()
     obs, _ = env.reset()
     with torch.no_grad():
         while True:
+            print("Sim time: ", simtime)
+            print("Real time:", time.time()-realtime, "\n")
             # env.commands[0, 0] = 0.0  # Forward velocity
             # env.commands[0, 1] = 0.0  # Lateral velocity
             # env.commands[0, 2] = 0.0  # Yaw rate
@@ -94,15 +97,29 @@ def main():
             #       "RAnkle pitch:", max_torques[5],"\t","LAnkle pitch:",max_torques[11],"\n",)
             
             
+            #dont forget to deivide by action scale if going to send raw actions
             actions = policy(obs)
-            legs_pos_cmd = np.rad2deg(actions.cpu().numpy())
+            
+            #################  InCase of sending raw actions ###########################################
+            # legs_pos_cmd = np.rad2deg(actions.cpu().numpy()* env_cfg["action_scale"])
+            # legs_pos_cmd = np.floor(legs_pos_cmd).astype(int)
+
+            # print("Actions:", list(legs_pos_cmd[0]))
+            # legs_command(list(legs_pos_cmd[0]))
+            #################  InCase of sending what is on the simulation ###########################################
+            legs_pos_cmd = np.rad2deg(env.dof_pos[0].cpu().numpy())
             legs_pos_cmd = np.floor(legs_pos_cmd).astype(int)
+            print("Current positions:", list(legs_pos_cmd))
+            legs_command(legs_pos_cmd)
 
-            print("Actions:", list(legs_pos_cmd[0]))
-            legs_command(list(legs_pos_cmd[0]))
+           
 
-            #input("Press Enter to step.. ")
+
+
+
+
             obs, rews, dones, infos = env.step(actions)
+            simtime += env.dt
             
             # print(env.get_feet_pos())
             # RLeg , LLeg = env.get_feet_height()
@@ -117,5 +134,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# python3 nubiv6_eval.py -e first_try --ckpt 900
