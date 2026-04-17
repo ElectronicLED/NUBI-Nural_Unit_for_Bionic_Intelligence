@@ -1,6 +1,9 @@
 import genesis as gs
 from nubiv6_env import NubiEnv
 
+from playsound import playsound
+import time
+
 import argparse
 import os
 import pickle
@@ -58,7 +61,7 @@ def get_train_cfg(exp_name, max_iterations):
             "run_name": "",
         },
         "runner_class_name": "OnPolicyRunner",
-        "num_steps_per_env": 24, # Increased from 24 standard is 1024
+        "num_steps_per_env": 48, # Increased from 24 standard is 1024
         "save_interval": 100,
         "empirical_normalization": None,
         "seed": 1,
@@ -114,8 +117,8 @@ def get_cfgs():
         "kp": 254.0,
         "kd": 15.0,
         # termination
-        "termination_if_roll_greater_than": 10,  # degree
-        "termination_if_pitch_greater_than": 10,
+        "termination_if_roll_greater_than": 20,  # degree
+        "termination_if_pitch_greater_than": 20,
         # base pose
         "base_init_pos": [0.0, 0.0, 0.23],
         "base_init_quat": [0.0, 0.0, 0.0, 1.0],  # 90 degrees about z-axis
@@ -137,25 +140,25 @@ def get_cfgs():
         },
     }
     reward_cfg = {
-        "tracking_sigma": 0.25,
-        "base_height_target": 0.2,
+        "tracking_sigma": 0.02,
+        "base_height_target": 0.23,
         "feet_height_target_difference": 0.025,
         "reward_scales": {
             "tracking_lin_vel": 1.0,
             "tracking_ang_vel": 0.2,
             "lin_vel_z": -1.0,
-            "base_height": -50.0,
+            "base_height": 0.5,
             "action_rate": -0.005,
-            "similar_to_default": -0.1,
-            "collision": -0.5, # Penalize collisions this number needs tuning
-            #"feet_height_alternate": 1.3
+            "similar_to_default": -0.06,
+            "collision": -0.2, # Penalize collisions this number needs tuning
+            "feet_height_alternate": 1.3
         },
         # Per-joint weights for similar_to_default reward (optional)
         # Order: RHip_yaw, RHip_roll, RHip_pitch, RKnee_pitch, RAnkle_roll, RAnkle_pitch,
         #        LHip_yaw, LHip_roll, LHip_pitch, LKnee_pitch, LAnkle_roll, LAnkle_pitch
         "similar_to_default_weights": [
-            1.0, 0.9, 0.7, 0.65, 0.9, 0.7,  # Right leg joints
-            1.0, 0.9, 0.7, 0.65, 0.9, 0.7,  # Left leg joints
+            1.0, 0.9, 0.7, 0.6, 0.9, 0.7,  # Right leg joints
+            1.0, 0.9, 0.7, 0.6, 0.9, 0.7,  # Left leg joints
         ],
     }
     command_cfg = {
@@ -171,7 +174,7 @@ def get_cfgs():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-e", "--exp_name", type=str, default="test")
-    parser.add_argument("-B", "--num_envs", type=int, default=4096)# default was 4096
+    parser.add_argument("-B", "--num_envs", type=int, default=2048)# default was 4096
     parser.add_argument("--max_iterations", type=int, default=1001)
     args = parser.parse_args()
 
@@ -201,6 +204,11 @@ def main():
 
 if __name__ == "__main__":
     main()
+    playsound("/home/nour/Downloads/ring.mp3")
+    time.sleep(0.2)
+    playsound("/home/nour/Downloads/ring.mp3")
+    time.sleep(0.4)
+    playsound("/home/nour/Downloads/ring.mp3")
 
 
 # python3 nubiv6_train.py --exp_name JR_P254_D15 --max_iterations 1001

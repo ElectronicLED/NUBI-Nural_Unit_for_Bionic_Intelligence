@@ -20,6 +20,8 @@ class NubiEnv:
 
         self.simulate_action_latency = True  # there is a 1 step latency on real robot
         self.dt = 0.02  # control frequency on real robot is 50hz
+        self.sim_dt = 0.004 #Physics and PD control frequency (1000Hz)
+        self.control_substeps = int(self.dt / self.sim_dt) # 20 steps per RL action
         self.max_episode_length = math.ceil(env_cfg["episode_length_s"] / self.dt)
 
         self.env_cfg = env_cfg
@@ -35,10 +37,10 @@ class NubiEnv:
         gravity = self.env_cfg.get("gravity", (0.0, 0.0, -9.81))
         # create scene
         self.scene = gs.Scene(
-            sim_options=gs.options.SimOptions(dt=self.dt, substeps=2, gravity=gravity),
+            sim_options=gs.options.SimOptions(dt=self.sim_dt, substeps=1, gravity=gravity),
             viewer_options=gs.options.ViewerOptions(
-                max_FPS=int(0.5 / self.dt),
-                camera_pos=(-2.0, 1.0, 1.0),
+                max_FPS=int(1.25 / self.dt),
+                camera_pos=(-1.0, 0.5, 1.0),
                 camera_lookat=(0.0, 0.0, 0.5),
                 camera_fov=40,
             ),
@@ -51,7 +53,7 @@ class NubiEnv:
                 ambient_light = (0.1, 0.1, 0.1),
             ),
             rigid_options=gs.options.RigidOptions(
-                dt=self.dt,
+                dt=self.sim_dt,
                 constraint_solver=gs.constraint_solver.Newton,
                 enable_collision=True,
                 enable_joint_limit=True,
@@ -101,8 +103,8 @@ class NubiEnv:
         # self.robot.set_dofs_kv([self.env_cfg["kd"]] * self.num_actions, self.motors_dof_idx)
         ###############################ChatGPT Added###############################
         # # 1. Disable internal PD (set to 0 so physics engine doesn't interfere)
-        # self.robot.set_dofs_kp([0.0] * self.num_actions, self.motors_dof_idx)
-        # self.robot.set_dofs_kv([0.0] * self.num_actions, self.motors_dof_idx)
+        self.robot.set_dofs_kp([0.0] * self.num_actions, self.motors_dof_idx)
+        self.robot.set_dofs_kv([0.0] * self.num_actions, self.motors_dof_idx)
 
         # # 2. Store your config gains for manual calculation
         # # We create tensors of shape (num_envs, num_actions) for easy multiplication later
@@ -116,7 +118,7 @@ class NubiEnv:
 
         # --- Herkulex DRS-0101 Sim-to-Real Parameters ---
         self.max_torque = 1.2  # Max physical torque in Nm
-        self.pTime_ms = 200    # Target time for a full trajectory in milliseconds
+        self.pTime_ms = 35    # Target time for a full trajectory in milliseconds
         
         # Every tick is 11.2ms. We cast to int to mimic the microcontroller's discrete registers.
         self.pTime_ticks = int(self.pTime_ms / 11.2) if self.pTime_ms > 0 else 89
@@ -136,13 +138,13 @@ class NubiEnv:
         
         # Scaling factors to convert Microcontroller Units to SI Units (Nm)
         # We start very small to prevent physics explosions.
-        self.kp_scale = 3   # TODO Tune this
+        self.kp_scale = 0.2   # TODO Tune this
         self.kd_scale = 0.00002 # TODO Tune this
         
         # Final Gains used by Genesis
         self.herk_Kp = self.raw_Kp * self.kp_scale
         self.herk_Kd = self.raw_Kd * self.kd_scale
-        self.herk_Kff = 1.05  # NEW: Velocity Feedforward Gain
+        self.herk_Kff = 0.1  # NEW: Velocity Feedforward Gain
 
         # State Tracking Tensors (Shape: [num_envs, num_actions])
         self.herk_goal_pos = torch.zeros((self.num_envs, self.num_actions), device=self.device, dtype=gs.tc_float)
@@ -217,7 +219,7 @@ class NubiEnv:
 
         # 2. Detect if the RL policy issued a NEW command
         # Using 1e-4 epsilon to ignore tiny floating-point noise from the neural net
-        new_cmd_mask = torch.abs(target_dof_pos - self.herk_goal_pos) > 1e-4
+        new_cmd_mask = torch.abs(target_dof_pos - self.herk_goal_pos) > 0.05
 
         # 3. Update trajectory state tensors where a new command was received
         self.herk_start_pos = torch.where(new_cmd_mask, self.herk_current_pos, self.herk_start_pos)
@@ -225,73 +227,144 @@ class NubiEnv:
         self.herk_time_elapsed = torch.where(new_cmd_mask, torch.zeros_like(self.herk_time_elapsed), self.herk_time_elapsed)
         
         # 4. Advance time for the internal servo trajectory generator
-        self.herk_time_elapsed += self.dt
-        t = self.herk_time_elapsed
+        # self.herk_time_elapsed += self.dt
+        # t = self.herk_time_elapsed
 
-        # 5. Calculate Trapezoidal Kinematics
-        D = self.herk_goal_pos - self.herk_start_pos
-        v_max = D / (self.T - self.t_acc)
-        accel = v_max / self.t_acc
+        # # 5. Calculate Trapezoidal Kinematics
+        # D = self.herk_goal_pos - self.herk_start_pos
+        # v_max = D / (self.T - self.t_acc)
+        # accel = v_max / self.t_acc
 
-        # 6. Create Boolean masks for the four phases of the trajectory
-        mask_acc = t <= self.t_acc
-        mask_cruise = (t > self.t_acc) & (t <= (self.T - self.t_acc))
-        mask_dec = (t > (self.T - self.t_acc)) & (t < self.T)
-        mask_done = t >= self.T
+        # # 6. Create Boolean masks for the four phases of the trajectory
+        # mask_acc = t <= self.t_acc
+        # mask_cruise = (t > self.t_acc) & (t <= (self.T - self.t_acc))
+        # mask_dec = (t > (self.T - self.t_acc)) & (t < self.T)
+        # mask_done = t >= self.T
 
-        # --- Phase 1: Accelerating ---
-        pos_acc = self.herk_start_pos + (0.5 * accel * t**2)
-        vel_acc = accel * t
+        # # --- Phase 1: Accelerating ---
+        # pos_acc = self.herk_start_pos + (0.5 * accel * t**2)
+        # vel_acc = accel * t
 
-        # --- Phase 2: Cruising ---
-        pos_at_accel_end = self.herk_start_pos + (0.5 * accel * self.t_acc**2)
-        pos_cruise = pos_at_accel_end + (v_max * (t - self.t_acc))
-        vel_cruise = v_max  # Constant velocity
+        # # --- Phase 2: Cruising ---
+        # pos_at_accel_end = self.herk_start_pos + (0.5 * accel * self.t_acc**2)
+        # pos_cruise = pos_at_accel_end + (v_max * (t - self.t_acc))
+        # vel_cruise = v_max  # Constant velocity
 
-        # --- Phase 3: Decelerating ---
-        pos_at_cruise_end = pos_at_accel_end + (v_max * (self.T - 2 * self.t_acc))
-        time_in_decel = t - (self.T - self.t_acc)
-        pos_dec = pos_at_cruise_end + (v_max * time_in_decel) - (0.5 * accel * time_in_decel**2)
-        vel_dec = v_max - (accel * time_in_decel)
+        # # --- Phase 3: Decelerating ---
+        # pos_at_cruise_end = pos_at_accel_end + (v_max * (self.T - 2 * self.t_acc))
+        # time_in_decel = t - (self.T - self.t_acc)
+        # pos_dec = pos_at_cruise_end + (v_max * time_in_decel) - (0.5 * accel * time_in_decel**2)
+        # vel_dec = v_max - (accel * time_in_decel)
 
-        # --- Phase 4: Done ---
-        pos_done = self.herk_goal_pos
-        vel_done = torch.zeros_like(pos_done)
+        # # --- Phase 4: Done ---
+        # pos_done = self.herk_goal_pos
+        # vel_done = torch.zeros_like(pos_done)
 
-        # 7. Apply the piecewise POSITIONS based on the masks
-        self.herk_current_pos = torch.where(mask_acc, pos_acc, self.herk_current_pos)
-        self.herk_current_pos = torch.where(mask_cruise, pos_cruise, self.herk_current_pos)
-        self.herk_current_pos = torch.where(mask_dec, pos_dec, self.herk_current_pos)
-        self.herk_current_pos = torch.where(mask_done, pos_done, self.herk_current_pos)
+        # # 7. Apply the piecewise POSITIONS based on the masks
+        # self.herk_current_pos = torch.where(mask_acc, pos_acc, self.herk_current_pos)
+        # self.herk_current_pos = torch.where(mask_cruise, pos_cruise, self.herk_current_pos)
+        # self.herk_current_pos = torch.where(mask_dec, pos_dec, self.herk_current_pos)
+        # self.herk_current_pos = torch.where(mask_done, pos_done, self.herk_current_pos)
 
-        # 8. Apply the piecewise VELOCITIES based on the masks
-        self.herk_current_vel = torch.where(mask_acc, vel_acc, self.herk_current_vel)
-        self.herk_current_vel = torch.where(mask_cruise, vel_cruise, self.herk_current_vel)
-        self.herk_current_vel = torch.where(mask_dec, vel_dec, self.herk_current_vel)
-        self.herk_current_vel = torch.where(mask_done, vel_done, self.herk_current_vel)
+        # # 8. Apply the piecewise VELOCITIES based on the masks
+        # self.herk_current_vel = torch.where(mask_acc, vel_acc, self.herk_current_vel)
+        # self.herk_current_vel = torch.where(mask_cruise, vel_cruise, self.herk_current_vel)
+        # self.herk_current_vel = torch.where(mask_dec, vel_dec, self.herk_current_vel)
+        # self.herk_current_vel = torch.where(mask_done, vel_done, self.herk_current_vel)
 
-        # 9. Fetch the actual joint states from the Genesis simulator
-        actual_pos = self.robot.get_dofs_position(self.motors_dof_idx)
-        actual_vel = self.robot.get_dofs_velocity(self.motors_dof_idx)
+        # # 9. Fetch the actual joint states from the Genesis simulator
+        # actual_pos = self.robot.get_dofs_position(self.motors_dof_idx)
+        # actual_vel = self.robot.get_dofs_velocity(self.motors_dof_idx)
 
-        # 10. Calculate the True PD Error against the moving "ghost" target
-        pos_error = self.herk_current_pos - actual_pos
-        vel_error = self.herk_current_vel - actual_vel
+        # # 10. Calculate the True PD Error against the moving "ghost" target
+        # pos_error = self.herk_current_pos - actual_pos
+        # vel_error = self.herk_current_vel - actual_vel
 
-        # Feedforward Torque: Proactively push based on desired speed
-        tau_ff = self.herk_Kff * self.herk_current_vel
+        # # Feedforward Torque: Proactively push based on desired speed
+        # tau_ff = self.herk_Kff * self.herk_current_vel
 
-        # 11. Calculate custom torque
-        tau = (self.herk_Kp * pos_error) + (self.herk_Kd * vel_error) + tau_ff
-        #print("Calculated torque:\n",tau)
-        # 12. Clip torque to hardware limits to prevent simulation explosions
-        tau = torch.clamp(tau, min=-self.max_torque, max=self.max_torque)
-        print("Clipped torque:\n",tau)
-        # 13. Apply raw forces to Genesis
-        self.robot.control_dofs_force(tau, self.motors_dof_idx)
+        # # 11. Calculate custom torque
+        # tau = (self.herk_Kp * pos_error) + (self.herk_Kd * vel_error) + tau_ff
+        # #print("Calculated torque:\n",tau)
+        # # 12. Clip torque to hardware limits to prevent simulation explosions
+        # tau = torch.clamp(tau, min=-self.max_torque, max=self.max_torque)
+        # #print("Clipped torque:\n",tau)
+        # # 13. Apply raw forces to Genesis
+        # self.robot.control_dofs_force(tau, self.motors_dof_idx)
 
-        # --- Step the Physics Scene ---
-        self.scene.step()
+        # # --- Step the Physics Scene ---
+        # self.scene.step()
+
+
+#       ==========================================================
+        # 4. HIGH-FREQUENCY CONTROL SUB-STEPPING LOOP (1000Hz)
+        # ==========================================================
+        for _ in range(self.control_substeps):
+            
+            # A. Advance time by ONE MILLISECOND (sim_dt), not the full RL dt
+            self.herk_time_elapsed += self.sim_dt
+            t = self.herk_time_elapsed
+
+            # B. Calculate Trapezoidal Kinematics
+            D = self.herk_goal_pos - self.herk_start_pos
+            v_max = D / (self.T - self.t_acc)
+            accel = v_max / self.t_acc
+
+            # C. Create Boolean masks for the four phases
+            mask_acc = t <= self.t_acc
+            mask_cruise = (t > self.t_acc) & (t <= (self.T - self.t_acc))
+            mask_dec = (t > (self.T - self.t_acc)) & (t < self.T)
+            mask_done = t >= self.T
+
+            # --- Phase Math ---
+            pos_acc = self.herk_start_pos + (0.5 * accel * t**2)
+            vel_acc = accel * t
+
+            pos_at_accel_end = self.herk_start_pos + (0.5 * accel * self.t_acc**2)
+            pos_cruise = pos_at_accel_end + (v_max * (t - self.t_acc))
+            vel_cruise = v_max  
+
+            pos_at_cruise_end = pos_at_accel_end + (v_max * (self.T - 2 * self.t_acc))
+            time_in_decel = t - (self.T - self.t_acc)
+            pos_dec = pos_at_cruise_end + (v_max * time_in_decel) - (0.5 * accel * time_in_decel**2)
+            vel_dec = v_max - (accel * time_in_decel)
+
+            pos_done = self.herk_goal_pos
+            vel_done = torch.zeros_like(pos_done)
+
+            # D. Apply piecewise POSITIONS and VELOCITIES based on masks
+            self.herk_current_pos = torch.where(mask_acc, pos_acc, self.herk_current_pos)
+            self.herk_current_pos = torch.where(mask_cruise, pos_cruise, self.herk_current_pos)
+            self.herk_current_pos = torch.where(mask_dec, pos_dec, self.herk_current_pos)
+            self.herk_current_pos = torch.where(mask_done, pos_done, self.herk_current_pos)
+
+            self.herk_current_vel = torch.where(mask_acc, vel_acc, self.herk_current_vel)
+            self.herk_current_vel = torch.where(mask_cruise, vel_cruise, self.herk_current_vel)
+            self.herk_current_vel = torch.where(mask_dec, vel_dec, self.herk_current_vel)
+            self.herk_current_vel = torch.where(mask_done, vel_done, self.herk_current_vel)
+
+            # E. Fetch actual joint states
+            actual_pos = self.robot.get_dofs_position(self.motors_dof_idx)
+            actual_vel = self.robot.get_dofs_velocity(self.motors_dof_idx)
+
+            # F. Calculate Error
+            pos_error = self.herk_current_pos - actual_pos
+            vel_error = self.herk_current_vel - actual_vel
+
+            # G. Feedforward & Feedback Torque Calculation
+            tau_ff = self.herk_Kff * self.herk_current_vel
+            tau = (self.herk_Kp * pos_error) + (self.herk_Kd * vel_error) + tau_ff
+            
+            # Clip to hardware limits (Bring this back down to reality!)
+            tau = torch.clamp(tau, min=-self.max_torque, max=self.max_torque)
+            # print("Calculated torque:\n",tau)
+            
+            # H. Apply raw forces
+            self.robot.control_dofs_force(tau, self.motors_dof_idx)
+
+            # I. Step the Physics Scene (advances simulation by 0.001s)
+            self.scene.step()
+
         #############################################################################
         # update buffers
         self.episode_length_buf += 1
@@ -404,6 +477,16 @@ class NubiEnv:
         ### new addition by ChatGPT ###
         # Reset previous target to default (so velocity target starts at 0)
         #self.prev_target_dof_pos[envs_idx] = self.default_dof_pos
+        # --- NEW: Reset Custom Herkulex Tensors ---
+        # Snap the moving ghost targets back to the default standing pose
+        self.herk_goal_pos[envs_idx] = self.default_dof_pos
+        self.herk_start_pos[envs_idx] = self.default_dof_pos
+        self.herk_current_pos[envs_idx] = self.default_dof_pos
+        self.herk_current_vel[envs_idx] = 0.0
+        
+        # Fast-forward the timer so the trapezoid math holds the default pose 
+        # instead of trying to accelerate from zero.
+        self.herk_time_elapsed[envs_idx] = self.T
         ###############################
         self.robot.set_dofs_position(
             position=self.dof_pos[envs_idx],
@@ -468,9 +551,13 @@ class NubiEnv:
         # Penalize joint poses far away from default pose (with per-joint weights)
         return torch.sum(self.similar_to_default_weights * torch.abs(self.dof_pos - self.default_dof_pos), dim=1)
 
+    # def _reward_base_height(self):
+    #     # Penalize base height away from target
+    #     return torch.square(self.base_pos[:, 2] - self.reward_cfg["base_height_target"])
     def _reward_base_height(self):
-        # Penalize base height away from target
-        return torch.square(self.base_pos[:, 2] - self.reward_cfg["base_height_target"])
+        # POSITIVE REWARD: +1.0 for standing at the target height, decays as it falls
+        height_error = torch.square(self.base_pos[:, 2] - self.reward_cfg["base_height_target"])
+        return torch.exp(-height_error / 0.01)
     
     def _reward_collision(self):
         # Return a per-environment collision penalty tensor.
@@ -495,7 +582,7 @@ class NubiEnv:
             l_height = l_height.to(device=gs.device, dtype=gs.tc_float)
 
         reward = torch.zeros(self.num_envs, device=gs.device, dtype=gs.tc_float)
-        threshold = float(self.feet_height_threshold)
+        threshold = float(self.reward_cfg["feet_height_target_difference"])
 
         # signed and absolute difference
         diff_signed = r_height - l_height
