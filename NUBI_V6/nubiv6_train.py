@@ -150,21 +150,21 @@ def get_cfgs():
             "base_height": 0.5,
             "action_rate": -0.005,
             "similar_to_default": -0.06,
-            "collision": -0.2, # Penalize collisions this number needs tuning
+            "collision": -0.1, # Penalize collisions this number needs tuning
             "feet_height_alternate": 1.3
         },
         # Per-joint weights for similar_to_default reward (optional)
         # Order: RHip_yaw, RHip_roll, RHip_pitch, RKnee_pitch, RAnkle_roll, RAnkle_pitch,
         #        LHip_yaw, LHip_roll, LHip_pitch, LKnee_pitch, LAnkle_roll, LAnkle_pitch
         "similar_to_default_weights": [
-            1.0, 0.9, 0.7, 0.6, 0.9, 0.7,  # Right leg joints
-            1.0, 0.9, 0.7, 0.6, 0.9, 0.7,  # Left leg joints
+            1.0, 0.9, 0.7, 0.5, 0.9, 0.7,  # Right leg joints
+            1.0, 0.9, 0.7, 0.5, 0.9, 0.7,  # Left leg joints
         ],
     }
     command_cfg = {
         "num_commands": 3,
         "lin_vel_x_range": [0.0, 0.0],
-        "lin_vel_y_range": [-0.3, -0.3],
+        "lin_vel_y_range": [-0.2, -0.2],
         "ang_vel_range": [0, 0],
     }
 

@@ -594,14 +594,14 @@ class NubiEnv:
 
         # compute ramped reward (normalized to [0,1] by threshold)
         # values above threshold are clipped to 1.0
-        # ramp = torch.clamp(diff_abs / threshold, min=0.0, max=1.0)
+        ramp = torch.clamp(diff_abs / threshold, min=0.0, max=1.0)
         exp = torch.exp(-diff_abs / threshold)
 
-        # # assign ramped rewards only for the eligible envs
-        # reward[mask_right] = ramp[mask_right]
-        # reward[mask_left] = ramp[mask_left]
-        reward[mask_right] = exp[mask_right]
-        reward[mask_left] = exp[mask_left]
+        # assign ramped rewards only for the eligible envs
+        reward[mask_right] = ramp[mask_right]
+        reward[mask_left] = ramp[mask_left]
+        # reward[mask_right] = exp[mask_right]
+        # reward[mask_left] = exp[mask_left]
 
         # set 0 for right-rewarded, 1 for left-rewarded
         self.last_rewarded_leg[mask_right] = 0
