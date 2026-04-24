@@ -1,0 +1,1915 @@
+<?xml version="1.0"?>
+<robot
+  name="view_robot_pkg">
+  <link
+    name="base_lin">
+    <inertial>
+      <origin
+        xyz="0.00360572903498757 0.00118309605607281 0.00217711576246571"
+        rpy="0 0 0" />
+      <mass
+        value="0.00436456608198958" />
+      <inertia
+        ixx="1.03700098227038E-06"
+        ixy="-1.2808652170486E-07"
+        ixz="-1.24574759195156E-07"
+        iyy="5.23421759609031E-07"
+        iyz="3.00902000693848E-08"
+        izz="1.11895824239189E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/base_lin.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/base_lin.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="R_W_1">
+    <inertial>
+      <origin
+        xyz="0.0135310577359082 -0.0355253365427388 -0.052761768139199"
+        rpy="0 0 0" />
+      <mass
+        value="0.152073564561278" />
+      <inertia
+        ixx="0.00220129498898566"
+        ixy="-2.43000627132473E-06"
+        ixz="-5.02051972199334E-06"
+        iyy="0.00129797606901867"
+        iyz="4.95365662374062E-06"
+        izz="0.000970481901105194" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/R_W_1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.286274509803922 0.662745098039216 0.329411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/R_W_1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LHip_yaw"
+    type="revolute">
+    <origin
+      xyz="0.00811191095429442 0.0343859376847431 -0.0358999999999563"
+      rpy="-0.0295865830615605 -0.00698131700551125 -0.231656625322495" />
+    <parent
+      link="base_lin" />
+    <child
+      link="R_W_1" />
+    <axis
+      xyz="-0.00698126029799116 0.0295815458381401 -0.99953799034878" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="R_W_2">
+    <inertial>
+      <origin
+        xyz="0.0348267429071289 -0.000161718132895672 -0.013079020937468"
+        rpy="0 0 0" />
+      <mass
+        value="0.00053474319201658" />
+      <inertia
+        ixx="3.81196631534239E-09"
+        ixy="4.8199716472387E-12"
+        ixz="1.12935089535727E-11"
+        iyy="4.21629884233603E-09"
+        iyz="-2.45179082569498E-11"
+        izz="5.38948960510623E-09" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/R_W_2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/R_W_2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LHip_roll"
+    type="revolute">
+    <origin
+      xyz="-0.0350660356311487 0.00115022718562807 -0.0240322725212692"
+      rpy="0 0 0" />
+    <parent
+      link="R_W_1" />
+    <child
+      link="R_W_2" />
+    <axis
+      xyz="0.999896590427051 -0.0123609060710088 -0.00734958865932969" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="R_W_3">
+    <inertial>
+      <origin
+        xyz="-0.00366906536477185 0.0206923269048276 -0.064013310924508"
+        rpy="0 0 0" />
+      <mass
+        value="0.00409019778385964" />
+      <inertia
+        ixx="1.06330826557753E-06"
+        ixy="-3.67250983349582E-09"
+        ixz="-1.27947501575626E-07"
+        iyy="4.91110344706927E-07"
+        iyz="-1.75096861655991E-08"
+        izz="1.11815791917397E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/R_W_3.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/R_W_3.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LHip_pitch"
+    type="revolute">
+    <origin
+      xyz="0.0462337025626653 -0.0223530513381598 -0.00111240331126483"
+      rpy="0 0 0" />
+    <parent
+      link="R_W_2" />
+    <child
+      link="R_W_3" />
+    <axis
+      xyz="-0.0125726074067991 -0.999485937943567 -0.0294921921203482" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="R_N_1">
+    <inertial>
+      <origin
+        xyz="0.0180911931167852 0.0174794377607834 -0.0155248520163054"
+        rpy="0 0 0" />
+      <mass
+        value="0.00406217575232337" />
+      <inertia
+        ixx="3.58680966433164E-07"
+        ixy="-1.36796623061842E-09"
+        ixz="3.00792440067483E-09"
+        iyy="4.52712722842304E-07"
+        iyz="-9.83119522170605E-09"
+        izz="7.96923604729599E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/R_N_1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/R_N_1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LKnee_pitch"
+    type="revolute">
+    <origin
+      xyz="-0.0122338652690933 0.00291198983896201 -0.0773641940455132"
+      rpy="0 0 0" />
+    <parent
+      link="R_W_3" />
+    <child
+      link="R_N_1" />
+    <axis
+      xyz="0.012572607406823 0.999485937943566 0.0294921921203551" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="R_A_1">
+    <inertial>
+      <origin
+        xyz="0.00906436446976777 0.0212998378074056 0.00109078883632363"
+        rpy="0 0 0" />
+      <mass
+        value="0.00272881286947315" />
+      <inertia
+        ixx="1.64229681803521E-07"
+        ixy="2.4326999108096E-10"
+        ixz="-1.3340308998563E-10"
+        iyy="8.86535064342371E-08"
+        iyz="-1.26998727090048E-10"
+        izz="9.18493082595308E-08" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/R_A_1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/R_A_1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LAnkle_pitch"
+    type="revolute">
+    <origin
+      xyz="0.0116386736214952 0.00109273068918236 -0.0774847266386327"
+      rpy="0 0 0" />
+    <parent
+      link="R_N_1" />
+    <child
+      link="R_A_1" />
+    <axis
+      xyz="0.00321902611343638 -0.999556505100927 -0.0296045770329757" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="R_A_2">
+    <inertial>
+      <origin
+        xyz="0.0430494211015171 0.00106475615608614 -0.0292398518791859"
+        rpy="0 0 0" />
+      <mass
+        value="0.0107696045303586" />
+      <inertia
+        ixx="2.38077899159162E-06"
+        ixy="-7.53555463459518E-10"
+        ixz="5.55369185912146E-08"
+        iyy="7.30172054483324E-06"
+        iyz="-6.9852711783785E-08"
+        izz="9.65966781504387E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/R_A_2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.286274509803922 0.662745098039216 0.329411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/R_A_2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="LAnkle_roll"
+    type="revolute">
+    <origin
+      xyz="-0.0466491161038564 0.0211292222358059 0.000725339778560485"
+      rpy="0 0 0" />
+    <parent
+      link="R_A_1" />
+    <child
+      link="R_A_2" />
+    <axis
+      xyz="0.999964392032425 0.00344846027439361 -0.00770212885881819" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="L_W_1">
+    <inertial>
+      <origin
+        xyz="0.0198755299031583 0.0300308834006024 -0.0518252471094609"
+        rpy="0 0 0" />
+      <mass
+        value="0.152073564561278" />
+      <inertia
+        ixx="0.00216862030111371"
+        ixy="-0.000168715022494926"
+        ixz="2.27879942313857E-06"
+        iyy="0.00133058381521921"
+        iyz="-7.6047271917558E-06"
+        izz="0.000970548842776614" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/L_W_1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.286274509803922 0.662745098039216 0.329411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/L_W_1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RHip_yaw"
+    type="revolute">
+    <origin
+      xyz="-0.00811115881539393 -0.034382750486029 -0.0359000000000256"
+      rpy="0.00685752129495438 -0.00130889866810499 -0.0430575611663204" />
+    <parent
+      link="base_lin" />
+    <child
+      link="L_W_1" />
+    <axis
+      xyz="-0.00130889829658463 -0.00685746167291572 -0.999975630705396" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="L_W_2">
+    <inertial>
+      <origin
+        xyz="0.0349529105405521 0.000637258724828671 0.00110937814476841"
+        rpy="0 0 0" />
+      <mass
+        value="0.000548582459427165" />
+      <inertia
+        ixx="4.2009379147889E-09"
+        ixy="4.5835594675733E-12"
+        ixz="9.19876249753698E-12"
+        iyy="3.94859601140859E-09"
+        iyz="-5.84836288599058E-11"
+        izz="5.46020489769509E-09" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/L_W_2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/L_W_2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RHip_roll"
+    type="revolute">
+    <origin
+      xyz="-0.0344340076210223 0.00570690748207037 -0.0242946563290467"
+      rpy="-0.0365680701988691 -0.00698114687545119 -0.188554812891601" />
+    <parent
+      link="L_W_1" />
+    <child
+      link="L_W_2" />
+    <axis
+      xyz="0.999785460209647 0.019699590675994 -0.00639997504543661" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="L_W_3">
+    <inertial>
+      <origin
+        xyz="-0.00368840681064642 -0.0172743724623736 -0.0653797701648462"
+        rpy="0 0 0" />
+      <mass
+        value="0.00416880860873003" />
+      <inertia
+        ixx="1.06373644976686E-06"
+        ixy="1.47090858434795E-08"
+        ixz="-1.27369159994478E-07"
+        iyy="4.92510709050603E-07"
+        iyz="-2.17234809212734E-08"
+        izz="1.11844723976545E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/L_W_3.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/L_W_3.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RHip_pitch"
+    type="revolute">
+    <origin
+      xyz="0.0461667822915901 0.0215038971400305 4.99520127628106E-05"
+      rpy="0 0 0" />
+    <parent
+      link="L_W_2" />
+    <child
+      link="L_W_3" />
+    <axis
+      xyz="-0.0195011681197361 0.999368229569572 0.0297127273898547" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="L_N_1">
+    <inertial>
+      <origin
+        xyz="0.0182399394741348 -0.0206609308045556 -0.0166545672069358"
+        rpy="0 0 0" />
+      <mass
+        value="0.00406217499121926" />
+      <inertia
+        ixx="3.5868071601581E-07"
+        ixy="-1.3554655679744E-09"
+        ixz="2.9967520697757E-09"
+        iyy="4.52712810861831E-07"
+        iyz="-9.83132372705578E-09"
+        izz="7.96923757052267E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/L_N_1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/L_N_1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RKnee_pitch"
+    type="revolute">
+    <origin
+      xyz="-0.0122292736907317 0.00158734307245378 -0.0774034293266377"
+      rpy="0 0 0" />
+    <parent
+      link="L_W_3" />
+    <child
+      link="L_N_1" />
+    <axis
+      xyz="0.0195011681198009 -0.999368229569575 -0.0297127273897283" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="L_A_1">
+    <inertial>
+      <origin
+        xyz="0.00921711872720943 -0.0200210253235265 0.00261268459792596"
+        rpy="0 0 0" />
+      <mass
+        value="0.00270980906824081" />
+      <inertia
+        ixx="1.64099947129278E-07"
+        ixy="5.85484159216669E-10"
+        ixz="-5.54936055314888E-11"
+        iyy="8.8811595074974E-08"
+        iyz="-1.26594825208358E-10"
+        izz="9.12773083050912E-08" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/L_A_1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/L_A_1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RAnkle_pitch"
+    type="revolute">
+    <origin
+      xyz="0.0116621204095037 -0.000762059454564312 -0.0775407363717699"
+      rpy="0 0 0" />
+    <parent
+      link="L_N_1" />
+    <child
+      link="L_A_1" />
+    <axis
+      xyz="-0.00321902611345547 0.999556505100927 0.0296045770329677" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="L_A_2">
+    <inertial>
+      <origin
+        xyz="0.0430733910529578 0.00106370731759919 -0.0292045648561665"
+        rpy="0 0 0" />
+      <mass
+        value="0.0107696045304608" />
+      <inertia
+        ixx="2.3806928274237E-06"
+        ixy="-5.76895170545883E-10"
+        ixz="4.95703457127456E-08"
+        iyy="7.30172055642596E-06"
+        iyz="-6.98541822287163E-08"
+        izz="9.65975396775113E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/L_A_2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.286274509803922 0.662745098039216 0.329411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/L_A_2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="RAnkle_roll"
+    type="revolute">
+    <origin
+      xyz="-0.0464504790035918 -0.0206894543645093 -0.000414864266030435"
+      rpy="0 0 0" />
+    <parent
+      link="L_A_1" />
+    <child
+      link="L_A_2" />
+    <axis
+      xyz="0.99997044950115 0.00342421615067466 -0.00688294037609805" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="Upper_body">
+    <inertial>
+      <origin
+        xyz="0.00100722535937103 -0.0202566857675417 0.0151964571900813"
+        rpy="0 0 0" />
+      <mass
+        value="0.0205774766400463" />
+      <inertia
+        ixx="1.64988049423163E-05"
+        ixy="-2.22421726148623E-09"
+        ixz="-2.04398960610794E-08"
+        iyy="2.97052147537651E-06"
+        iyz="-3.13992649129696E-07"
+        izz="1.3571680294212E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/Upper_body.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/Upper_body.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Upper_body_joint"
+    type="revolute">
+    <origin
+      xyz="0.0155859734030666 0.0150977984615721 0.0154999999999887"
+      rpy="-0.0295865830615605 -0.00698131700551125 -0.231656625322495" />
+    <parent
+      link="base_lin" />
+    <child
+      link="Upper_body" />
+    <axis
+      xyz="-0.000181925773328471 -0.999562370008579 -0.0295809967013674" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="1.2"
+      velocity="0" />
+  </joint>
+  <link
+    name="hL_sh1">
+    <inertial>
+      <origin
+        xyz="0.00131091796412774 -0.00866235893889855 -0.000265533363404291"
+        rpy="0 0 0" />
+      <mass
+        value="0.00373121734305147" />
+      <inertia
+        ixx="4.74256618274354E-07"
+        ixy="9.7336627711189E-08"
+        ixz="7.68570035006557E-09"
+        iyy="1.0351058806852E-06"
+        iyz="-4.44418779135314E-09"
+        izz="1.16211248513842E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/hL_sh1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.286274509803922 0.662745098039216 0.329411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/hL_sh1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Rshoulder_pitch"
+    type="revolute">
+    <origin
+      xyz="0.00101152037119112 -0.101559924097068 0.0250260965550666"
+      rpy="0 0 0" />
+    <parent
+      link="Upper_body" />
+    <child
+      link="hL_sh1" />
+    <axis
+      xyz="0.000181925773391679 0.999562370008603 0.0295809967005423" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="hL_sh2">
+    <inertial>
+      <origin
+        xyz="0.00135125140164027 -0.0480052886531075 -0.0209137174718051"
+        rpy="0 0 0" />
+      <mass
+        value="0.0072690936477349" />
+      <inertia
+        ixx="1.3265592589259E-06"
+        ixy="-6.3694991284233E-10"
+        ixz="-2.97204485828927E-09"
+        iyy="1.34718911610898E-06"
+        iyz="1.03170921059654E-07"
+        izz="6.39556655299642E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/hL_sh2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/hL_sh2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Rshoulder_roll"
+    type="revolute">
+    <origin
+      xyz="0.01899560198786 -0.0215900909300901 -0.000771639290922721"
+      rpy="1.5707963267949 0 1.5707963267949" />
+    <parent
+      link="hL_sh1" />
+    <child
+      link="hL_sh2" />
+    <axis
+      xyz="2.46709159273879E-05 -0.00698358673469218 0.999975614156498" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="hL_e">
+    <inertial>
+      <origin
+        xyz="-0.00108595272484013 -0.0511817177287948 -0.0181567313690575"
+        rpy="0 0 0" />
+      <mass
+        value="0.0159991858724107" />
+      <inertia
+        ixx="1.21525410938445E-06"
+        ixy="8.46502282966865E-08"
+        ixz="-1.91757925355194E-08"
+        iyy="1.97255379218827E-06"
+        iyz="4.35639498448052E-08"
+        izz="2.18814673519924E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/hL_e.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/hL_e.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Relbow_roll"
+    type="revolute">
+    <origin
+      xyz="0.0019079 -0.067834 -0.0027738"
+      rpy="0 0 0" />
+    <parent
+      link="hL_sh2" />
+    <child
+      link="hL_e" />
+    <axis
+      xyz="2.6821E-05 -0.0069835 0.99998" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="right_link_RG_joint">
+    <inertial>
+      <origin
+        xyz="-0.00624999999938902 -0.00162912039424912 -0.0128975178670396"
+        rpy="0 0 0" />
+      <mass
+        value="0.00139752482636938" />
+      <inertia
+        ixx="1.39538807855437E-07"
+        ixy="7.86999506504697E-20"
+        ixz="6.36951512171121E-19"
+        iyy="1.34640696691803E-07"
+        iyz="-1.61754818418713E-08"
+        izz="8.62484403395177E-09" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/right_link_RG_joint.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/right_link_RG_joint.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="right_link_RG"
+    type="revolute">
+    <origin
+      xyz="0.00044735 -0.07088 -0.0025451"
+      rpy="0.025745 -1.5638 -1.567" />
+    <parent
+      link="hL_e" />
+    <child
+      link="right_link_RG_joint" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="0.18"
+      velocity="10.7" />
+    <mimic
+      joint="Right_gear_RG"
+      multiplier="-1"
+      offset="0" />
+  </joint>
+  <link
+    name="left_link_RG_joint">
+    <inertial>
+      <origin
+        xyz="-0.00624999999939946 0.00146284315163947 -0.0129174335412123"
+        rpy="0 0 0" />
+      <mass
+        value="0.00139752482636938" />
+      <inertia
+        ixx="1.39538807855438E-07"
+        ixy="-7.07930151856063E-20"
+        ixz="6.39047138710107E-19"
+        iyy="1.35036486928344E-07"
+        iyz="1.45469487788438E-08"
+        izz="8.22905379741309E-09" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/left_link_RG_joint.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/left_link_RG_joint.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="left_link_RG"
+    type="revolute">
+    <origin
+      xyz="0.010443 -0.070584 -0.0025433"
+      rpy="0.025745 -1.5638 -1.567" />
+    <parent
+      link="hL_e" />
+    <child
+      link="left_link_RG_joint" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="0.18"
+      velocity="10.7" />
+    <mimic
+      joint="Right_gear_RG"
+      multiplier="-1"
+      offset="0" />
+  </joint>
+  <link
+    name="Right_gear_RG_joint">
+    <inertial>
+      <origin
+        xyz="4.77728967496205E-13 0.00016594842143558 -0.00405315130518313"
+        rpy="0 0 0" />
+      <mass
+        value="0.00242320126079168" />
+      <inertia
+        ixx="3.41846920844848E-07"
+        ixy="1.301432726039E-19"
+        ixz="1.21286737673235E-18"
+        iyy="2.55684137221555E-07"
+        iyz="-2.67095542763266E-08"
+        izz="9.26246536520713E-08" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/Right_gear_RG_joint.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/Right_gear_RG_joint.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Right_gear_RG"
+    type="revolute">
+    <origin
+      xyz="-0.00904038284810671 -0.051152434659326 -0.0024070404355967"
+      rpy="0.0257453763099395 -1.56381269541651 -1.56695574759296" />
+    <parent
+      link="hL_e" />
+    <child
+      link="Right_gear_RG_joint" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="0.18"
+      velocity="10.7" />
+  </joint>
+  <link
+    name="Right_finger_RG_joint">
+    <inertial>
+      <origin
+        xyz="-0.00450000588206523 0.00643932780470902 -0.0264947872009815"
+        rpy="0 0 0" />
+      <mass
+        value="0.00317495861984542" />
+      <inertia
+        ixx="1.00818470091617E-06"
+        ixy="4.84072552656453E-12"
+        ixz="-3.70875898561584E-13"
+        iyy="9.56385097263167E-07"
+        iyz="1.49240693633751E-07"
+        izz="6.50286333620689E-08" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/Right_finger_RG_joint.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/Right_finger_RG_joint.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Right_finger_RG"
+    type="revolute">
+    <origin
+      xyz="0 -0.0030207 -0.025572"
+      rpy="0 0 0" />
+    <parent
+      link="Right_gear_RG_joint" />
+    <child
+      link="Right_finger_RG_joint" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="0.18"
+      velocity="10.7" />
+    <mimic
+      joint="Right_gear_RG"
+      multiplier="-1"
+      offset="0" />
+  </joint>
+  <link
+    name="left_gear_RG_joint">
+    <inertial>
+      <origin
+        xyz="4.71733763163229E-13 -0.000110358378073272 -0.00404162250451834"
+        rpy="0 0 0" />
+      <mass
+        value="0.00248161328462976" />
+      <inertia
+        ixx="3.41732297320524E-07"
+        ixy="-1.39773283445848E-19"
+        ixz="1.20733679545803E-18"
+        iyy="2.54729230795644E-07"
+        iyz="2.87255508891157E-08"
+        izz="9.36207019505596E-08" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/left_gear_RG_joint.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/left_gear_RG_joint.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="left_gear_RG"
+    type="revolute">
+    <origin
+      xyz="0.0178478449034265 -0.0503567054438041 -0.002402204490914"
+      rpy="0.0257453763099395 -1.56381269541651 -1.56695574759296" />
+    <parent
+      link="hL_e" />
+    <child
+      link="left_gear_RG_joint" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="0.18"
+      velocity="10.7" />
+    <mimic
+      joint="Right_gear_RG"
+      multiplier="1"
+      offset="0" />
+  </joint>
+  <link
+    name="left_finger_RG_joint">
+    <inertial>
+      <origin
+        xyz="-0.0044999867095219 -0.00617417186440372 -0.0265578218707025"
+        rpy="0 0 0" />
+      <mass
+        value="0.00317495858496895" />
+      <inertia
+        ixx="1.00818466475774E-06"
+        ixy="4.8364207233801E-12"
+        ixz="4.20111704251237E-13"
+        iyy="9.59279382264501E-07"
+        iyz="-1.40301800368464E-07"
+        izz="6.21343121145496E-08" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/left_finger_RG_joint.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/left_finger_RG_joint.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="left_finger_RG"
+    type="revolute">
+    <origin
+      xyz="0 0.00338553552667054 -0.0255264695797015"
+      rpy="0 0 0" />
+    <parent
+      link="left_gear_RG_joint" />
+    <child
+      link="left_finger_RG_joint" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="0.18"
+      velocity="10.7" />
+    <mimic
+      joint="Right_gear_RG"
+      multiplier="-1"
+      offset="0" />
+  </joint>
+  <link
+    name="hr_sh1">
+    <inertial>
+      <origin
+        xyz="0.00131406268079337 0.00866239401866364 0.000247183234635795"
+        rpy="0 0 0" />
+      <mass
+        value="0.00373121730714512" />
+      <inertia
+        ixx="4.74185734875702E-07"
+        ixy="-9.74168836873543E-08"
+        ixz="1.92364721755129E-09"
+        iyy="1.03509626735371E-06"
+        iyz="-3.08421998385708E-09"
+        izz="1.16219295785583E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/hr_sh1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.286274509803922 0.662745098039216 0.329411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/hr_sh1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Lshoulder_pitch"
+    type="revolute">
+    <origin
+      xyz="0.00104096446219726 0.060169267832598 0.0298122840963835"
+      rpy="0 0 0" />
+    <parent
+      link="Upper_body" />
+    <child
+      link="hr_sh1" />
+    <axis
+      xyz="-0.00018192577337194 -0.999562370008584 -0.0295809967011877" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="hr_sh2">
+    <inertial>
+      <origin
+        xyz="-0.0202138282256679 0.00101188605248215 -0.0480202042509639"
+        rpy="0 0 0" />
+      <mass
+        value="0.00726909364773545" />
+      <inertia
+        ixx="6.39556655299694E-07"
+        ixy="-2.97204485826868E-09"
+        ixz="1.03170921059719E-07"
+        iyy="1.32655925892601E-06"
+        iyz="-6.36949912853332E-10"
+        izz="1.34718911610908E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/hr_sh2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/hr_sh2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Lshoulder_roll"
+    type="revolute">
+    <origin
+      xyz="0.0190034845977193 0.0215910216665414 0.000506261459308988"
+      rpy="0 0 0" />
+    <parent
+      link="hr_sh1" />
+    <child
+      link="hr_sh2" />
+    <axis
+      xyz="0.999975614156498 2.46709159308775E-05 -0.00698358673469515" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="hr_e">
+    <inertial>
+      <origin
+        xyz="-0.0181566758165128 0.00441901220074614 -0.0511525346440407"
+        rpy="0 0 0" />
+      <mass
+        value="0.015999176996954" />
+      <inertia
+        ixx="2.18815927046705E-06"
+        ixy="1.62194431100435E-08"
+        ixz="4.45729464323839E-08"
+        iyy="1.22788418320202E-06"
+        iyz="-1.28779659746746E-07"
+        izz="1.95990938555189E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/hr_e.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/hr_e.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="Lelbow_roll"
+    type="revolute">
+    <origin
+      xyz="-0.002073890762049 0.00190794827611906 -0.0678386008964182"
+      rpy="0 0 0" />
+    <parent
+      link="hr_sh2" />
+    <child
+      link="hr_e" />
+    <axis
+      xyz="0.999975614545494 2.6820905506732E-05 -0.00698352310799514" />
+    <limit
+      lower="-2.79"
+      upper="2.79"
+      effort="1.2"
+      velocity="6.3" />
+  </joint>
+  <link
+    name="left_link_LG_joint">
+    <inertial>
+      <origin
+        xyz="-0.00624999999939901 0.000893448983509959 -0.0129692616884252"
+        rpy="0 0 0" />
+      <mass
+        value="0.0013975248263694" />
+      <inertia
+        ixx="1.39538807855438E-07"
+        ixy="-4.33378340609858E-20"
+        ixz="6.43022090520245E-19"
+        iyy="1.36069343622812E-07"
+        iyz="8.92037104639254E-09"
+        izz="7.19619710294459E-09" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/left_link_LG_joint.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/left_link_LG_joint.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="left_link_LG"
+    type="revolute">
+    <origin
+      xyz="-0.00254445629419009 0.00384586341249626 -0.0707793479664849"
+      rpy="0.0295860491684953 0.00698357987316876 2.68215595276084E-05" />
+    <parent
+      link="hr_e" />
+    <child
+      link="left_link_LG_joint" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="0.18"
+      velocity="10.7" />
+    <mimic
+      joint="left_gear_LG"
+      multiplier="-1"
+      offset="0" />
+  </joint>
+  <link
+    name="right_link_LG_joint">
+    <inertial>
+      <origin
+        xyz="-0.00624999999939713 -0.00212470649491348 -0.0128251948310587"
+        rpy="0 0 0" />
+      <mass
+        value="0.00139752482636939" />
+      <inertia
+        ixx="1.39538807855438E-07"
+        ixy="1.01857300029482E-19"
+        ixz="6.28864054231091E-19"
+        iyy="1.33208537628754E-07"
+        iyz="-2.09778425655922E-08"
+        izz="1.00570030970019E-08" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/right_link_LG_joint.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/right_link_LG_joint.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="right_link_LG"
+    type="revolute">
+    <origin
+      xyz="-0.00254625404314113 -0.00614976028701264 -0.0710751580837086"
+      rpy="0.0295860491684953 0.00698357987316876 2.68215595276084E-05" />
+    <parent
+      link="hr_e" />
+    <child
+      link="right_link_LG_joint" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="0.18"
+      velocity="10.7" />
+    <mimic
+      joint="left_gear_LG"
+      multiplier="-1"
+      offset="0" />
+  </joint>
+  <link
+    name="right_gear_LG_joint">
+    <inertial>
+      <origin
+        xyz="4.70845584743529E-13 -9.311722442229E-05 -0.00404205650774703"
+        rpy="0 0 0" />
+      <mass
+        value="0.00248161328462969" />
+      <inertia
+        ixx="3.41732297320512E-07"
+        ixy="1.78034283572593E-19"
+        ixz="1.1892622269895E-18"
+        iyy="2.51434712067315E-07"
+        iyz="-3.66753116660772E-08"
+        izz="9.69152206788759E-08" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/right_gear_LG_joint.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/right_gear_LG_joint.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="right_gear_LG"
+    type="revolute">
+    <origin
+      xyz="-0.00240806703635066 -0.0147378901634019 -0.0513210463705125"
+      rpy="0.0295860491684953 0.00698357987316876 2.68215595276084E-05" />
+    <parent
+      link="hr_e" />
+    <child
+      link="right_gear_LG_joint" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="0.18"
+      velocity="10.7" />
+    <mimic
+      joint="left_gear_LG"
+      multiplier="1"
+      offset="0" />
+  </joint>
+  <link
+    name="right_finger_LG_joint">
+    <inertial>
+      <origin
+        xyz="-0.00450002135966299 0.00611687938194683 -0.0265710936414894"
+        rpy="0 0 0" />
+      <mass
+        value="0.0031749832619267" />
+      <inertia
+        ixx="1.00818270027101E-06"
+        ixy="4.8356128576175E-12"
+        ixz="-4.2970657322429E-13"
+        iyy="9.59878359477634E-07"
+        iyz="1.38363021222793E-07"
+        izz="6.15334321076417E-08" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/right_finger_LG_joint.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/right_finger_LG_joint.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="right_finger_LG"
+    type="revolute">
+    <origin
+      xyz="0 -0.00466549364942903 -0.0253238162410179"
+      rpy="0 0 0" />
+    <parent
+      link="right_gear_LG_joint" />
+    <child
+      link="right_finger_LG_joint" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="0.18"
+      velocity="10.7" />
+    <mimic
+      joint="left_gear_LG"
+      multiplier="-1"
+      offset="0" />
+  </joint>
+  <link
+    name="left_gear_LG_joint">
+    <inertial>
+      <origin
+        xyz="4.58411086867727E-13 -0.000402073297587346 -0.00403657172018934"
+        rpy="0 0 0" />
+      <mass
+        value="0.00242320126079165" />
+      <inertia
+        ixx="3.41846920844846E-07"
+        ixy="-8.26263411425374E-20"
+        ixz="1.22310756252303E-18"
+        iyy="2.58239868046523E-07"
+        iyz="1.70332727662138E-08"
+        izz="9.00689228271012E-08" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/left_gear_LG_joint.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/left_gear_LG_joint.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="left_gear_LG"
+    type="revolute">
+    <origin
+      xyz="-0.0024032310916634 0.0121503375883392 -0.0505253171551752"
+      rpy="0.0295860491684953 0.00698357987316876 2.68215595276084E-05" />
+    <parent
+      link="hr_e" />
+    <child
+      link="left_gear_LG_joint" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="0.18"
+      velocity="10.7" />
+  </joint>
+  <link
+    name="left_finger_LG_joint">
+    <inertial>
+      <origin
+        xyz="-0.00449998671104901 -0.00640605142109996 -0.0265028669480014"
+        rpy="0 0 0" />
+      <mass
+        value="0.00317498316377553" />
+      <inertia
+        ixx="1.00818267734673E-06"
+        ixy="4.83978943114668E-12"
+        ixz="3.77636931446349E-13"
+        iyy="9.56756478281153E-07"
+        iyz="-1.48118588051461E-07"
+        izz="6.46552901338942E-08" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/left_finger_LG_joint.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://view_robot_pkg/meshes/left_finger_LG_joint.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="left_finger_LG"
+    type="revolute">
+    <origin
+      xyz="0 0.001524 -0.025705"
+      rpy="0 0 0" />
+    <parent
+      link="left_gear_LG_joint" />
+    <child
+      link="left_finger_LG_joint" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="0.18"
+      velocity="10.7" />
+    <mimic
+      joint="left_gear_LG"
+      multiplier="-1"
+      offset="0" />
+  </joint>
+  <link name="left_arm_tcp"/>
+  <joint name="left_arm_tcp_joint" type="fixed">
+    <parent link="hr_e"/>
+    <child link="left_arm_tcp"/>
+    <origin xyz="0 -0.0026 -0.1" rpy="0 0 0"/>
+  </joint>
+
+  <link name="right_arm_tcp"/>
+  <joint name="right_arm_tcp_joint" type="fixed">
+    <parent link="hL_e"/>
+    <child link="right_arm_tcp"/>
+    <origin xyz="0.006 -0.1 0" rpy="0 0 0"/> 
+  </joint>
+  <!-- CAMERA LINK -->
+  <link name="camera_link">
+    <visual>
+      <geometry>
+        <box size="0.02 0.04 0.02"/>
+      </geometry>
+      <material name="red">
+        <color rgba="1 0 0 1"/>
+      </material>
+    </visual>
+  </link>
+
+  <!-- CAMERA JOINT -->
+  <joint name="camera_joint" type="fixed">
+    <parent link="Upper_body"/>
+    <child link="camera_link"/>
+
+    <!-- 🔥 POSITION + ORIENTATION -->
+    <origin xyz="0.0 -0.019 0.04" rpy="0 0 0"/>
+  </joint>
+</robot>

@@ -1,0 +1,12 @@
+# Default initial positions for view_robot_pkg's ros2_control fake system
+
+initial_positions:
+  Lelbow_roll: 0
+  Lshoulder_pitch: 0
+  Lshoulder_roll: 0
+  Relbow_roll: 0
+  Right_gear_RG: 0
+  Rshoulder_pitch: 0
+  Rshoulder_roll: 0
+  Upper_body_joint: 0
+  left_gear_LG: 0
