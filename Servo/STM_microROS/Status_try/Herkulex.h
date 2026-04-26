@@ -68,7 +68,7 @@ static int LED_GREEN1 =	 0x01;
 static int LED_BLUE   =   0x02;
 static int LED_CYAN   =   0x03;
 static int LED_RED    = 	 0x04;
-static int LED_YELLOW = 	 0x05;
+static int LED_GREEN2 = 	 0x05;
 static int LED_PINK   =   0x06;
 static int LED_WHITE  =   0x07;
 
@@ -119,10 +119,10 @@ public:
 		
   void  reboot(int servoID);
   void  setLed(int servoID, int valueLed);
-  byte getLed(int servoID);
  
   void  writeRegistryRAM(int servoID, int address, int writeByte);
   void  writeRegistryEEP(int servoID, int address, int writeByte);
+
   
 // private area  
 private:
