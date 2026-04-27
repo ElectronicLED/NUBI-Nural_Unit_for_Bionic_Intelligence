@@ -11,7 +11,8 @@
 #include <std_msgs/msg/int16.h>
 #include <std_msgs/msg/int16_multi_array.h>
 #include <std_msgs/msg/bool.h>
-#include <std_msgs/msg/string.h>
+#include <std_msgs/msg/u_int8_multi_array.h>
+//#include <std_msgs/msg/string.h>
 
 #include <Servo.h>
 
@@ -39,6 +40,7 @@ rcl_publisher_t leg_pos_feedback_publisher;
 rcl_publisher_t upperbody_pos_feedback_publisher;
 rcl_publisher_t status_publisher;
 rcl_publisher_t color_feedback_publisher;
+rcl_publisher_t torque_feedback_publisher;
 
 // ------------------- micro-ROS Service object -------------------
 
@@ -46,6 +48,7 @@ rcl_publisher_t color_feedback_publisher;
 // ------------------- micro-ROS Timer objects -------------------
 
 rcl_timer_t color_timer;
+rcl_timer_t torque_timer;
 
 //Subscriber messages
 //std_msgs__msg__Int16 msg;
@@ -60,6 +63,7 @@ std_msgs__msg__Int16MultiArray legs_feedback;
 std_msgs__msg__Int16MultiArray upperbody_feedback;
 std_msgs__msg__Int16MultiArray status_msg;
 std_msgs__msg__Int16MultiArray color_feedback;
+std_msgs__msg__UInt8MultiArray torque_feedback;
 
 #define left_gripper_pin PB9
 #define right_gripper_pin PB13
@@ -75,7 +79,12 @@ const uint leg_motor_indecies[12] = {16,6,7,8,10,9,17,11,12,13,15,14};
 const uint upper_motor_indecies[7] = {0,1,2,3,4,5,19};
 byte statusError, statusDetail;
 
-
+float timer_frequency = 3;
+unsigned long timer_period_ms = (unsigned long) (1000/timer_frequency);
+unsigned long torque_lastTime = 0;
+unsigned long color_lastTime = 0;
+unsigned long torque_currentTime = 0;
+unsigned long color_currentTime = 0;
 
 // macros to check if any function returns anything other than RCL_RET_OK othwerwise stick to error or pass
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){error_loop();}}
@@ -117,6 +126,11 @@ void torque_cmd_callback(const void * msgin){
   //The incoming message is received as a generic void pointer.
   //the following line casts the void pointer to the specific message type 
   //so you can access the data.
+  torque_currentTime = millis();
+  if (torque_currentTime - torque_lastTime < timer_period_ms) return;
+  torque_lastTime = torque_currentTime;
+
+
   const std_msgs__msg__Bool * msg = (const std_msgs__msg__Bool *)msgin;
 
   if(msg->data == true){
@@ -146,6 +160,12 @@ void gripper_callback(const void* msgin) {
 }
 
 void color_cmd_callback(const void* msgin) {
+
+  color_currentTime = millis();
+  if (color_currentTime - color_lastTime < timer_period_ms) return;
+  color_lastTime = color_currentTime;
+
+
   const std_msgs__msg__Int16MultiArray* msg =
       (const std_msgs__msg__Int16MultiArray*)msgin;
 
@@ -255,10 +275,32 @@ void color_timer_setup(){
   rclc_timer_init_default(
     &color_timer,
     &support,
-    RCL_MS_TO_NS(100),      // period in nanoseconds
+    RCL_MS_TO_NS(timer_period_ms),      // period in nanoseconds
     color_timer_callback);
   
   rclc_executor_add_timer(&executor, &color_timer);
+}
+
+void torque_timer_setup(){
+  static u_int8_t feedback_buffer4[20];
+  // Link the buffer to the message struct
+  torque_feedback.data.capacity = 20;
+  torque_feedback.data.data = feedback_buffer4;
+  torque_feedback.data.size = 20;
+
+  rclc_publisher_init_default(
+    &torque_feedback_publisher,
+    &node,
+    ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, UInt8MultiArray),
+    "torque_feedback");
+
+  rclc_timer_init_default(
+    &torque_timer,
+    &support,
+    RCL_MS_TO_NS(timer_period_ms),      // period in nanoseconds
+    torque_timer_callback);
+  
+  rclc_executor_add_timer(&executor, &torque_timer);
 }
 
 // --------------------- Timers Callback Functions ---------------------
@@ -272,6 +314,24 @@ void color_timer_callback(rcl_timer_t * timer, int64_t last_call_time)
     }
 
     rcl_publish(&color_feedback_publisher, &color_feedback, NULL);
+  }
+}
+
+void torque_timer_callback(rcl_timer_t * timer, int64_t last_call_time)
+{
+  (void) last_call_time;
+
+  if (timer != NULL) {
+    for(int i = 0; i<20; i++){
+      if(Herkulex.getTorque(i) == 0x60){
+        torque_feedback.data.data[i] = 1;
+      }
+      else if(Herkulex.getTorque(i) == 0x00){
+        torque_feedback.data.data[i] = 0;
+      }
+    }
+
+    rcl_publish(&torque_feedback_publisher, &torque_feedback, NULL);
   }
 }
 
@@ -345,14 +405,15 @@ void setup() {
 
   // create executor
   // make sure you change the number to the number of subscribers
-  RCCHECK(rclc_executor_init(&executor, &support.context, 6, &allocator));  
+  RCCHECK(rclc_executor_init(&executor, &support.context, 7, &allocator));  
   //RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &msg, &subscription_callback, ON_NEW_DATA));
-  leg_cmd_sub_setup();
-  upperbody_cmd_sub_setup();
-  torque_cmd_sub_setup();
-  gripper_sub_setup();
-  color_sub_setup();
-  color_timer_setup();
+  leg_cmd_sub_setup();        //1
+  upperbody_cmd_sub_setup();  //2
+  torque_cmd_sub_setup();     //3
+  gripper_sub_setup();        //4
+  color_sub_setup();          //5
+  color_timer_setup();        //6
+  torque_timer_setup();       //7
 
   //Servo initialization
   delay(2000);  //a delay to have time for serial monitor opening

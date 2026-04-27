@@ -103,6 +103,7 @@ public:
   
   void  torqueON(int servoID);
   void  torqueOFF(int servoID);
+  byte getTorque(int servoID);
   
   void  moveAll(int servoID, int Goal, int iLed);
   void  moveSpeedAll(int servoID, int Goal, int iLed);
