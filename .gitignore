@@ -1,3 +1,5 @@
 __pycache__/
 .vscode/
 subClasses/__pycache__/
+AGENTS.md
+plans/
