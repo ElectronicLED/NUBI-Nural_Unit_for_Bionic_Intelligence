@@ -329,7 +329,7 @@
     <child
       link="RAnkle" />
     <axis
-      xyz="0 -1 0" />
+      xyz="0 1 0" />
     <limit
       lower="-2.79"
       upper="2.79"
@@ -388,7 +388,7 @@
     <child
       link="RFoot" />
     <axis
-      xyz="0 -1 0" />
+      xyz="0 1 0" />
     <limit
       lower="-2.79"
       upper="2.79"
@@ -563,7 +563,7 @@
     <child
       link="LFemur" />
     <axis
-      xyz="1 0 0" />
+      xyz="-1 0 0" />
     <limit
       lower="-2.79"
       upper="2.79"
@@ -679,7 +679,7 @@
     <child
       link="LAnkle" />
     <axis
-      xyz="0 -1 0" />
+      xyz="0 1 0" />
     <limit
       lower="-2.79"
       upper="2.79"
@@ -737,7 +737,7 @@
     <child
       link="LFoot" />
     <axis
-      xyz="1 0 0" />
+      xyz="-1 0 0" />
     <limit
       lower="-2.79"
       upper="2.79"
