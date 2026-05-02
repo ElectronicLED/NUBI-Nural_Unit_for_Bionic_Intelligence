@@ -1,25 +1,32 @@
 #include <micro_ros_arduino.h>
-
 #include "Herkulex.h"
-
 #include <stdio.h>
 #include <rcl/rcl.h>
 #include <rcl/error_handling.h>
 #include <rclc/rclc.h>
 #include <rclc/executor.h>
-
 #include <std_msgs/msg/int16.h>
 #include <std_msgs/msg/int16_multi_array.h>
 #include <std_msgs/msg/bool.h>
 #include <std_msgs/msg/u_int8_multi_array.h>
-//#include <std_msgs/msg/string.h>
-
+#include <std_msgs/msg/string.h>
 #include <Servo.h>
-
 #include <string.h>
-
+// rcutils logging is unreliable on STM32 microROS — use /nubi_debug publisher instead
 #define NUM_SERVOS 2
+// ------------------- Timer frequencies -------------------
+// Torque reading is slow (~12ms/servo × 20 = 240ms) so keep it at 1 Hz
+#define TORQUE_TIMER_HZ    1
+#define STATUS_TIMER_HZ    2
 
+const unsigned long torque_timer_period_ms = (unsigned long)(1000 / TORQUE_TIMER_HZ);  // 1000ms
+const unsigned long status_timer_period_ms = (unsigned long)(1000 / STATUS_TIMER_HZ);  //  500ms
+// number of motors
+int n=20;
+
+
+const uint leg_motor_indecies[12] = {16,6,7,8,10,9,17,11,12,13,15,14};
+const uint upper_motor_indecies[7] = {0,1,2,3,4,18,19};
 Servo gripper[NUM_SERVOS];
 
 // ------------------- micro-ROS objects defined once -------------------
@@ -41,14 +48,13 @@ rcl_publisher_t upperbody_pos_feedback_publisher;
 rcl_publisher_t status_publisher;
 rcl_publisher_t color_feedback_publisher;
 rcl_publisher_t torque_feedback_publisher;
+rcl_publisher_t debug_publisher;
 
-// ------------------- micro-ROS Service object -------------------
 
-
-// ------------------- micro-ROS Timer objects -------------------
-
+// -------------------Timer objects -------------------
 rcl_timer_t color_timer;
 rcl_timer_t torque_timer;
+rcl_timer_t status_timer;
 
 //Subscriber messages
 //std_msgs__msg__Int16 msg;
@@ -65,26 +71,31 @@ std_msgs__msg__Int16MultiArray status_msg;
 std_msgs__msg__Int16MultiArray color_feedback;
 std_msgs__msg__UInt8MultiArray torque_feedback;
 
+// Debug string message — reused for all log publishes
+std_msgs__msg__String debug_msg;
+static char debug_char_buf[128];
+
+// Helper: publish a debug string to /nubi_debug
+void debug_log(const char* msg) {
+  debug_msg.data.data = debug_char_buf;
+  debug_msg.data.capacity = sizeof(debug_char_buf);
+  strncpy(debug_char_buf, msg, sizeof(debug_char_buf) - 1);
+  debug_char_buf[sizeof(debug_char_buf) - 1] = '\0';
+  debug_msg.data.size = strlen(debug_char_buf);
+  rcl_publish(&debug_publisher, &debug_msg, NULL);
+}
+
 #define left_gripper_pin PB9
 #define right_gripper_pin PB13
 
-// loops on servos by turn
-int feedback_index = 0;
-// number of motors
-int n=20;
+// loops on servos by turn — separate indices for legs and upper body
+int leg_feedback_index = 0;
+int upper_feedback_index = 0;
+#define FEEDBACK_TOTAL 19   // 12 legs + 7 upper (kept for reference)
 
-bool torque_state = true;
 
-const uint leg_motor_indecies[12] = {16,6,7,8,10,9,17,11,12,13,15,14};
-const uint upper_motor_indecies[7] = {0,1,2,3,4,5,19};
 byte statusError, statusDetail;
 
-float timer_frequency = 3;
-unsigned long timer_period_ms = (unsigned long) (1000/timer_frequency);
-unsigned long torque_lastTime = 0;
-unsigned long color_lastTime = 0;
-unsigned long torque_currentTime = 0;
-unsigned long color_currentTime = 0;
 
 // macros to check if any function returns anything other than RCL_RET_OK othwerwise stick to error or pass
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){error_loop();}}
@@ -101,79 +112,37 @@ void error_loop(){
 
 // --------------------- Subsribers Callback Functions ---------------------
 void legs_cmd_callback(const void * msgin){
-  //The incoming message is received as a generic void pointer.
-  //the following line casts the void pointer to the specific message type 
-  //so you can access the data.
-  // const std_msgs__msg__Int16MultiArray * msg = (const std_msgs__msg__Int16MultiArray *)msgin;
-  // for(int i = 0; i<12;i++){
-  //   Herkulex.moveOneAngle(leg_motor_indecies[i], msg->data.data[i], 1000, LED_BLUE);
-  // }
+  // Queue all 12 leg servos then fire simultaneously with actionAll
   for(int i = 0; i<12;i++){
-    // Directly accessing the global struct
-    Herkulex.moveOneAngle(leg_motor_indecies[i], legs_command.data.data[i], 1000, LED_BLUE);
+    Herkulex.moveAllAngle(leg_motor_indecies[i], legs_command.data.data[i], LED_BLUE);
   }
+  Herkulex.actionAll(500);  // 500ms execution time — reduce if hardware allows
 }
 
 void upperbody_cmd_callback(const void * msgin){
-
+  // Queue all 7 servos then fire simultaneously with actionAll
+  // actionAll(ms): ms = time for servos to reach position; lower = faster
   for(int i = 0; i<7;i++){
-    // Directly accessing the global struct
-    Herkulex.moveOneAngle(upper_motor_indecies[i], upperbody_command.data.data[i], 1000, LED_BLUE);
+    Herkulex.moveAllAngle(upper_motor_indecies[i], upperbody_command.data.data[i], LED_BLUE);
   }
+  Herkulex.actionAll(500);  // 500ms execution time — reduce further if hardware allows
 }
 
 void torque_cmd_callback(const void * msgin){
   //The incoming message is received as a generic void pointer.
   //the following line casts the void pointer to the specific message type 
   //so you can access the data.
-  torque_currentTime = millis();
-  if (torque_currentTime - torque_lastTime < timer_period_ms) return;
-  torque_lastTime = torque_currentTime;
-
-
   const std_msgs__msg__Bool * msg = (const std_msgs__msg__Bool *)msgin;
 
   if(msg->data == true){
-    for(int i = 0; i<n;i++){
-  //    Herkulex.moveOneAngle(leg_motor_indecies[i], msg->data.data[i], 1000, LED_BLUE);
-      Herkulex.torqueON(i);
-    }
-    torque_state = true;
+    Herkulex.torqueON(BROADCAST_ID);   // single broadcast packet to all servos
   }
   else{
-    for(int i = 0; i<n;i++){
-  //    Herkulex.moveOneAngle(leg_motor_indecies[i], msg->data.data[i], 1000, LED_BLUE);
-      Herkulex.torqueOFF(i);
-    }
-    torque_state = false;
+    Herkulex.torqueOFF(BROADCAST_ID);  // single broadcast packet to all servos
   }
 }
 
-void gripper_callback(const void* msgin) {
-  const std_msgs__msg__Int16MultiArray* msg = 
-  (const std_msgs__msg__Int16MultiArray*)msgin;
-  for (int i = 0; i < NUM_SERVOS; i++) {
 
-    gripper[i].write(msg->data.data[i]);
-    
-  }
-}
-
-void color_cmd_callback(const void* msgin) {
-
-  color_currentTime = millis();
-  if (color_currentTime - color_lastTime < timer_period_ms) return;
-  color_lastTime = color_currentTime;
-
-
-  const std_msgs__msg__Int16MultiArray* msg =
-      (const std_msgs__msg__Int16MultiArray*)msgin;
-
-  int16_t led_id    = msg->data.data[0];
-  int16_t led_color = msg->data.data[1];
-
-  Herkulex.setLed(led_id, led_color);
-}
 
 // --------------------- Subsribers Setup Functions ---------------------
 void leg_cmd_sub_setup(){
@@ -216,69 +185,63 @@ void torque_cmd_sub_setup(){
   RCCHECK(rclc_executor_add_subscription(&executor, &torque_command_subscriber, &torque_command, &torque_cmd_callback, ON_NEW_DATA));
 }
 
-void gripper_sub_setup() {
-  // Allocate memory for incoming Float64MultiArray
-  static int16_t memory_buffer2[2]; 
-  gripper_command.data.capacity = 2;
-  gripper_command.data.size = 0;
-  gripper_command.data.data = memory_buffer2;
 
-  rclc_subscription_init_default(
-    &gripper_command_subscriber,
-    &node,
-    ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int16MultiArray),
-    "gripper_command");
-
-  rclc_executor_add_subscription(
-    &executor,
-    &gripper_command_subscriber,
-    &gripper_command,
-    &gripper_callback,
-    ON_NEW_DATA);
-
-}
-
-void color_sub_setup(){
-  static int16_t memory_buffer3[2]; 
-  color_command.data.capacity = 2;
-  color_command.data.size = 2;
-  color_command.data.data = memory_buffer3;
-
-  rclc_subscription_init_default(
-    &color_cmd_subscriber,
-    &node,
-    ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int16MultiArray),
-    "LED_color_cmd");
-
-  rclc_executor_add_subscription(
-    &executor, 
-    &color_cmd_subscriber, 
-    &color_command,
-    &color_cmd_callback, 
-    ON_NEW_DATA);
-}
 
 // --------------------- Timers Setup Functions ---------------------
-void color_timer_setup(){
-  static int16_t feedback_buffer3[20];
-  // Link the buffer to the message struct
-  color_feedback.data.capacity = 20;
-  color_feedback.data.data = feedback_buffer3;
-  color_feedback.data.size = 20;
 
-  rclc_publisher_init_default(
-    &color_feedback_publisher,
-    &node,
-    ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int16MultiArray),
-    "LED_color_feedback");
+void torque_timer_callback(rcl_timer_t * timer, int64_t last_call_time)
+{
+  (void) last_call_time;
 
+  if (timer != NULL) {
+    unsigned long t0_torque = micros();
+    for(int i = 0; i<20; i++){
+      byte tq = Herkulex.getTorque(i);
+      if(tq == 0x60){
+        torque_feedback.data.data[i] = 1;
+      }
+      else if(tq == 0x00){
+        torque_feedback.data.data[i] = 0;
+      }
+    }
+    unsigned long elapsed_torque = micros() - t0_torque;
+    char log_buf[128];
+    snprintf(log_buf, sizeof(log_buf), "[NUBI] torque read 20 servos: %lu us", elapsed_torque);
+    debug_log(log_buf);
+
+    rcl_publish(&torque_feedback_publisher, &torque_feedback, NULL);
+  }
+}
+
+
+
+void status_timer_callback(rcl_timer_t * timer, int64_t last_call_time)
+{
+  (void) last_call_time;
+  if (timer != NULL) {
+    unsigned long t0_status = micros();
+    for(int i = 0; i < 20; i++){
+      byte result = Herkulex.stat(i, statusError, statusDetail);
+      if (result != (byte)-1 && result != (byte)-2){
+        status_msg.data.data[i * 2]     = statusError;
+        status_msg.data.data[i * 2 + 1] = statusDetail;
+      }
+    }
+    unsigned long elapsed_status = micros() - t0_status;
+    char log_buf[128];
+    snprintf(log_buf, sizeof(log_buf), "[NUBI] status read 20 servos: %lu us", elapsed_status);
+    debug_log(log_buf);
+    rcl_publish(&status_publisher, &status_msg, NULL);
+  }
+}
+
+void status_timer_setup(){
   rclc_timer_init_default(
-    &color_timer,
+    &status_timer,
     &support,
-    RCL_MS_TO_NS(timer_period_ms),      // period in nanoseconds
-    color_timer_callback);
-  
-  rclc_executor_add_timer(&executor, &color_timer);
+    RCL_MS_TO_NS(status_timer_period_ms),   // 2 Hz
+    status_timer_callback);
+  rclc_executor_add_timer(&executor, &status_timer);
 }
 
 void torque_timer_setup(){
@@ -297,43 +260,14 @@ void torque_timer_setup(){
   rclc_timer_init_default(
     &torque_timer,
     &support,
-    RCL_MS_TO_NS(timer_period_ms),      // period in nanoseconds
+    RCL_MS_TO_NS(torque_timer_period_ms),   // 1 Hz
     torque_timer_callback);
   
   rclc_executor_add_timer(&executor, &torque_timer);
 }
 
 // --------------------- Timers Callback Functions ---------------------
-void color_timer_callback(rcl_timer_t * timer, int64_t last_call_time)
-{
-  (void) last_call_time;
 
-  if (timer != NULL) {
-    for(int i = 0; i<20; i++){
-      color_feedback.data.data[i] = (int16_t)Herkulex.getLed(i);
-    }
-
-    rcl_publish(&color_feedback_publisher, &color_feedback, NULL);
-  }
-}
-
-void torque_timer_callback(rcl_timer_t * timer, int64_t last_call_time)
-{
-  (void) last_call_time;
-
-  if (timer != NULL) {
-    for(int i = 0; i<20; i++){
-      if(Herkulex.getTorque(i) == 0x60){
-        torque_feedback.data.data[i] = 1;
-      }
-      else if(Herkulex.getTorque(i) == 0x00){
-        torque_feedback.data.data[i] = 0;
-      }
-    }
-
-    rcl_publish(&torque_feedback_publisher, &torque_feedback, NULL);
-  }
-}
 
 void setup() {
   pinMode(LED_BUILTIN,OUTPUT);
@@ -403,17 +337,21 @@ void setup() {
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int16MultiArray),
     "motor_status");
 
+  rclc_publisher_init_default(
+    &debug_publisher,
+    &node,
+    ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, String),
+    "nubi_debug");
+
   // create executor
   // make sure you change the number to the number of subscribers
-  RCCHECK(rclc_executor_init(&executor, &support.context, 7, &allocator));  
+  RCCHECK(rclc_executor_init(&executor, &support.context, 5, &allocator));  
   //RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &msg, &subscription_callback, ON_NEW_DATA));
   leg_cmd_sub_setup();        //1
   upperbody_cmd_sub_setup();  //2
   torque_cmd_sub_setup();     //3
-  gripper_sub_setup();        //4
-  color_sub_setup();          //5
-  color_timer_setup();        //6
-  torque_timer_setup();       //7
+  torque_timer_setup();       //4
+  status_timer_setup();       //5
 
   //Servo initialization
   delay(2000);  //a delay to have time for serial monitor opening
@@ -428,46 +366,38 @@ void setup() {
 }
 
 
-
-
 void loop() {
   // put your main code here, to run repeatedly:
   //digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 
-  legs_feedback.data.data[feedback_index] = Herkulex.getAngle(leg_motor_indecies[feedback_index]);
-
-  // 2. Increment index for the next loop (Wrap around at 12)
-  feedback_index++;
-  if (feedback_index >= 12) {
-    feedback_index = 0;
+  // Round-robin: read ONE leg AND ONE upper servo per loop iteration
+  // Legs cycle 0..11, upper cycles 0..6 independently
+  {
+    unsigned long t0 = micros();
+    legs_feedback.data.data[leg_feedback_index] = Herkulex.getAngle(leg_motor_indecies[leg_feedback_index]);
+    unsigned long el = micros() - t0;
+    char buf[128];
+    snprintf(buf, sizeof(buf), "[NUBI] leg[%d] getAngle: %lu us", leg_feedback_index, el);
+    debug_log(buf);
+    leg_feedback_index++;
+    if (leg_feedback_index >= 12) leg_feedback_index = 0;
   }
 
-  // for(int i = 0; i < 12; i++) { 
-  //   legs_feedback.data.data[i] = Herkulex.getAngle(leg_motor_indecies[i]);
-  // }
-
-  for(int i = 0; i < 7; i++) { 
-    upperbody_feedback.data.data[i] = Herkulex.getAngle(upper_motor_indecies[i]);
+  {
+    unsigned long t0 = micros();
+    upperbody_feedback.data.data[upper_feedback_index] = Herkulex.getAngle(upper_motor_indecies[upper_feedback_index]);
+    unsigned long el = micros() - t0;
+    char buf[128];
+    snprintf(buf, sizeof(buf), "[NUBI] upper[%d] getAngle: %lu us", upper_feedback_index, el);
+    debug_log(buf);
+    upper_feedback_index++;
+    if (upper_feedback_index >= 7) upper_feedback_index = 0;
   }
 
-  //Status Publisher
-  for(int i=0; i<20; i++){
-    byte result = Herkulex.stat(i, statusError, statusDetail);
-
-    if (result == (byte)-1 || result == (byte)-2) {
-
-    }
-    else{
-      status_msg.data.data[i * 2]     = statusError;
-      status_msg.data.data[i * 2 + 1] = statusDetail;
-    }
-  }
-
-  // 2. Publish the message
-  // We pass NULL as the 3rd argument (allocation) because it's rarely used
+  // Publish feedback
   RCSOFTCHECK(rcl_publish(&leg_pos_feedback_publisher, &legs_feedback, NULL));
   RCSOFTCHECK(rcl_publish(&upperbody_pos_feedback_publisher, &upperbody_feedback, NULL));
-  rcl_publish(&status_publisher, &status_msg, NULL);
+  // status is published by status_timer_callback at 3 Hz
 
 
   RCCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(2)));

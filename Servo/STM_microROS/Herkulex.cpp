@@ -629,9 +629,8 @@ byte HerkulexClass::getLed(int servoID)
 byte HerkulexClass::getTorque(int servoID)
 {
   // flush RX buffer before starting
-  delay(5);
   while(Serial1.available()) Serial1.read();
-  delay(2);
+  delay(1);
 
   pSize = 0x09;
   pID   = servoID;
@@ -654,7 +653,7 @@ byte HerkulexClass::getTorque(int servoID)
   dataEx[8] = data[1];
 
   Serial1.write(dataEx, pSize);  // send directly, bypass clearBuffer
-  delay(5);                      // give servo time to respond
+  delay(2);                      // give servo time to respond
   readData(12);
 
   // Verify checksum on ACK packet
