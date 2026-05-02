@@ -14,6 +14,8 @@
 #include <string.h>
 // rcutils logging is unreliable on STM32 microROS — use /nubi_debug publisher instead
 #define NUM_SERVOS 2
+#define NUM_LEGS 12
+#define NUM_UPPDERBODY 7
 // ------------------- Timer frequencies -------------------
 // Torque reading is slow (~12ms/servo × 20 = 240ms) so keep it at 1 Hz
 #define TORQUE_TIMER_HZ    1
@@ -25,8 +27,8 @@ const unsigned long status_timer_period_ms = (unsigned long)(1000 / STATUS_TIMER
 int n=20;
 
 
-const uint leg_motor_indecies[12] = {16,6,7,8,10,9,17,11,12,13,15,14};
-const uint upper_motor_indecies[7] = {0,1,2,3,4,18,19};
+const uint leg_motor_indecies[NUM_LEGS] = {16,6,7,8,10,9,17,11,12,13,15,14};
+const uint upper_motor_indecies[NUM_UPPDERBODY] = {0,1,2,3,4,18,19};
 Servo gripper[NUM_SERVOS];
 
 // ------------------- micro-ROS objects defined once -------------------
@@ -113,19 +115,22 @@ void error_loop(){
 // --------------------- Subsribers Callback Functions ---------------------
 void legs_cmd_callback(const void * msgin){
   // Queue all 12 leg servos then fire simultaneously with actionAll
-  for(int i = 0; i<12;i++){
+  int i = 0;
+  for(; i<NUM_LEGS;i++){
     Herkulex.moveAllAngle(leg_motor_indecies[i], legs_command.data.data[i], LED_BLUE);
   }
-  Herkulex.actionAll(500);  // 500ms execution time — reduce if hardware allows
+  //always take last index as playtime
+  Herkulex.actionAll(legs_command.data.data[i]);  // 500ms execution time — reduce if hardware allows
 }
 
 void upperbody_cmd_callback(const void * msgin){
   // Queue all 7 servos then fire simultaneously with actionAll
   // actionAll(ms): ms = time for servos to reach position; lower = faster
-  for(int i = 0; i<7;i++){
+  int i = 0;
+  for(; i<NUM_UPPDERBODY;i++){
     Herkulex.moveAllAngle(upper_motor_indecies[i], upperbody_command.data.data[i], LED_BLUE);
   }
-  Herkulex.actionAll(500);  // 500ms execution time — reduce further if hardware allows
+  Herkulex.actionAll(upperbody_command.data.data[i]);  // 500ms execution time — reduce further if hardware allows
 }
 
 void torque_cmd_callback(const void * msgin){
@@ -146,8 +151,8 @@ void torque_cmd_callback(const void * msgin){
 
 // --------------------- Subsribers Setup Functions ---------------------
 void leg_cmd_sub_setup(){
-  static int16_t memory_buffer[12]; 
-  legs_command.data.capacity = 12;
+  static int16_t memory_buffer[13]; 
+  legs_command.data.capacity = 13;
   legs_command.data.data = memory_buffer;
   legs_command.data.size = 0;
 
@@ -161,8 +166,8 @@ void leg_cmd_sub_setup(){
 }
 
 void upperbody_cmd_sub_setup(){
-  static int16_t memory_buffer1[7]; 
-  upperbody_command.data.capacity = 7;
+  static int16_t memory_buffer1[8]; 
+  upperbody_command.data.capacity = 8;
   upperbody_command.data.data = memory_buffer1;
   upperbody_command.data.size = 0;
 
