@@ -1,7 +1,9 @@
 import threading
 from PyQt6.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QInputDialog, QMessageBox
+    QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QInputDialog, QMessageBox,
+    QSizePolicy
 )
+from PyQt6.QtGui import QFont, QFontMetrics
 import json
 from collections import defaultdict
 import rclpy
@@ -30,7 +32,7 @@ class jsonGUI(QWidget):
         self.filename = "data.json"
         self.load_data()
         # delay between actions when doing "Do All"
-        self.do_all_delay = 2
+        self.do_all_delay = 1.3
         self.initLayout()
         self.node = rclpy.create_node("jsonGUI")
         # Start a dedicated spin thread for this node so the class is self-contained
@@ -101,6 +103,9 @@ class jsonGUI(QWidget):
             seq_layout.addWidget(toggle_btn)
             seq_label = QLabel(seq_name)
             seq_label.setStyleSheet("font-weight: bold; font-size: 14px;")
+            seq_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+            _f = QFont(); _f.setBold(True); _f.setPointSize(14)
+            seq_label.setMinimumWidth(QFontMetrics(_f).horizontalAdvance(seq_name) + 12)
 
             record_sub_btn = QPushButton("Record Sub-action")
             record_sub_btn.clicked.connect(lambda checked, s=seq_name: self.add_sub_action(s))

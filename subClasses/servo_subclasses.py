@@ -3,7 +3,7 @@ from PyQt6.QtGui import QKeySequence, QPixmap,QPalette,QBrush
 from PyQt6.QtCore import Qt,pyqtSignal,QObject
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Int32,Int16MultiArray,Bool
+from std_msgs.msg import Int32,Int16MultiArray,Bool,UInt8MultiArray
 from rclpy.publisher import Publisher
 
 servo_legs_sub_topic = "/legs_feedback"
@@ -13,9 +13,11 @@ servo_upperbody_sub_topic = "/upperbody_feedback"
 servo_upperbody_pub_topic = "/upperbody_command"
 Upperbody = "Upperbody"
 torque_pub_topic = "/torque_command"
+torque_feedback_sub_topic = "/torque_feedback"
 
 class ServoControlROSNode(Node, QObject):
     angles_callback_signal = pyqtSignal(str, list)
+    torque_feedback_signal = pyqtSignal(int)
     def __init__(self):
         # must run rclpy.init() before it, here we run it in name == main
         Node.__init__(self, 'servo_gui_ros_node')
@@ -46,6 +48,12 @@ class ServoControlROSNode(Node, QObject):
             servo_upperbody_pub_topic,
             10
         )
+        self.torque_feedback_sub = self.create_subscription(
+            UInt8MultiArray,
+            torque_feedback_sub_topic,
+            self.torque_feedback_callback,
+            10
+        )
         self.torque_pub = self.create_publisher(
             Bool,torque_pub_topic,10
         )
@@ -70,6 +78,9 @@ class ServoControlROSNode(Node, QObject):
     
     def upperbody_callback(self, msg: Int16MultiArray):
         self.angles_callback_signal.emit(Upperbody,msg.data)
+    
+    def torque_feedback_callback(self, msg: UInt8MultiArray):
+        self.torque_feedback_signal.emit(msg.data[0])
 
     def publish_legs_angles(self,num:list[int]):
         msg = Int16MultiArray()
@@ -213,9 +224,10 @@ class servo_control_subWidget(QWidget):
     
 class torque_control_subWidget(QWidget):
     parent = None
+    toggle_requested = pyqtSignal()
     def __init__(self,toggle_key,name=None):
         super().__init__(torque_control_subWidget.parent) 
-        self.torque_lock_status = True
+        self.torque_lock_status = None
         self.toggle_key = toggle_key
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self.setStyleSheet("""
@@ -231,6 +243,10 @@ class torque_control_subWidget(QWidget):
                 background: rgb(255, 0, 0);
             }
 
+            QWidget[state="gray"] {
+                background: rgb(128, 128, 128);
+            }
+
             QLabel {
                 color: white;
                 font-size: 20px;
@@ -243,33 +259,22 @@ class torque_control_subWidget(QWidget):
             }
             """)
         self.setFixedWidth(170)
-        if self.torque_lock_status:
-            self.turn_green()
-        else:
-            self.turn_red() 
+        self.turn_gray()
         self.vlayout = QVBoxLayout(self)
         self.vlayout.setContentsMargins(3,10,3,10)
         self.vlayout.setSpacing(0)
         self.torque_lock_label = QLabel("Torque Lock")
 
-        self.torque_lock_status_label = QLabel('On' if self.torque_lock_status else 'Off')
+        self.torque_lock_status_label = QLabel('None')
 
         self.torque_lock_label.setAlignment(Qt.AlignmentFlag.AlignCenter)        
         self.torque_lock_status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)        
         self.toggle_btn = QPushButton(f"Toggle with {toggle_key}",self)
         # Connect logic (Signals & Slots)
-        self.toggle_btn.clicked.connect(self.toggle_torque)
+        self.toggle_btn.clicked.connect(self.toggle_requested.emit)
         self.vlayout.addWidget(self.torque_lock_label)
         self.vlayout.addWidget(self.torque_lock_status_label)
         self.vlayout.addWidget(self.toggle_btn)
-
-    def toggle_torque(self):
-        self.torque_lock_status = not self.torque_lock_status
-        self.torque_lock_status_label.setText("On" if self.torque_lock_status else "Off")
-        if self.torque_lock_status:
-            self.turn_green()
-        else:
-            self.turn_red()
 
     def turn_green(self):
         self.setProperty("state", "green")
@@ -280,6 +285,30 @@ class torque_control_subWidget(QWidget):
         self.setProperty("state", "red")
         self.style().unpolish(self)
         self.style().polish(self)
+
+    def turn_gray(self):
+        self.setProperty("state", "gray")
+        self.style().unpolish(self)
+        self.style().polish(self)
+
+    def set_torque_state(self, state):
+        """Set torque state: None (gray), True (green), or False (red)"""
+        self.torque_lock_status = state
+        if state is None:
+            self.torque_lock_status_label.setText('None')
+            self.turn_gray()
+        elif state:
+            self.torque_lock_status_label.setText('On')
+            self.turn_green()
+        else:
+            self.torque_lock_status_label.setText('Off')
+            self.turn_red()
+
+    def set_torque_timeout(self):
+        """Display timeout message when no feedback received for 5+ seconds."""
+        self.torque_lock_status = None
+        self.torque_lock_status_label.setText('No reading\nreceived for\npast 5 seconds')
+        self.turn_gray()
 
 #can be much better but good enough for now
 def return_servo_subWidgets_positions(bg:QPixmap)->dict[int,tuple[int,int]]:
@@ -308,11 +337,12 @@ def return_servo_subWidgets_positions(bg:QPixmap)->dict[int,tuple[int,int]]:
     x15 = x11
     x16 = -shift17-servo_widget_width
     x17 = shift17
+    x18 = x5
     x19 = shift19
     x20 = x5+20
     x21 = -x20-servo_widget_width
                                                             #servo 18 not implemented in low level
-    x_shifts = [x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,x17,0,x19,x20,x21]
+    x_shifts = [x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,x17,x18,x19,x20,x21]
 
     y0  = 140
     y1  = 136
@@ -331,10 +361,11 @@ def return_servo_subWidgets_positions(bg:QPixmap)->dict[int,tuple[int,int]]:
     y14 = y9
     y15 = y10
     y16 = y17 = 255
+    y18 = y5
     y19 = 175
     y20 = y12
     y21 = y7
-    y_values = [y0,y1,y2,y3,y4,y5,y6,y7,y8,y9,y10,y11,y12,y13,y14,y15,y16,y17,0,y19,y20,y21]
+    y_values = [y0,y1,y2,y3,y4,y5,y6,y7,y8,y9,y10,y11,y12,y13,y14,y15,y16,y17,y18,y19,y20,y21]
     
     # combine into dict
     positions = {i: (centerx + x_shifts[i], y_values[i]) for i in range(len(x_shifts))}

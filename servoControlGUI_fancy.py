@@ -1,9 +1,10 @@
 from subClasses.servo_subclasses import *
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QSlider, QSpinBox
-from PyQt6.QtCore import QRect,Qt,QObject,pyqtSignal
+from PyQt6.QtCore import QRect,Qt,QObject,pyqtSignal,QTimer
 from PyQt6.QtGui import QKeySequence, QPixmap,QPalette,QBrush
 import sys
 import threading
+import time
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Int32,Int16MultiArray,Bool
@@ -19,7 +20,7 @@ command_array(name = Legs,
               pub_type=Int16MultiArray)
 
 command_array(name = Upperbody,
-              ids_array = [0, 1, 2, 3, 4, 5, 19],
+              ids_array = [0, 1, 2, 3, 4, 18, 19],
               hotkey_array = ['a','s','d','f','g','h','j'],
               pub_topic=servo_upperbody_pub_topic,
               pub_type=Int16MultiArray)
@@ -50,8 +51,15 @@ class servoGUI(QWidget):
         self.ros_node = ServoControlROSNode()
         # step increment for servo changes (0-90)
         self.step = 10
+        # torque feedback timeout tracking
+        self.last_torque_feedback_time = None
         self.initlayout()
         self.place_servoSubwidgets()
+        # Setup timeout checker timer
+        self.torque_timeout_timer = QTimer(self)
+        self.torque_timeout_timer.setInterval(1000)  # check every second
+        self.torque_timeout_timer.timeout.connect(self.check_torque_timeout)
+        self.torque_timeout_timer.start()
         self.ros_thread = threading.Thread(
         target=ros_spin,
         args=(self.ros_node,),
@@ -95,7 +103,9 @@ class servoGUI(QWidget):
         xTorque,Ytorque = 50,25
         self.torque_lock_widget = torque_control_subWidget(torque_hotkey)
         self.torque_lock_widget.move(xTorque,Ytorque)
+        self.torque_lock_widget.toggle_requested.connect(self.toggle_torque)
         self.ros_node.angles_callback_signal.connect(self.handle_angles_callback)
+        self.ros_node.torque_feedback_signal.connect(self.handle_torque_feedback)
         # Step control slider + spinbox
         self.step_label = QLabel(f"Step: {self.step}", parent=self)
         self.step_slider = QSlider(Qt.Orientation.Horizontal, parent=self)
@@ -149,6 +159,28 @@ class servoGUI(QWidget):
         for i, id in enumerate(all_commands_dict[name].ids_array):
             self.servo_control_subWidgets_dict[id].set_angle(angles_list[i])
 
+    def check_torque_timeout(self):
+        """Check if torque feedback has timed out (no messages for 5+ seconds)."""
+        if self.last_torque_feedback_time is None:
+            # No messages received yet, nothing to check
+            return
+        
+        elapsed = time.time() - self.last_torque_feedback_time
+        if elapsed > 5.0:
+            self.torque_lock_widget.set_torque_timeout()
+
+    def handle_torque_feedback(self, torque_state: int):
+        """Handle torque feedback from ROS node and update GUI widget.
+        
+        Args:
+            torque_state: Integer value (0 or 1) from ROS feedback
+        """
+        # Record timestamp of this feedback message
+        self.last_torque_feedback_time = time.time()
+        # Convert int to bool: 0 -> False, 1 -> True
+        torque_bool = bool(torque_state)
+        self.torque_lock_widget.set_torque_state(torque_bool)
+
     def get_all_legs_angles(self):
         try:
             return [int(self.servo_control_subWidgets_dict[id].get_angle()) for id in all_commands_dict[Legs].ids_array]
@@ -170,6 +202,11 @@ class servoGUI(QWidget):
             print(f"Error getting {command_array.name} angles: {e}, check that the angles are being read and are not None")
             return False
 
+    def toggle_torque(self):
+        new_state = not self.torque_lock_widget.torque_lock_status
+        self.ros_node.publish_torque(new_state)
+        print(f"Torque Lock: {new_state}")
+
     def keyPressEvent(self,event):
         #always returns higher case
         key_pressed = QKeySequence(event.key()).toString().lower()
@@ -181,9 +218,7 @@ class servoGUI(QWidget):
             return
         
         if key_pressed == self.torque_lock_widget.toggle_key:
-            self.torque_lock_widget.toggle_torque()
-            self.ros_node.publish_torque(self.torque_lock_widget.torque_lock_status)
-            print(f"Torque Lock: {self.torque_lock_widget.torque_lock_status}")
+            self.toggle_torque()
             
         for servo_widget in self.servo_control_subWidgets_dict.values():            
             #note its is known that the aligning the axis correctly
