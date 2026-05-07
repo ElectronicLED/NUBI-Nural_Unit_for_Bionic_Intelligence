@@ -2,7 +2,7 @@ import argparse
 import os
 import pickle
 from importlib import metadata
-
+import numpy as np
 import torch
 
 try:
@@ -18,11 +18,14 @@ from rsl_rl.runners import OnPolicyRunner
 
 import genesis as gs
 from nubiv6_env import NubiEnv
+from action_logger import ActionLogger
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-e", "--exp_name", type=str, default="time_aware_PID")
     parser.add_argument("--ckpt", type=int, default=1600)
+    parser.add_argument("--log_actions", action="store_true", help="Enable action logging")
+    parser.add_argument("--max_steps", type=int, default=None, help="Maximum steps to run (None = infinite)")
     args = parser.parse_args()
 
     gs.init()
@@ -46,6 +49,19 @@ def main():
     runner.load(resume_path)
     policy = runner.get_inference_policy(device=gs.device)
 
+    # Initialize action logger if enabled
+    logger = None
+    if args.log_actions:
+        logger = ActionLogger()
+        logger.start_episode(metadata={
+            "exp_name": args.exp_name,
+            "ckpt": args.ckpt,
+            "env_cfg": str(env_cfg),
+            "obs_cfg": str(obs_cfg),
+            "reward_cfg": str(reward_cfg),
+            "command_cfg": str(command_cfg),
+        })
+        print("Action logging enabled")
 
     max_torques = [0.0] * len(env.get_joint_torques()[0])
 
@@ -53,10 +69,15 @@ def main():
     # feet_names = ["RFoot", "LFoot"]  # replace with your actual link names
     # feet_indices = [env.robot.get_link(name).idx for name in feet_names]
 
-
     obs, _ = env.reset()
+    step_count = 0
+
     with torch.no_grad():
         while True:
+            if args.max_steps and step_count >= args.max_steps:
+                print(f"Reached max steps: {args.max_steps}")
+                break
+
             # env.commands[0, 0] = 0.0  # Forward velocity
             # env.commands[0, 1] = 0.0  # Lateral velocity
             # env.commands[0, 2] = 0.0  # Yaw rate
@@ -75,7 +96,26 @@ def main():
             
             
             actions = policy(obs)
+            print("Actions:", np.rad2deg(list(actions.cpu().numpy()[0]* env_cfg["action_scale"])))
+
+            # Log step if logging is enabled
+            if logger:
+                logger.log_step(
+                    obs=obs,
+                    action=actions,
+                    reward=None,  # Reward not available in eval mode
+                    done=False,
+                    info={"step": step_count}
+                )
+            
             obs, rews, dones, infos = env.step(actions)
+            step_count += 1
+
+            if step_count % 100 == 0:
+                print(f"Step: {step_count}")
+            if logger and (step_count >= args.max_steps):
+                print(f"Reached max steps: {args.max_steps}")
+                break
             
             # print(env.get_feet_pos())
             # RLeg , LLeg = env.get_feet_height()
@@ -87,8 +127,14 @@ def main():
             # LFoot_pos = links_pos[13].cpu().numpy()  # shape: (num_feet, 3)
             # print(LFoot_pos,RFoot_pos)
 
+    # Save logged episode if logging was enabled
+    if logger:
+        filename = f"{args.exp_name}_ckpt{args.ckpt}_steps{step_count}.pkl"
+        logger.save_episode(filename)
+        print(f"Episode logged with {step_count} steps")
 
 if __name__ == "__main__":
     main()
 
-# python3 nubiv6_eval.py -e JR_P254_D15 --ckpt 800
+# python3 nubiv6_eval.py -e kind_policy_fixed --ckpt 1000
+# python3 nubiv6_eval.py -e trapezoidel_200ms --ckpt 200 --log_actions --max_steps 1000
