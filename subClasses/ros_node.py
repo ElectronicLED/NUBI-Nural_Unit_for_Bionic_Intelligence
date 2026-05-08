@@ -2,6 +2,13 @@ from PyQt6.QtCore import pyqtSignal, QObject
 from rclpy.node import Node
 from std_msgs.msg import Int16MultiArray
 from rclpy.publisher import Publisher
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
+
+_BE_QOS = QoSProfile(
+    reliability=ReliabilityPolicy.BEST_EFFORT,
+    history=HistoryPolicy.KEEP_LAST,
+    depth=1
+)
 
 servo_legs_sub_topic      = "/legs_feedback"
 servo_legs_pub_topic      = "/legs_command"
@@ -18,6 +25,7 @@ CMD_TORQUE_SET     = 2   # torque change  (data[1]: 1=ON, 0=OFF)
 CMD_REQUEST_TORQUE = 3   # request torque status array
 CMD_RESET_ERROR    = 6   # reset error
 CMD_REINITIALIZE   = 7   # reinitialize all servos (reboot + clearError + ACK + torqueON)
+CMD_MOVE_ONE       = 8   # move single Herkulex servo: data[1]=servo_id, data[2]=angle(deg), data[3]=play_time(ms)
 
 # Index protocol constants (STM -> PC via status_response, data[0])
 RESP_STATUS_ARRAY  = 1   # status array  (data[1..40] = 20x[statusError, statusDetail])
@@ -38,22 +46,22 @@ class ServoControlROSNode(Node, QObject):
         self._dynamic_publishers: dict[str, Publisher] = {}
 
         self.legs_sub = self.create_subscription(
-            Int16MultiArray, servo_legs_sub_topic, self.legs_callback, 10)
+            Int16MultiArray, servo_legs_sub_topic, self.legs_callback, _BE_QOS)
         self.legs_pub = self.create_publisher(
-            Int16MultiArray, servo_legs_pub_topic, 10)
+            Int16MultiArray, servo_legs_pub_topic, _BE_QOS)
 
         self.upperbody_sub = self.create_subscription(
-            Int16MultiArray, servo_upperbody_sub_topic, self.upperbody_callback, 10)
+            Int16MultiArray, servo_upperbody_sub_topic, self.upperbody_callback, _BE_QOS)
         self.upperbody_pub = self.create_publisher(
-            Int16MultiArray, servo_upperbody_pub_topic, 10)
+            Int16MultiArray, servo_upperbody_pub_topic, _BE_QOS)
 
         # Unified command publisher (PC -> STM)
         self.status_pub = self.create_publisher(
-            Int16MultiArray, status_command_topic, 10)
+            Int16MultiArray, status_command_topic, _BE_QOS)
 
         # Unified response subscriber (STM -> PC)
         self.status_sub = self.create_subscription(
-            Int16MultiArray, status_response_topic, self.status_response_callback, 10)
+            Int16MultiArray, status_response_topic, self.status_response_callback, _BE_QOS)
 
     # Publishers
     def publish_generic(self, topic_name: str, data_type: type, msg) -> None:
@@ -102,6 +110,10 @@ class ServoControlROSNode(Node, QObject):
     def reinitialize_servos(self):
         """Send reinitialize command (index 7): STM reboots all servos then runs initialize()."""
         self._send_status_command([CMD_REINITIALIZE])
+
+    def move_one_servo(self, servo_id: int, angle: int, play_time: int = 500):
+        """Move a single Herkulex servo (index 8). data[1]=servo_id, data[2]=angle, data[3]=play_time."""
+        self._send_status_command([CMD_MOVE_ONE, servo_id, angle, play_time])
 
     # Subscribers
     def legs_callback(self, msg: Int16MultiArray):

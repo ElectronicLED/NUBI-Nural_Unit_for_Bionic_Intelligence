@@ -9,7 +9,14 @@ from collections import defaultdict
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Bool,Int16MultiArray
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 import time
+
+_BE_QOS = QoSProfile(
+    reliability=ReliabilityPolicy.BEST_EFFORT,
+    history=HistoryPolicy.KEEP_LAST,
+    depth=1
+)
 import re
 
 def inline_lists(json_text):
@@ -43,19 +50,19 @@ class jsonGUI(QWidget):
         )
         self.ros_thread.start()
         # --- Publishers ---
-        self.publisher_legs = self.node.create_publisher(Int16MultiArray,"legs_command",10)
-        self.publisher_upperbody = self.node.create_publisher(Int16MultiArray,"upperbody_command",10)
+        self.publisher_legs = self.node.create_publisher(Int16MultiArray,"legs_command",_BE_QOS)
+        self.publisher_upperbody = self.node.create_publisher(Int16MultiArray,"upperbody_command",_BE_QOS)
         self.legs_sub = self.node.create_subscription(
             Int16MultiArray,
             "legs_feedback",
             self.legs_feedback_callback,
-            10
+            _BE_QOS
         )
         self.arms_sub = self.node.create_subscription(
             Int16MultiArray,
             "upperbody_feedback",
             self.arms_feedback_callback,
-            10
+            _BE_QOS
         )
 
     def legs_feedback_callback(self,angles_list:Int16MultiArray):

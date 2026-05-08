@@ -506,6 +506,11 @@ void HerkulexClass::actionAll(int pTime)
     delay(1);
 	readData(13);
 
+	// 3588 is a sentinel: (3588-512)*0.325 = 1004.7 → int16 = 1004
+	// Signals servo did not respond at all (unpowered / disconnected).
+	// Distinct from 3586 → 999 which means bytes received but checksum failed (noise).
+	if (_timed_out) return 3588;
+
         	
 	pSize = dataEx[2];           // 3.Packet size 7-58
 	pID   = dataEx[3];           // 4. Servo ID
@@ -521,8 +526,8 @@ void HerkulexClass::actionAll(int pTime)
     ck1=checksum1(data,lenghtString);	//6. Checksum1
 	ck2=checksum2(ck1);					//7. Checksum2
 
-    // 3586 is a sentinel: (3586-512)*0.325 = 999.05, so getAngle() returns 999
-	// which signals a checksum error to callers without needing an extra if-branch.
+    // 3586 is a sentinel: (3586-512)*0.325 = 999.05 → int16 = 999
+	// so getAngle() returns 999 which signals a checksum error to callers without needing an extra if-branch.
 	if (ck1 != dataEx[5]) return 3586;
 	if (ck2 != dataEx[6]) return 3586;
 
@@ -1001,35 +1006,19 @@ void HerkulexClass::readData(int size)
 	int i = 0;
     int beginsave=0;
     int Time_Counter=0;
-  //   switch (port)
-	// {
-	// case SSerial:
 
-  //       while((SwSerial.available() < size) & (Time_Counter < TIME_OUT)){
-  //       		Time_Counter++;
-  //       		delayMicroseconds(1000);  //wait 1 millisecond for 10 times
-	// 	}
-        	
-	// 	while (SwSerial.available() > 0){
-	// 		byte inchar = (byte)SwSerial.read();
-	// 		if ( (inchar == 0xFF) & ((byte)SwSerial.peek() == 0xFF) ){
-	// 				beginsave=1; 
-	// 				i=0; 				 // if found new header, begin again
-	// 		}
-	// 		if (beginsave==1 && i<size) {
-	// 			   dataEx[i] = inchar;
-	// 			   i++;
-	// 		}
-	// 	}
-	// 	SwSerial.flush();
-	// 	break;
-	
-	// #if defined (__AVR_ATmega1280__) || defined (__AVR_ATmega128__) || defined (__AVR_ATmega2560__)
-	// case HSerial1:
+		_timed_out = false;  // assume success until proven otherwise
+
 		while((Serial1.available() < size) & (Time_Counter < TIME_OUT)){
         		Time_Counter++;
         		delayMicroseconds(1000);
-		}      	
+		}
+
+		if (Time_Counter >= TIME_OUT) {
+			_timed_out = true;   // servo never responded — unpowered or disconnected
+			return;
+		}
+
 		while (Serial1.available() > 0){
       		byte inchar = (byte)Serial1.read();
 			//printHexByte(inchar);

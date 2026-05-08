@@ -10,11 +10,13 @@ class servo_control_subWidget(QWidget):
     update_angle_signal    = pyqtSignal(object, int)       # (servo_widget, sign)
     position_changed_signal = pyqtSignal(int, int, int)    # (servo_id, abs_x, abs_y)
 
-    def __init__(self, hotkey, id, command_name: str = None, display_name: str = None):
+    def __init__(self, hotkey, id, command_name: str = None, display_name: str = None, show_torque: bool = True):
         super().__init__(servo_control_subWidget.parent)
         self.id           = id
         self.display_name = display_name if display_name is not None else str(id)
-        self.angle        = 0
+        self.angle        = None  # None shows "θ: --" until a real reading arrives
+        self.torque       = None
+        self.show_torque  = show_torque
         self.hotkey       = hotkey
         self.command_name = command_name
         self.name         = command_name   # ergonomic alias
@@ -73,6 +75,7 @@ class servo_control_subWidget(QWidget):
         self.vlayout.addWidget(self.det_label)
         self.vlayout.addWidget(self.down_btn)
         self._apply_stylesheet()
+        self._refresh_angle_label()
 
     # ── Drag ─────────────────────────────────────────────────────────────────
     def mousePressEvent(self, event):
@@ -111,18 +114,38 @@ class servo_control_subWidget(QWidget):
         self.up_btn.setText(f"{'+' if self.up_btn.text()[0] == '-' else '-'} {self.hotkey}")
 
     def get_angle(self) -> str:
-        return self.angle_label.text()[3:]
+        return str(self.angle) if self.angle is not None else "N"
+
+    def _refresh_angle_label(self) -> None:
+        angle_str = "--" if self.angle is None else str(self.angle)
+        if self.show_torque:
+            torque_str = "--" if self.torque is None else ("On" if self.torque else "Off")
+            self.angle_label.setText(f"θ: {angle_str} | T: {torque_str}")
+        else:
+            self.angle_label.setText(f"θ: {angle_str}")
 
     def set_angle(self, num: int):
         if not isinstance(num, int):
             print(f"Error: angle must be int, got {type(num)}")
             return
-        # 999 is the checksum-error sentinel from the STM (getPosition returns 3586
-        # which maps to ~999 via the angle formula). Skip display, keep last good value.
-        if abs(num) >= 900:
+        # 999 = checksum noise (servo responded, CRC failed) — keep last display silently
+        if abs(num) == 999:
+            return
+        # 1004 = timeout sentinel (servo did not respond = unpowered/disconnected)
+        # Set angle to None so the label shows "θ: --"
+        if abs(num) >= 1000:
+            self.angle = None
+            self.torque = None  # also clear torque — unpowered servo has no torque state
+            self._refresh_angle_label()
             return
         self.angle = num
-        self.angle_label.setText(f"θ: {num}")
+        self._refresh_angle_label()
+
+    def set_torque(self, on: bool) -> None:
+        if not self.show_torque:
+            return
+        self.torque = on
+        self._refresh_angle_label()
 
     def increment(self):
         self.update_angle_signal.emit(self, 1)

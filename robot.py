@@ -1,8 +1,15 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Bool,Int16MultiArray
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 import json
 import time
+
+_BE_QOS = QoSProfile(
+    reliability=ReliabilityPolicy.BEST_EFFORT,
+    history=HistoryPolicy.KEEP_LAST,
+    depth=1
+)
 
 class robot_actions_controller():
     def __init__(self):
@@ -13,8 +20,8 @@ class robot_actions_controller():
         self.node = rclpy.create_node("LAPTOP_NODE")
 
         # --- Publishers ---
-        self.publisher_legs = self.node.create_publisher(Int16MultiArray,"legs_command",10)
-        self.publisher_upperbody = self.node.create_publisher(Int16MultiArray,"upperbody_command",10)
+        self.publisher_legs = self.node.create_publisher(Int16MultiArray,"legs_command",_BE_QOS)
+        self.publisher_upperbody = self.node.create_publisher(Int16MultiArray,"upperbody_command",_BE_QOS)
 
     def default_stance(self):
         upper_cmd =  Int16MultiArray()

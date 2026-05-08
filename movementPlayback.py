@@ -4,7 +4,14 @@ import rclpy
 import threading  # <--- Import threading
 from std_msgs.msg import Int16MultiArray
 from std_msgs.msg import Bool
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 import time
+
+_BE_QOS = QoSProfile(
+    reliability=ReliabilityPolicy.BEST_EFFORT,
+    history=HistoryPolicy.KEEP_LAST,
+    depth=1
+)
 
 # Global variables to store the latest positions
 legs_pos_feedback = [0,0,0,0,0,0,0,0,0,0,0,0]
@@ -15,8 +22,8 @@ def main():
     node = rclpy.create_node("LAPTOP_NODE")
 
     # --- Publishers ---
-    publisher_legs = node.create_publisher(Int16MultiArray,"legs_command",10)
-    publisher_upperbody = node.create_publisher(Int16MultiArray,"upperbody_command",10)
+    publisher_legs = node.create_publisher(Int16MultiArray,"legs_command",_BE_QOS)
+    publisher_upperbody = node.create_publisher(Int16MultiArray,"upperbody_command",_BE_QOS)
     publisher_torque = node.create_publisher(Bool,"torque_command",10)
 
     # --- Callbacks ---
@@ -30,8 +37,8 @@ def main():
 
     # --- Subscribers ---
     # Using a queue size of 1 ensures we don't buffer old data if the thread lags
-    node.create_subscription(Int16MultiArray, "legs_feedback", sub_legs_callback, 1)
-    node.create_subscription(Int16MultiArray, "upperbody_feedback", sub_upperbody_callback, 1)
+    node.create_subscription(Int16MultiArray, "legs_feedback", sub_legs_callback, _BE_QOS)
+    node.create_subscription(Int16MultiArray, "upperbody_feedback", sub_upperbody_callback, _BE_QOS)
 
     # --- Helper Functions ---
     def upperbody_command(arr):

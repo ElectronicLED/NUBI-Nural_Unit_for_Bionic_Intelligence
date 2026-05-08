@@ -23,6 +23,7 @@
 //   3 = request torque status array
 //   6 = reset error
 //   7 = reinitialize servos (reboot all + clearError + ACK + torqueON)
+//   8 = move one servo  data[1]=servo_id  data[2]=angle(deg, int16)  data[3]=play_time(ms)
 // STM -> PC (status_response data[0]):
 //   1 = status array    (data[1..40] = 20 × [statusError, statusDetail])
 //   5 = torque array    (data[1..20] = 20 × torque byte)
@@ -31,6 +32,7 @@
 #define CMD_REQUEST_TORQUE   3
 #define CMD_RESET_ERROR      6
 #define CMD_REINITIALIZE     7
+#define CMD_MOVE_ONE         8
 #define RESP_STATUS_ARRAY    1
 #define RESP_TORQUE_ARRAY    5
 #define STATUS_ARRAY_SIZE     41   // index byte + up to 40 data bytes
@@ -38,8 +40,8 @@
 int n=20;
 
 
-const uint leg_motor_indecies[NUM_LEGS] = {16,6,7,8,10,9,17,11,12,13,15,14};
-const uint upper_motor_indecies[NUM_UPPDERBODY] = {0,1,2,3,4,18,19};
+const uint leg_motor_indecies[NUM_LEGS] = {16,6,7,8,10,9,17,18,12,13,15,14};
+const uint upper_motor_indecies[NUM_UPPDERBODY] = {0,1,2,3,4,11,19};
 // Standard (non-Herkulex) servos — pin order matches upperbody_command.data [7..10]
 const int std_servo_pins[NUM_STD_SERVOS] = {PB13, PB14, PB15, PA8};
 Servo std_servo[NUM_STD_SERVOS];
@@ -158,6 +160,7 @@ void status_cmd_callback(const void * msgin){
     case CMD_REQUEST_TORQUE: action_str = "request torque array";  break;
     case CMD_RESET_ERROR:    action_str = "reset error";            break;
     case CMD_REINITIALIZE:   action_str = "reinitialize servos";    break;
+    case CMD_MOVE_ONE:       action_str = "move one servo";         break;
   }
   snprintf(log_buf, sizeof(log_buf), "[NUBI] received index %d -> %s", (int)idx, action_str);
   debug_log(log_buf);
@@ -218,6 +221,15 @@ void status_cmd_callback(const void * msgin){
     Herkulex.clearError(BROADCAST_ID);
     debug_log("[NUBI] clearError applied");
   }
+  else if(idx == CMD_MOVE_ONE){
+    int16_t servo_id  = status_command.data.data[1];
+    int16_t angle     = status_command.data.data[2];
+    int16_t play_time = status_command.data.data[3];
+    Herkulex.moveOneAngle(servo_id, (float)angle, (int)play_time, LED_BLUE);
+    char mv_buf[64];
+    snprintf(mv_buf, sizeof(mv_buf), "[NUBI] moveOne id=%d angle=%d t=%d", (int)servo_id, (int)angle, (int)play_time);
+    debug_log(mv_buf);
+  }
   else if(idx == CMD_REINITIALIZE){
     debug_log("[NUBI] reinitialize: rebooting all servos...");
     for(int i = 0; i < n; i++){
@@ -243,7 +255,7 @@ void leg_cmd_sub_setup(){
   legs_command.data.data = memory_buffer;
   legs_command.data.size = 0;
 
-  RCCHECK(rclc_subscription_init_default(
+  RCCHECK(rclc_subscription_init_best_effort(
     &leg_command_subscriber,
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int16MultiArray),
@@ -259,7 +271,7 @@ void upperbody_cmd_sub_setup(){
   upperbody_command.data.data = memory_buffer1;
   upperbody_command.data.size = 0;
 
-  RCCHECK(rclc_subscription_init_default(
+  RCCHECK(rclc_subscription_init_best_effort(
     &upperbody_command_subscriber,
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int16MultiArray),
@@ -274,7 +286,7 @@ void status_cmd_sub_setup(){
   status_command.data.data     = status_cmd_buffer;
   status_command.data.size     = 0;
 
-  RCCHECK(rclc_subscription_init_default(
+  RCCHECK(rclc_subscription_init_best_effort(
     &status_command_subscriber,
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int16MultiArray),
@@ -315,13 +327,17 @@ void setup() {
   // We need space for 12 integers
 
   // Create a static buffer to hold the data you want to send
-  static int16_t feedback_buffer[12]; 
+  // Initialised to 1004 (the "no power" sentinel) so the GUI shows "--" for every
+  // servo slot until a real reading arrives. See plans/no-power-sentinel-init.md
+  static int16_t feedback_buffer[12];
+  for(int i = 0; i < 12; i++) feedback_buffer[i] = 1004;
   // Link the buffer to the message struct
   legs_feedback.data.capacity = 12;
   legs_feedback.data.data = feedback_buffer;
   legs_feedback.data.size = 12; // IMPORTANT: Tell ROS how many items you are sending
 
-  static int16_t feedback_buffer1[7]; 
+  static int16_t feedback_buffer1[7];
+  for(int i = 0; i < 7; i++) feedback_buffer1[i] = 1004;
   // Link the buffer to the message struct
   upperbody_feedback.data.capacity = 7;
   upperbody_feedback.data.data = feedback_buffer1;
@@ -334,19 +350,19 @@ void setup() {
   status_response.data.data     = status_resp_buffer;
   status_response.data.size     = STATUS_ARRAY_SIZE;
 
-  RCCHECK(rclc_publisher_init_default(
+  RCCHECK(rclc_publisher_init_best_effort(
     &leg_pos_feedback_publisher,
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int16MultiArray),
     "legs_feedback"));
 
-  RCCHECK(rclc_publisher_init_default(
+  RCCHECK(rclc_publisher_init_best_effort(
     &upperbody_pos_feedback_publisher,
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int16MultiArray),
     "upperbody_feedback"));
 
-  rclc_publisher_init_default(
+  rclc_publisher_init_best_effort(
     &status_response_publisher,
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int16MultiArray),
@@ -377,6 +393,7 @@ void setup() {
     delay(50);           // increased: servo needs ~40ms to come back after reboot
   }
   delay(1500);           // wait for ALL servos to fully boot before initialize
+  
   Herkulex.initialize(); //initialize motors: clearError + ACK(1) + torqueON
   delay(200);
   // Second clearError+torqueON pass to recover any Break-mode servos
@@ -397,9 +414,14 @@ void loop() {
   {
     unsigned long t0 = micros();
     float leg_angle = Herkulex.getAngle(leg_motor_indecies[leg_feedback_index]);
-    if (leg_angle < 900.0f) {  // 999 = checksum error sentinel, skip
+    if (leg_angle < 900.0f) {
+      // Valid reading — update buffer
       legs_feedback.data.data[leg_feedback_index] = (int16_t)leg_angle;
+    } else if (leg_angle >= 1002.0f) {
+      // Timeout sentinel (1004) — servo unpowered/disconnected, propagate so GUI shows "--"
+      legs_feedback.data.data[leg_feedback_index] = 1004;
     }
+    // 999 (checksum noise) falls through: buffer keeps its last good value silently
     unsigned long el = micros() - t0;
     unsigned long now_ms = millis();
     if (now_ms - last_pos_log_ms >= 1000) {
@@ -415,9 +437,14 @@ void loop() {
   {
     unsigned long t0 = micros();
     float upper_angle = Herkulex.getAngle(upper_motor_indecies[upper_feedback_index]);
-    if (upper_angle < 900.0f) {  // 999 = checksum error sentinel, skip
+    if (upper_angle < 900.0f) {
+      // Valid reading — update buffer
       upperbody_feedback.data.data[upper_feedback_index] = (int16_t)upper_angle;
+    } else if (upper_angle >= 1002.0f) {
+      // Timeout sentinel (1004) — servo unpowered/disconnected, propagate so GUI shows "--"
+      upperbody_feedback.data.data[upper_feedback_index] = 1004;
     }
+    // 999 (checksum noise) falls through: buffer keeps its last good value silently
     unsigned long el = micros() - t0;
     unsigned long now_ms = millis();
     if (now_ms - last_pos_log_ms >= 1000) {

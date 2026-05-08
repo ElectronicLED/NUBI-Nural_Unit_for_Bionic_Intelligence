@@ -137,6 +137,10 @@ private:
 
   int port;
   
+  // Set by readData(): true if the read timed out (servo did not respond = unpowered/disconnected),
+  // false if bytes were received (servo responded, even if checksum failed).
+  bool _timed_out;
+  
   int pSize;
   int pID;
   int cmd;

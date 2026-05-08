@@ -157,7 +157,8 @@ class servoGUI(QWidget):
                     hotkey = str(servo_key),
                     id = servo_id,
                     command_name = command_array.name,
-                    display_name = STD_SERVO_DISPLAY.get(servo_id))
+                    display_name = STD_SERVO_DISPLAY.get(servo_id),
+                    show_torque = servo_id not in STD_SERVO_IDS)
                 self.servo_control_subWidgets_dict[servo_id].update_angle_signal.connect(
                     self.update_servo_position)
                 self.servo_control_subWidgets_dict[servo_id].position_changed_signal.connect(
@@ -171,6 +172,8 @@ class servoGUI(QWidget):
         self.torque_lock_widget = torque_control_subWidget(torque_hotkey)
         self.torque_lock_widget.move(xTorque,Ytorque)
         self.torque_lock_widget.toggle_requested.connect(self.toggle_torque)
+        self.torque_lock_widget.set_on_requested.connect(self.set_torque_on)
+        self.torque_lock_widget.set_off_requested.connect(self.set_torque_off)
         # Error clear button — directly below the torque widget
         self.error_clear_btn = QPushButton("Clear Errors", parent=self)
         self.error_clear_btn.setStyleSheet(
@@ -416,6 +419,10 @@ class servoGUI(QWidget):
         # Use servo 0 as representative state (all servos toggled together)
         torque_bool = bool(torque_list[0])
         self.torque_lock_widget.set_torque_state(torque_bool)
+        # Update each servo subwidget's individual torque indicator
+        for servo_id, widget in self.servo_control_subWidgets_dict.items():
+            if servo_id < len(torque_list):
+                widget.set_torque(bool(torque_list[servo_id]))
 
     def check_torque_timeout(self):
         # Replaced by polling; kept as no-op for compatibility
@@ -498,8 +505,7 @@ class servoGUI(QWidget):
             print(f"Error getting {command_array.name} angles: {e}, check that the angles are being read and are not None")
             return False
 
-    def toggle_torque(self):
-        new_state = not self.torque_lock_widget.torque_lock_status
+    def _send_torque(self, new_state: bool):
         self.torque_lock_widget.turn_blue()   # visual feedback: request sent
         self.ros_node.publish_torque(new_state)
         print(f"Torque Lock: {new_state}")
@@ -508,6 +514,16 @@ class servoGUI(QWidget):
         self._torque_response_count = 0
         self._torque_timeout_timer.stop()
         self._torque_verify_timer.start()
+
+    def toggle_torque(self):
+        new_state = not self.torque_lock_widget.torque_lock_status
+        self._send_torque(new_state)
+
+    def set_torque_on(self):
+        self._send_torque(True)
+
+    def set_torque_off(self):
+        self._send_torque(False)
 
     def keyPressEvent(self,event):
         #always returns higher case
@@ -600,6 +616,17 @@ class servoGUI(QWidget):
         if servo_widget.id in STD_SERVO_IDS:
             servo_widget.set_angle(new_servo_angle)
 
+        # Herkulex servos: move only this one servo via CMD_MOVE_ONE (index 8)
+        # STD servos still need the full array published on their topic
+        if servo_widget.id not in STD_SERVO_IDS:
+            self.ros_node.move_one_servo(
+                servo_widget.id,
+                new_servo_angle,
+                getattr(self, 'action_time', 500)
+            )
+            print(f"move_one_servo id={servo_widget.id} angle={new_servo_angle}")
+            return
+
         pub_topic = getattr(command, 'pub_topic', None)
         pub_type = getattr(command, 'pub_type', None)
         if not pub_topic or not pub_type:
@@ -607,12 +634,7 @@ class servoGUI(QWidget):
             return
 
         msg = pub_type()
-        # std_msgs messages used here all expose a `.data` field
-        # Append action_time as the last element for legs and upperbody commands
-        if command.name in (Legs, Upperbody):
-            msg.data = all_angles + [getattr(self, 'action_time', 1000)]
-        else:
-            msg.data = all_angles
+        msg.data = all_angles + [getattr(self, 'action_time', 1000)]
         self.ros_node.publish_generic(pub_topic, pub_type, msg)
         print(f"Published {command.name} angles: {msg.data}")
 

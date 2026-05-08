@@ -1,10 +1,12 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel
 from PyQt6.QtCore import Qt, pyqtSignal
 
 
 class torque_control_subWidget(QWidget):
     parent           = None
     toggle_requested = pyqtSignal()
+    set_on_requested  = pyqtSignal()
+    set_off_requested = pyqtSignal()
 
     def __init__(self, toggle_key, name=None):
         super().__init__(torque_control_subWidget.parent)
@@ -35,9 +37,23 @@ class torque_control_subWidget(QWidget):
         self.toggle_btn = QPushButton(f"Toggle with {toggle_key}", self)
         self.toggle_btn.clicked.connect(self.toggle_requested.emit)
 
+        self.on_btn = QPushButton("ON", self)
+        self.on_btn.setStyleSheet("background: rgb(220, 120, 0); color: white; font-size: 20px; font-weight: bold;")
+        self.on_btn.clicked.connect(self.set_on_requested.emit)
+
+        self.off_btn = QPushButton("OFF", self)
+        self.off_btn.setStyleSheet("background: rgb(220, 120, 0); color: white; font-size: 20px; font-weight: bold;")
+        self.off_btn.clicked.connect(self.set_off_requested.emit)
+
+        self.on_off_row = QHBoxLayout()
+        self.on_off_row.setSpacing(4)
+        self.on_off_row.addWidget(self.on_btn)
+        self.on_off_row.addWidget(self.off_btn)
+
         self.vlayout.addWidget(self.torque_lock_label)
         self.vlayout.addWidget(self.torque_lock_status_label)
         self.vlayout.addWidget(self.toggle_btn)
+        self.vlayout.addLayout(self.on_off_row)
 
     # ── Colour helpers ────────────────────────────────────────────────────────
     def _set_state(self, state: str):

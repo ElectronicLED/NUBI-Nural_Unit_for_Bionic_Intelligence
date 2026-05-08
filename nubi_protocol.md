@@ -18,6 +18,9 @@ INDEX  ACTION                  PAYLOAD
                                         waits 1500ms, then runs initialize()
                                         (clearError + ACK(1) + torqueON) plus
                                         a second clearError+torqueON pass
+  8    Move one servo          data[1]: servo_id (0-19)
+                                data[2]: angle in degrees (int16, -160..160)
+                                data[3]: play_time in ms (0-2856)
 
 ## STM -> PC  (/status_response)
 
