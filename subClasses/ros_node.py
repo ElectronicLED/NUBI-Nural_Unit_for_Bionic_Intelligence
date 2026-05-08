@@ -17,6 +17,7 @@ CMD_REQUEST_STATUS = 0   # request status array
 CMD_TORQUE_SET     = 2   # torque change  (data[1]: 1=ON, 0=OFF)
 CMD_REQUEST_TORQUE = 3   # request torque status array
 CMD_RESET_ERROR    = 6   # reset error
+CMD_REINITIALIZE   = 7   # reinitialize all servos (reboot + clearError + ACK + torqueON)
 
 # Index protocol constants (STM -> PC via status_response, data[0])
 RESP_STATUS_ARRAY  = 1   # status array  (data[1..40] = 20x[statusError, statusDetail])
@@ -97,6 +98,10 @@ class ServoControlROSNode(Node, QObject):
     def reset_error(self):
         """Send reset error command (index 6)."""
         self._send_status_command([CMD_RESET_ERROR])
+
+    def reinitialize_servos(self):
+        """Send reinitialize command (index 7): STM reboots all servos then runs initialize()."""
+        self._send_status_command([CMD_REINITIALIZE])
 
     # Subscribers
     def legs_callback(self, msg: Int16MultiArray):

@@ -72,6 +72,8 @@ class jsonGUI(QWidget):
         self.main_vlayout.setContentsMargins(2, 2, 2, 2)
         self.current_arms_angles = [0, 0, 0, 0, 0, 0, 0]
         self.current_legs_angles = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        self.action_time = 1000  # ms default when running standalone
+        self.action_time_source = None  # callable set by parent GUI to provide live action time
         self.refresh_gui()
         # Big "+" button at the end to create a new main action
         self.setLayout(self.main_vlayout)
@@ -138,7 +140,7 @@ class jsonGUI(QWidget):
         # Save button below everything
         save_btn = QPushButton("💾 Save Changes")
         save_btn.clicked.connect(self.save_changes)
-        
+
         self.main_vlayout.addWidget(add_main_btn)
         self.main_vlayout.addWidget(save_btn)
 
@@ -211,15 +213,25 @@ class jsonGUI(QWidget):
         base_name = ''.join(filter(lambda c: not c.isdigit(), item_name))
         # Some items in sequences have the trailing 0 added artificially, adjust
         json_key = item_name if item_name in self.data else base_name
-        upper = self.data[json_key]['upper_body']
-        lower = self.data[json_key]['lower_body']
-        print(f"Action: {json_key}")
+        pose = self.data[json_key]
+        upper = list(pose['upper_body'])   # 7 Herkulex angles
+        lower = list(pose['lower_body'])   # 12 leg angles
+        # Use per-pose action_time if stored, otherwise use live source or fallback default
+        default_t = self.action_time_source() if callable(self.action_time_source) else self.action_time
+        t = int(pose.get('action_time', default_t))
+        # STM upperbody_command expects 12 elements:
+        #   [0..6] = Herkulex angles, [7..10] = std servo angles (0 = no change), [11] = playtime
+        # STM legs_command expects 13 elements:
+        #   [0..11] = leg angles, [12] = playtime
+        upper_cmd = Int16MultiArray()
+        lower_cmd = Int16MultiArray()
+        upper = upper + [90, 90, 90, 90, t]
+        lower = lower + [t] 
+        upper_cmd.data = upper    # pad 4 std-servo slots + playtime
+        lower_cmd.data = lower                # append playtime
+        print(f"Action: {json_key}  (t={t}ms)")
         print("Upper Body:", upper)
         print("Lower Body:", lower)
-        upper_cmd =  Int16MultiArray()
-        lower_cmd = Int16MultiArray()
-        upper_cmd.data = upper
-        lower_cmd.data = lower
 
         self.publisher_upperbody.publish(upper_cmd)
         time.sleep(0.1)

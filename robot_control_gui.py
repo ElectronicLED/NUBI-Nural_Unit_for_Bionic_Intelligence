@@ -23,6 +23,8 @@ class robotGUI(QWidget):
         self.initlayout()
 
     def initlayout(self):
+        # Wire jsonGUI to read action time from the servo control GUI spinbox
+        self.jsonGUI.action_time_source = lambda: self.servo_control_gui.action_time
         self.hlayout = QHBoxLayout()
         self.hlayout.addWidget(self.servo_control_gui)
         self.hlayout.addWidget(self.robot_control_buttons)
@@ -52,7 +54,7 @@ if __name__ == "__main__":
     os.environ["QT_SCALE_FACTOR"] = "0.9"
     app = QApplication(sys.argv)
     robot_control_gui= robotGUI()
-    robot_control_gui.show()
+    robot_control_gui.showNormal()
 
     app.exec()
     # Clean up nodes (each GUI class spins its own node thread)

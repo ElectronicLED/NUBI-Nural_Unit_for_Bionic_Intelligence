@@ -22,6 +22,7 @@
 //   2 = torque change  (data[1]: 1=ON, 0=OFF)
 //   3 = request torque status array
 //   6 = reset error
+//   7 = reinitialize servos (reboot all + clearError + ACK + torqueON)
 // STM -> PC (status_response data[0]):
 //   1 = status array    (data[1..40] = 20 × [statusError, statusDetail])
 //   5 = torque array    (data[1..20] = 20 × torque byte)
@@ -29,6 +30,7 @@
 #define CMD_TORQUE_SET       2
 #define CMD_REQUEST_TORQUE   3
 #define CMD_RESET_ERROR      6
+#define CMD_REINITIALIZE     7
 #define RESP_STATUS_ARRAY    1
 #define RESP_TORQUE_ARRAY    5
 #define STATUS_ARRAY_SIZE     41   // index byte + up to 40 data bytes
@@ -155,6 +157,7 @@ void status_cmd_callback(const void * msgin){
     case CMD_TORQUE_SET:     action_str = "torque set";             break;
     case CMD_REQUEST_TORQUE: action_str = "request torque array";  break;
     case CMD_RESET_ERROR:    action_str = "reset error";            break;
+    case CMD_REINITIALIZE:   action_str = "reinitialize servos";    break;
   }
   snprintf(log_buf, sizeof(log_buf), "[NUBI] received index %d -> %s", (int)idx, action_str);
   debug_log(log_buf);
@@ -214,6 +217,20 @@ void status_cmd_callback(const void * msgin){
   else if(idx == CMD_RESET_ERROR){
     Herkulex.clearError(BROADCAST_ID);
     debug_log("[NUBI] clearError applied");
+  }
+  else if(idx == CMD_REINITIALIZE){
+    debug_log("[NUBI] reinitialize: rebooting all servos...");
+    for(int i = 0; i < n; i++){
+      Herkulex.reboot(i);
+      delay(50);
+    }
+    delay(1500);  // wait for all servos to fully boot
+    Herkulex.initialize();  // clearError + ACK(1) + torqueON
+    delay(200);
+    Herkulex.clearError(BROADCAST_ID);
+    delay(50);
+    Herkulex.torqueON(BROADCAST_ID);
+    debug_log("[NUBI] reinitialize complete");
   }
 }
 
@@ -311,10 +328,10 @@ void setup() {
   upperbody_feedback.data.size = 7; 
 
   // ── status_response buffer setup ──
-  static int16_t nubi_resp_buffer[STATUS_ARRAY_SIZE];
-  memset(nubi_resp_buffer, 0, sizeof(nubi_resp_buffer));
+  static int16_t status_resp_buffer[STATUS_ARRAY_SIZE];
+  memset(status_resp_buffer, 0, sizeof(status_resp_buffer));
   status_response.data.capacity = STATUS_ARRAY_SIZE;
-  status_response.data.data     = nubi_resp_buffer;
+  status_response.data.data     = status_resp_buffer;
   status_response.data.size     = STATUS_ARRAY_SIZE;
 
   RCCHECK(rclc_publisher_init_default(

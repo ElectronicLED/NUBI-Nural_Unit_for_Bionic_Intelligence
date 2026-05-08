@@ -14,6 +14,10 @@ INDEX  ACTION                  PAYLOAD
   3    Request torque array    (none)   STM reads all 20 servo torque registers
                                         and replies with index 5
   6    Reset error             (none)   STM calls clearError(BROADCAST_ID)
+  7    Reinitialize servos     (none)   STM reboots all 20 servos (50ms each),
+                                        waits 1500ms, then runs initialize()
+                                        (clearError + ACK(1) + torqueON) plus
+                                        a second clearError+torqueON pass
 
 ## STM -> PC  (/status_response)
 

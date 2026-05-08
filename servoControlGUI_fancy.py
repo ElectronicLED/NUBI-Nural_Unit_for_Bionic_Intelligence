@@ -330,7 +330,7 @@ class servoGUI(QWidget):
         self.action_time_label.setStyleSheet("color: black; background-color: white; font-weight: bold;")
         self.action_time_label.adjustSize()
         self.action_time_spinBox = QSpinBox(parent=self)
-        self.action_time_spinBox.setRange(0, 2856)
+        self.action_time_spinBox.setRange(200, 2856)
         self.action_time_spinBox.setValue(self.action_time)
         self.action_time_label.move(sx, _ctrl_y + 48)
         self.action_time_spinBox.move(sx + sidebar_w - 80, _ctrl_y + 44)
@@ -338,6 +338,17 @@ class servoGUI(QWidget):
         # Clear Errors button — below action time
         self.error_clear_btn.resize(sidebar_w, 30)
         self.error_clear_btn.move(sx, _ctrl_y + 76)
+        # Reinitialize button — reboots all servos then runs initialize() on STM
+        if not hasattr(self, 'reinit_btn'):
+            self.reinit_btn = QPushButton("Reinitialize", parent=self)
+            self.reinit_btn.setStyleSheet(
+                "QPushButton { background: #2980b9; color: white; font-weight: bold; "
+                "font-size: 13px; border-radius: 4px; padding: 4px; }\n"
+                "QPushButton:pressed { background: #1a5276; }")
+            self.reinit_btn.clicked.connect(self.ros_node.reinitialize_servos)
+            self.reinit_btn.show()
+        self.reinit_btn.resize(sidebar_w, 30)
+        self.reinit_btn.move(sx, _ctrl_y + 112)
         self.action_time_label.show()
         self.action_time_spinBox.show()
         def _on_action_time_changed(val):
