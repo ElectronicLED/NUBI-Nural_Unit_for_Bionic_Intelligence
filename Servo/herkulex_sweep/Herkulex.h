@@ -65,12 +65,12 @@
 
 // HERKULEX LED - See Manual p29
 static int LED_GREEN1 =	 0x01;
-static int LED_BLUE  =   0x02;
-static int LED_CYAN  =   0x03;
-static int LED_RED   = 	 0x04;
-static int LED_GREEN2= 	 0x05;
-static int LED_PINK  =   0x06;
-static int LED_WHITE =   0x07;
+static int LED_BLUE   =   0x02;
+static int LED_CYAN   =   0x03;
+static int LED_RED    = 	 0x04;
+static int LED_YELLOW = 	 0x05;
+static int LED_PINK   =   0x06;
+static int LED_WHITE  =   0x07;
 
 // HERKULEX STATUS ERROR - See Manual p39
 static byte H_STATUS_OK					= 0x00;
@@ -94,7 +94,8 @@ public:
   void  end();
   
   void  initialize();
-  byte  stat(int servoID);
+  //byte  stat(int servoID);
+  byte stat(int servoID, byte &statusError, byte &statusDetail);
   void  ACK(int valueACK);
   byte  model();
   void  set_ID(int ID_Old, int ID_New);
@@ -102,6 +103,7 @@ public:
   
   void  torqueON(int servoID);
   void  torqueOFF(int servoID);
+  byte getTorque(int servoID);
   
   void  moveAll(int servoID, int Goal, int iLed);
   void  moveSpeedAll(int servoID, int Goal, int iLed);
@@ -118,10 +120,10 @@ public:
 		
   void  reboot(int servoID);
   void  setLed(int servoID, int valueLed);
+  byte getLed(int servoID);
  
   void  writeRegistryRAM(int servoID, int address, int writeByte);
   void  writeRegistryEEP(int servoID, int address, int writeByte);
-
   
 // private area  
 private:

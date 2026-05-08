@@ -51,8 +51,11 @@
 // Herkulex begin with Arduino Uno
 void HerkulexClass::begin(long baud, int rx, int tx)
 {
-	// Instead of SoftwareSerial, use Serial2
-	//SoftwareSerial SwSerial(rx, tx);
+#if defined(STM32_CORE_VERSION) || defined(ARDUINO_ARCH_STM32)
+	// On STM32, explicitly set pins before begin so the rx/tx args are honoured
+	Serial1.setRx((uint32_t)rx);
+	Serial1.setTx((uint32_t)tx);
+#endif
 	Serial1.begin(baud);
 }
 
@@ -518,8 +521,10 @@ void HerkulexClass::actionAll(int pTime)
     ck1=checksum1(data,lenghtString);	//6. Checksum1
 	ck2=checksum2(ck1);					//7. Checksum2
 
-    if (ck1 != dataEx[5]) return -1;
-	if (ck2 != dataEx[6]) return -1;
+    // 3586 is a sentinel: (3586-512)*0.325 = 999.05, so getAngle() returns 999
+	// which signals a checksum error to callers without needing an extra if-branch.
+	if (ck1 != dataEx[5]) return 3586;
+	if (ck2 != dataEx[6]) return 3586;
 
 	Position = ((dataEx[10]&0x03)<<8) | dataEx[9];
         return Position;
@@ -528,6 +533,7 @@ void HerkulexClass::actionAll(int pTime)
 
 float HerkulexClass::getAngle(int servoID) {
 	int pos = (int)getPosition(servoID);
+	// If pos==3586 (checksum error sentinel), this yields 999.05 → 999 after int16 cast
 	return (pos-512) * 0.325;
 }
 

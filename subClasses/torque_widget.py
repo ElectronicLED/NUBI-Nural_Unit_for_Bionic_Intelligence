@@ -16,6 +16,7 @@ class torque_control_subWidget(QWidget):
             QWidget[state="green"] { background: rgb(0, 170, 0); }
             QWidget[state="red"]   { background: rgb(255, 0, 0); }
             QWidget[state="gray"]  { background: rgb(128, 128, 128); }
+            QWidget[state="blue"]  { background: rgb(30, 120, 220); }
             QLabel      { color: white; font-size: 20px; font-weight: bold; }
             QPushButton { color: white; font-size: 20px; font-weight: bold; }
         """)
@@ -47,6 +48,7 @@ class torque_control_subWidget(QWidget):
     def turn_green(self): self._set_state("green")
     def turn_red(self):   self._set_state("red")
     def turn_gray(self):  self._set_state("gray")
+    def turn_blue(self):  self._set_state("blue")
 
     # ── Public API ────────────────────────────────────────────────────────────
     def set_torque_state(self, state):
@@ -60,8 +62,3 @@ class torque_control_subWidget(QWidget):
         else:
             self.torque_lock_status_label.setText('Off')
             self.turn_red()
-
-    def set_torque_timeout(self):
-        self.torque_lock_status = None
-        self.torque_lock_status_label.setText('No reading\nreceived for\npast 5 seconds')
-        self.turn_gray()

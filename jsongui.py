@@ -59,10 +59,12 @@ class jsonGUI(QWidget):
         )
 
     def legs_feedback_callback(self,angles_list:Int16MultiArray):
-        self.current_legs_angles = angles_list.data
-    
+        # Always update so current_legs_angles reflects live state including 999 sentinels.
+        # Recording is blocked in read_positions() if any sentinel is present.
+        self.current_legs_angles = list(angles_list.data)
+
     def arms_feedback_callback(self,angles_list:Int16MultiArray):
-        self.current_arms_angles = angles_list.data
+        self.current_arms_angles = list(angles_list.data)
 
     def initLayout(self):
         # Reduce overall spacing to minimize clutter
@@ -225,20 +227,29 @@ class jsonGUI(QWidget):
 
     def read_positions(self):
         """
-        Dummy function for now. Replace with ROS code to read current positions.
-        Returns a dict like {'upper_body': [...], 'lower_body': [...]}
+        Returns a dict like {'upper_body': [...], 'lower_body': [...]}, or None if
+        any angle is a checksum-error sentinel (abs >= 900 == STM reported bad read).
         """
-        # Placeholder example
-        dic = {
-            'upper_body': list(self.current_arms_angles),
-            'lower_body': list(self.current_legs_angles)
-        }
+        arms = list(self.current_arms_angles)
+        legs = list(self.current_legs_angles)
+        # 999 is the sentinel value produced when getPosition() fails checksum on the STM.
+        if any(abs(v) >= 900 for v in arms) or any(abs(v) >= 900 for v in legs):
+            QMessageBox.warning(
+                self,
+                "Checksum Error",
+                "Cannot save position — one or more servo angles contain a checksum error (value ≥ 900).\n"
+                "Wait for valid readings before recording."
+            )
+            return None
+        dic = {'upper_body': arms, 'lower_body': legs}
         print(f"Saved {dic}")
         return dic
 
     def add_sub_action(self, seq_name):
         """Record current positions and add as a new sub-action to existing sequence"""
         positions = self.read_positions()
+        if positions is None:
+            return  # checksum error — dialog already shown by read_positions()
         existing_items = self.sequences[seq_name]
         new_index = str(len(existing_items))  # next sub-action index
         new_item_name = seq_name + new_index
@@ -260,8 +271,10 @@ class jsonGUI(QWidget):
             if name in self.sequences:
                 QMessageBox.warning(self, "Error", "Action already exists!")
                 return
-            # Read positions
+            # Read positions — may return None if checksum sentinels are present
             positions = self.read_positions()
+            if positions is None:
+                return  # checksum error — dialog already shown by read_positions()
             sub_action_name = name + "0"
             self.data[sub_action_name] = positions
             self.sequences[name] = [sub_action_name]

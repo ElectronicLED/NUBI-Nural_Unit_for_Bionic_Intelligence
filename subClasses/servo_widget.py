@@ -10,9 +10,10 @@ class servo_control_subWidget(QWidget):
     update_angle_signal    = pyqtSignal(object, int)       # (servo_widget, sign)
     position_changed_signal = pyqtSignal(int, int, int)    # (servo_id, abs_x, abs_y)
 
-    def __init__(self, hotkey, id, command_name: str = None):
+    def __init__(self, hotkey, id, command_name: str = None, display_name: str = None):
         super().__init__(servo_control_subWidget.parent)
         self.id           = id
+        self.display_name = display_name if display_name is not None else str(id)
         self.angle        = 0
         self.hotkey       = hotkey
         self.command_name = command_name
@@ -55,7 +56,7 @@ class servo_control_subWidget(QWidget):
         self.vlayout.setContentsMargins(2, 0, 0, 0)
         self.vlayout.setSpacing(3)
 
-        self.hotkey_label = QLabel(f"Id:{self.id} | {self.hotkey} ")
+        self.hotkey_label = QLabel(f"Id:{self.display_name} | {self.hotkey} ")
         self.angle_label  = QLabel("θ: None")
         self.err_label    = QLabel("err: --")
         self.det_label    = QLabel("det: --")
@@ -115,6 +116,10 @@ class servo_control_subWidget(QWidget):
     def set_angle(self, num: int):
         if not isinstance(num, int):
             print(f"Error: angle must be int, got {type(num)}")
+            return
+        # 999 is the checksum-error sentinel from the STM (getPosition returns 3586
+        # which maps to ~999 via the angle formula). Skip display, keep last good value.
+        if abs(num) >= 900:
             return
         self.angle = num
         self.angle_label.setText(f"θ: {num}")

@@ -1,6 +1,8 @@
+import os
 from servoControlGUI_fancy import *
 from robot import *
 from jsongui import *
+
 class robot_control_buttons(QWidget):
     def __init__(self):
         super().__init__()
@@ -47,6 +49,7 @@ def ros_spin(node):
 
 if __name__ == "__main__":
     rclpy.init()
+    os.environ["QT_SCALE_FACTOR"] = "0.9"
     app = QApplication(sys.argv)
     robot_control_gui= robotGUI()
     robot_control_gui.show()

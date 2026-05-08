@@ -13,23 +13,34 @@
 #include <Servo.h>
 #include <string.h>
 // rcutils logging is unreliable on STM32 microROS — use /nubi_debug publisher instead
-#define NUM_SERVOS 2
+#define NUM_STD_SERVOS 4
 #define NUM_LEGS 12
 #define NUM_UPPDERBODY 7
-// ------------------- Timer frequencies -------------------
-// Torque reading is slow (~12ms/servo × 20 = 240ms) so keep it at 1 Hz
-#define TORQUE_TIMER_HZ    1
-#define STATUS_TIMER_HZ    2
-
-const unsigned long torque_timer_period_ms = (unsigned long)(1000 / TORQUE_TIMER_HZ);  // 1000ms
-const unsigned long status_timer_period_ms = (unsigned long)(1000 / STATUS_TIMER_HZ);  //  500ms
+// ------------------- Index protocol (status_command / status_response) --------
+// PC -> STM (status_command data[0]):
+//   0 = request status array
+//   2 = torque change  (data[1]: 1=ON, 0=OFF)
+//   3 = request torque status array
+//   6 = reset error
+// STM -> PC (status_response data[0]):
+//   1 = status array    (data[1..40] = 20 × [statusError, statusDetail])
+//   5 = torque array    (data[1..20] = 20 × torque byte)
+#define CMD_REQUEST_STATUS   0
+#define CMD_TORQUE_SET       2
+#define CMD_REQUEST_TORQUE   3
+#define CMD_RESET_ERROR      6
+#define RESP_STATUS_ARRAY    1
+#define RESP_TORQUE_ARRAY    5
+#define STATUS_ARRAY_SIZE     41   // index byte + up to 40 data bytes
 // number of motors
 int n=20;
 
 
 const uint leg_motor_indecies[NUM_LEGS] = {16,6,7,8,10,9,17,11,12,13,15,14};
 const uint upper_motor_indecies[NUM_UPPDERBODY] = {0,1,2,3,4,18,19};
-Servo gripper[NUM_SERVOS];
+// Standard (non-Herkulex) servos — pin order matches upperbody_command.data [7..10]
+const int std_servo_pins[NUM_STD_SERVOS] = {PB13, PB14, PB15, PA8};
+Servo std_servo[NUM_STD_SERVOS];
 
 // ------------------- micro-ROS objects defined once -------------------
 rclc_executor_t executor;
@@ -40,38 +51,33 @@ rcl_node_t node;
 // ------------------- micro-ROS Subscribers object -------------------
 rcl_subscription_t leg_command_subscriber;
 rcl_subscription_t upperbody_command_subscriber;
-rcl_subscription_t torque_command_subscriber;
+rcl_subscription_t status_command_subscriber;
 rcl_subscription_t gripper_command_subscriber;
 rcl_subscription_t color_cmd_subscriber;
 
 // ------------------- micro-ROS Publishers object -------------------
 rcl_publisher_t leg_pos_feedback_publisher;
 rcl_publisher_t upperbody_pos_feedback_publisher;
-rcl_publisher_t status_publisher;
+rcl_publisher_t status_response_publisher;
 rcl_publisher_t color_feedback_publisher;
-rcl_publisher_t torque_feedback_publisher;
 rcl_publisher_t debug_publisher;
 
 
 // -------------------Timer objects -------------------
 rcl_timer_t color_timer;
-rcl_timer_t torque_timer;
-rcl_timer_t status_timer;
 
 //Subscriber messages
-//std_msgs__msg__Int16 msg;
 std_msgs__msg__Int16MultiArray legs_command;
 std_msgs__msg__Int16MultiArray upperbody_command;
-std_msgs__msg__Bool torque_command;
+std_msgs__msg__Int16MultiArray status_command;
 std_msgs__msg__Int16MultiArray gripper_command;
 std_msgs__msg__Int16MultiArray color_command;
 
 //Publisher messages
 std_msgs__msg__Int16MultiArray legs_feedback;
 std_msgs__msg__Int16MultiArray upperbody_feedback;
-std_msgs__msg__Int16MultiArray status_msg;
+std_msgs__msg__Int16MultiArray status_response;
 std_msgs__msg__Int16MultiArray color_feedback;
-std_msgs__msg__UInt8MultiArray torque_feedback;
 
 // Debug string message — reused for all log publishes
 std_msgs__msg__String debug_msg;
@@ -87,16 +93,13 @@ void debug_log(const char* msg) {
   rcl_publish(&debug_publisher, &debug_msg, NULL);
 }
 
-#define left_gripper_pin PB9
-#define right_gripper_pin PB13
-
 // loops on servos by turn — separate indices for legs and upper body
 int leg_feedback_index = 0;
 int upper_feedback_index = 0;
 #define FEEDBACK_TOTAL 19   // 12 legs + 7 upper (kept for reference)
 
 
-byte statusError, statusDetail;
+// statusError/statusDetail are now local to status_cmd_callback
 
 
 // macros to check if any function returns anything other than RCL_RET_OK othwerwise stick to error or pass
@@ -106,8 +109,9 @@ byte statusError, statusDetail;
 
 
 void error_loop(){
+  // NOTE: do NOT call debug_log here — debug_publisher may not be initialized yet.
   while(1){
-    digitalWrite(PB6, !digitalRead(PB6));
+    digitalWrite(PC13, !digitalRead(PC13));
     delay(100);
   }
 }
@@ -124,26 +128,92 @@ void legs_cmd_callback(const void * msgin){
 }
 
 void upperbody_cmd_callback(const void * msgin){
-  // Queue all 7 servos then fire simultaneously with actionAll
-  // actionAll(ms): ms = time for servos to reach position; lower = faster
+  // Queue all 7 Herkulex servos then fire simultaneously with actionAll
   int i = 0;
-  for(; i<NUM_UPPDERBODY;i++){
+  for(; i<NUM_UPPDERBODY; i++){
     Herkulex.moveAllAngle(upper_motor_indecies[i], upperbody_command.data.data[i], LED_BLUE);
   }
-  Herkulex.actionAll(upperbody_command.data.data[i]);  // 500ms execution time — reduce further if hardware allows
+  // i == NUM_UPPDERBODY (7) — next 4 values are standard servo angles (-150..+150 → 0..180)
+  for(int j = 0; j < NUM_STD_SERVOS; j++){
+    int angle = (int)upperbody_command.data.data[i + j];
+
+    int servo_pos = constrain(angle, 0, 180);
+    std_servo[j].write(servo_pos);
+  }
+  // last element (data[11]) is playtime for Herkulex actionAll
+  Herkulex.actionAll(upperbody_command.data.data[i + NUM_STD_SERVOS]);
 }
 
-void torque_cmd_callback(const void * msgin){
-  //The incoming message is received as a generic void pointer.
-  //the following line casts the void pointer to the specific message type 
-  //so you can access the data.
-  const std_msgs__msg__Bool * msg = (const std_msgs__msg__Bool *)msgin;
+void status_cmd_callback(const void * msgin){
+  int16_t idx = status_command.data.data[0];
 
-  if(msg->data == true){
-    Herkulex.torqueON(BROADCAST_ID);   // single broadcast packet to all servos
+  // ── Print index and indicated action ──
+  char log_buf[128];
+  const char* action_str = "unknown";
+  switch(idx){
+    case CMD_REQUEST_STATUS: action_str = "request status array";  break;
+    case CMD_TORQUE_SET:     action_str = "torque set";             break;
+    case CMD_REQUEST_TORQUE: action_str = "request torque array";  break;
+    case CMD_RESET_ERROR:    action_str = "reset error";            break;
   }
-  else{
-    Herkulex.torqueOFF(BROADCAST_ID);  // single broadcast packet to all servos
+  snprintf(log_buf, sizeof(log_buf), "[NUBI] received index %d -> %s", (int)idx, action_str);
+  debug_log(log_buf);
+
+  if(idx == CMD_REQUEST_STATUS){
+    unsigned long t0 = micros();
+    for(int i = 0; i < 20; i++){
+      byte statusError = 0, statusDetail = 0;
+      byte result = Herkulex.stat(i, statusError, statusDetail);
+      if(result != (byte)-1 && result != (byte)-2){
+        status_response.data.data[i * 2 + 1] = statusError;
+        status_response.data.data[i * 2 + 2] = statusDetail;
+      }
+    }
+    unsigned long elapsed = micros() - t0;
+    snprintf(log_buf, sizeof(log_buf), "[NUBI] status read 20 servos: %lu us", elapsed);
+    debug_log(log_buf);
+    status_response.data.data[0] = RESP_STATUS_ARRAY;
+    status_response.data.size = STATUS_ARRAY_SIZE;
+    rcl_publish(&status_response_publisher, &status_response, NULL);
+  }
+  else if(idx == CMD_TORQUE_SET){
+    int16_t torque_on = status_command.data.data[1];
+    if(torque_on == 1){
+      Herkulex.torqueON(BROADCAST_ID);
+      debug_log("[NUBI] torqueON applied");
+    } else {
+      Herkulex.torqueOFF(BROADCAST_ID);
+      debug_log("[NUBI] torqueOFF applied");
+    }
+    // Auto-publish torque state immediately after applying change
+    unsigned long t0_tq = micros();
+    for(int i = 0; i < 20; i++){
+      byte tq = Herkulex.getTorque(i);
+      status_response.data.data[i + 1] = (tq == 0x60) ? 1 : 0;
+    }
+    unsigned long elapsed_tq = micros() - t0_tq;
+    snprintf(log_buf, sizeof(log_buf), "[NUBI] torque auto-publish after set: %lu us", elapsed_tq);
+    debug_log(log_buf);
+    status_response.data.data[0] = RESP_TORQUE_ARRAY;
+    status_response.data.size = STATUS_ARRAY_SIZE;
+    rcl_publish(&status_response_publisher, &status_response, NULL);
+  }
+  else if(idx == CMD_REQUEST_TORQUE){
+    unsigned long t0 = micros();
+    for(int i = 0; i < 20; i++){
+      byte tq = Herkulex.getTorque(i);
+      status_response.data.data[i + 1] = (tq == 0x60) ? 1 : 0;
+    }
+    unsigned long elapsed = micros() - t0;
+    snprintf(log_buf, sizeof(log_buf), "[NUBI] torque read 20 servos: %lu us", elapsed);
+    debug_log(log_buf);
+    status_response.data.data[0] = RESP_TORQUE_ARRAY;
+    status_response.data.size = STATUS_ARRAY_SIZE;
+    rcl_publish(&status_response_publisher, &status_response, NULL);
+  }
+  else if(idx == CMD_RESET_ERROR){
+    Herkulex.clearError(BROADCAST_ID);
+    debug_log("[NUBI] clearError applied");
   }
 }
 
@@ -166,8 +236,9 @@ void leg_cmd_sub_setup(){
 }
 
 void upperbody_cmd_sub_setup(){
-  static int16_t memory_buffer1[8]; 
-  upperbody_command.data.capacity = 8;
+  // 7 Herkulex + 4 std servo + 1 playtime = 12
+  static int16_t memory_buffer1[12]; 
+  upperbody_command.data.capacity = 12;
   upperbody_command.data.data = memory_buffer1;
   upperbody_command.data.size = 0;
 
@@ -180,105 +251,33 @@ void upperbody_cmd_sub_setup(){
   RCCHECK(rclc_executor_add_subscription(&executor, &upperbody_command_subscriber, &upperbody_command, &upperbody_cmd_callback, ON_NEW_DATA));
 }
 
-void torque_cmd_sub_setup(){
+void status_cmd_sub_setup(){
+  static int16_t status_cmd_buffer[STATUS_ARRAY_SIZE];
+  status_command.data.capacity = STATUS_ARRAY_SIZE;
+  status_command.data.data     = status_cmd_buffer;
+  status_command.data.size     = 0;
+
   RCCHECK(rclc_subscription_init_default(
-    &torque_command_subscriber,
+    &status_command_subscriber,
     &node,
-    ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Bool),
-    "torque_command"));
+    ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int16MultiArray),
+    "status_command"));
 
-  RCCHECK(rclc_executor_add_subscription(&executor, &torque_command_subscriber, &torque_command, &torque_cmd_callback, ON_NEW_DATA));
+  RCCHECK(rclc_executor_add_subscription(&executor, &status_command_subscriber, &status_command, &status_cmd_callback, ON_NEW_DATA));
 }
 
 
 
-// --------------------- Timers Setup Functions ---------------------
-
-void torque_timer_callback(rcl_timer_t * timer, int64_t last_call_time)
-{
-  (void) last_call_time;
-
-  if (timer != NULL) {
-    unsigned long t0_torque = micros();
-    for(int i = 0; i<20; i++){
-      byte tq = Herkulex.getTorque(i);
-      if(tq == 0x60){
-        torque_feedback.data.data[i] = 1;
-      }
-      else if(tq == 0x00){
-        torque_feedback.data.data[i] = 0;
-      }
-    }
-    unsigned long elapsed_torque = micros() - t0_torque;
-    char log_buf[128];
-    snprintf(log_buf, sizeof(log_buf), "[NUBI] torque read 20 servos: %lu us", elapsed_torque);
-    debug_log(log_buf);
-
-    rcl_publish(&torque_feedback_publisher, &torque_feedback, NULL);
-  }
-}
-
-
-
-void status_timer_callback(rcl_timer_t * timer, int64_t last_call_time)
-{
-  (void) last_call_time;
-  if (timer != NULL) {
-    unsigned long t0_status = micros();
-    for(int i = 0; i < 20; i++){
-      byte result = Herkulex.stat(i, statusError, statusDetail);
-      if (result != (byte)-1 && result != (byte)-2){
-        status_msg.data.data[i * 2]     = statusError;
-        status_msg.data.data[i * 2 + 1] = statusDetail;
-      }
-    }
-    unsigned long elapsed_status = micros() - t0_status;
-    char log_buf[128];
-    snprintf(log_buf, sizeof(log_buf), "[NUBI] status read 20 servos: %lu us", elapsed_status);
-    debug_log(log_buf);
-    rcl_publish(&status_publisher, &status_msg, NULL);
-  }
-}
-
-void status_timer_setup(){
-  rclc_timer_init_default(
-    &status_timer,
-    &support,
-    RCL_MS_TO_NS(status_timer_period_ms),   // 2 Hz
-    status_timer_callback);
-  rclc_executor_add_timer(&executor, &status_timer);
-}
-
-void torque_timer_setup(){
-  static u_int8_t feedback_buffer4[20];
-  // Link the buffer to the message struct
-  torque_feedback.data.capacity = 20;
-  torque_feedback.data.data = feedback_buffer4;
-  torque_feedback.data.size = 20;
-
-  rclc_publisher_init_default(
-    &torque_feedback_publisher,
-    &node,
-    ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, UInt8MultiArray),
-    "torque_feedback");
-
-  rclc_timer_init_default(
-    &torque_timer,
-    &support,
-    RCL_MS_TO_NS(torque_timer_period_ms),   // 1 Hz
-    torque_timer_callback);
-  
-  rclc_executor_add_timer(&executor, &torque_timer);
-}
-
-// --------------------- Timers Callback Functions ---------------------
+// Status and torque are now driven by GUI requests (status_command).
+// No periodic publish timers needed.
 
 
 void setup() {
   pinMode(LED_BUILTIN,OUTPUT);
 
-  gripper[0].attach(right_gripper_pin);
-  gripper[1].attach(left_gripper_pin);
+  // NOTE: std_servo.attach() must NOT be called before set_microros_transports().
+  // PA8/PB13-15 use TIM1 which conflicts with micro-ROS transport init on STM32.
+  // Attach is done after all micro-ROS setup below.
 
   // Sets up the serial communication (usually USB-Serial or UART) to 
   // talk to the micro-ROS Agent on your PC
@@ -311,36 +310,30 @@ void setup() {
   upperbody_feedback.data.data = feedback_buffer1;
   upperbody_feedback.data.size = 7; 
 
-  static int16_t feedback_buffer2[40];
-  // Link the buffer to the message struct
-  status_msg.data.capacity = 40;
-  status_msg.data.data = feedback_buffer2;
-  status_msg.data.size = 40;
+  // ── status_response buffer setup ──
+  static int16_t nubi_resp_buffer[STATUS_ARRAY_SIZE];
+  memset(nubi_resp_buffer, 0, sizeof(nubi_resp_buffer));
+  status_response.data.capacity = STATUS_ARRAY_SIZE;
+  status_response.data.data     = nubi_resp_buffer;
+  status_response.data.size     = STATUS_ARRAY_SIZE;
 
-  
-
-  // create publisher
   RCCHECK(rclc_publisher_init_default(
     &leg_pos_feedback_publisher,
     &node,
-    // ROSIDL_GET_MSG_TYPE_SUPPORT(package_name, subfolder, message_name)
-    // fetches the "Instruction Manual" for a specific message_name in package_name/subfolder_name.
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int16MultiArray),
     "legs_feedback"));
 
   RCCHECK(rclc_publisher_init_default(
     &upperbody_pos_feedback_publisher,
     &node,
-    // ROSIDL_GET_MSG_TYPE_SUPPORT(package_name, subfolder, message_name)
-    // fetches the "Instruction Manual" for a specific message_name in package_name/subfolder_name.
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int16MultiArray),
     "upperbody_feedback"));
 
   rclc_publisher_init_default(
-    &status_publisher,
+    &status_response_publisher,
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int16MultiArray),
-    "motor_status");
+    "status_response");
 
   rclc_publisher_init_default(
     &debug_publisher,
@@ -348,26 +341,32 @@ void setup() {
     ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, String),
     "nubi_debug");
 
-  // create executor
-  // make sure you change the number to the number of subscribers
-  RCCHECK(rclc_executor_init(&executor, &support.context, 5, &allocator));  
-  //RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &msg, &subscription_callback, ON_NEW_DATA));
+  RCSOFTCHECK(rclc_executor_init(&executor, &support.context, 3, &allocator));  
   leg_cmd_sub_setup();        //1
   upperbody_cmd_sub_setup();  //2
-  torque_cmd_sub_setup();     //3
-  torque_timer_setup();       //4
-  status_timer_setup();       //5
+  status_cmd_sub_setup();     //3
+
+  // Attach standard servos AFTER micro-ROS init to avoid TIM1 conflict
+  for(int j = 0; j < NUM_STD_SERVOS; j++){
+    std_servo[j].attach(std_servo_pins[j]);
+  }
 
   //Servo initialization
   delay(2000);  //a delay to have time for serial monitor opening
-  Herkulex.begin(115200,PA9,PA10); //open serial 
+  // NOTE: begin(baud, rx_pin, tx_pin) — PA10=RX (servo TX), PA9=TX (servo RX)
+  Herkulex.begin(115200, PA10, PA9); //open serial — rx first, then tx
   for(int i=0; i<n; i++){
     Herkulex.reboot(i); //reboot motors
-    delay(20);
+    delay(50);           // increased: servo needs ~40ms to come back after reboot
   }
-  delay(500); 
-  Herkulex.initialize(); //initialize motors
-  delay(200);  
+  delay(1500);           // wait for ALL servos to fully boot before initialize
+  Herkulex.initialize(); //initialize motors: clearError + ACK(1) + torqueON
+  delay(200);
+  // Second clearError+torqueON pass to recover any Break-mode servos
+  Herkulex.clearError(BROADCAST_ID);
+  delay(50);
+  Herkulex.torqueON(BROADCAST_ID);
+  delay(100);
 }
 
 
@@ -377,24 +376,39 @@ void loop() {
 
   // Round-robin: read ONE leg AND ONE upper servo per loop iteration
   // Legs cycle 0..11, upper cycles 0..6 independently
+  static unsigned long last_pos_log_ms = 0;
   {
     unsigned long t0 = micros();
-    legs_feedback.data.data[leg_feedback_index] = Herkulex.getAngle(leg_motor_indecies[leg_feedback_index]);
+    float leg_angle = Herkulex.getAngle(leg_motor_indecies[leg_feedback_index]);
+    if (leg_angle < 900.0f) {  // 999 = checksum error sentinel, skip
+      legs_feedback.data.data[leg_feedback_index] = (int16_t)leg_angle;
+    }
     unsigned long el = micros() - t0;
-    char buf[128];
-    snprintf(buf, sizeof(buf), "[NUBI] leg[%d] getAngle: %lu us", leg_feedback_index, el);
-    debug_log(buf);
+    unsigned long now_ms = millis();
+    if (now_ms - last_pos_log_ms >= 1000) {
+      char buf[128];
+      snprintf(buf, sizeof(buf), "[NUBI] leg[%d] getAngle: %lu us", leg_feedback_index, el);
+      debug_log(buf);
+      last_pos_log_ms = now_ms;
+    }
     leg_feedback_index++;
     if (leg_feedback_index >= 12) leg_feedback_index = 0;
   }
 
   {
     unsigned long t0 = micros();
-    upperbody_feedback.data.data[upper_feedback_index] = Herkulex.getAngle(upper_motor_indecies[upper_feedback_index]);
+    float upper_angle = Herkulex.getAngle(upper_motor_indecies[upper_feedback_index]);
+    if (upper_angle < 900.0f) {  // 999 = checksum error sentinel, skip
+      upperbody_feedback.data.data[upper_feedback_index] = (int16_t)upper_angle;
+    }
     unsigned long el = micros() - t0;
-    char buf[128];
-    snprintf(buf, sizeof(buf), "[NUBI] upper[%d] getAngle: %lu us", upper_feedback_index, el);
-    debug_log(buf);
+    unsigned long now_ms = millis();
+    if (now_ms - last_pos_log_ms >= 1000) {
+      char buf[128];
+      snprintf(buf, sizeof(buf), "[NUBI] upper[%d] getAngle: %lu us", upper_feedback_index, el);
+      debug_log(buf);
+      last_pos_log_ms = now_ms;
+    }
     upper_feedback_index++;
     if (upper_feedback_index >= 7) upper_feedback_index = 0;
   }
@@ -402,8 +416,8 @@ void loop() {
   // Publish feedback
   RCSOFTCHECK(rcl_publish(&leg_pos_feedback_publisher, &legs_feedback, NULL));
   RCSOFTCHECK(rcl_publish(&upperbody_pos_feedback_publisher, &upperbody_feedback, NULL));
-  // status is published by status_timer_callback at 3 Hz
+  // status_response is published on demand via status_cmd_callback
 
 
-  RCCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(2)));
+  RCSOFTCHECK(rclc_executor_spin_some(&executor, RCL_MS_TO_NS(2)));
 }

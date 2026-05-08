@@ -51,8 +51,11 @@
 // Herkulex begin with Arduino Uno
 void HerkulexClass::begin(long baud, int rx, int tx)
 {
-	// Instead of SoftwareSerial, use Serial2
-	//SoftwareSerial SwSerial(rx, tx);
+#if defined(STM32_CORE_VERSION) || defined(ARDUINO_ARCH_STM32)
+	// On STM32, explicitly set pins before begin so the rx/tx args are honoured
+	Serial1.setRx((uint32_t)rx);
+	Serial1.setTx((uint32_t)tx);
+#endif
 	Serial1.begin(baud);
 }
 
@@ -118,7 +121,7 @@ void HerkulexClass::initialize()
 }
 
 // stat
-byte HerkulexClass::stat(int servoID)
+byte HerkulexClass::stat(int servoID, byte &statusError, byte &statusDetail)
 {
 	{
 	pSize    = 0x07;			//3.Packet size
@@ -155,7 +158,10 @@ byte HerkulexClass::stat(int servoID)
 	if (ck1 != dataEx[5]) return -1; //checksum verify
 	if (ck2 != dataEx[6]) return -2;
 
-	return dataEx[7];			// return status
+	//return dataEx[7];			// return status
+	statusError  = dataEx[7];
+	statusDetail = dataEx[8];
+	return dataEx[7];
 }
 }
 
@@ -575,6 +581,95 @@ void HerkulexClass::setLed(int servoID, int valueLed)
 	dataEx[9] = data[2];        // Value
 
 	sendData(dataEx, pSize);
+}
+
+// getLed - read current LED color from RAM register 0x35
+byte HerkulexClass::getLed(int servoID)
+{
+  // manually flush RX before starting
+  delay(5);
+  while(Serial1.available()) Serial1.read();
+  delay(2);
+  
+	pSize = 0x09;
+  pID   = servoID;
+  cmd   = HRAMREAD;
+  data[0] = 0x35;
+  data[1] = 0x01;
+  lenghtString = 2;
+
+  ck1 = checksum1(data, lenghtString);
+  ck2 = checksum2(ck1);
+  
+	dataEx[0] = 0xFF;
+  dataEx[1] = 0xFF;
+  dataEx[2] = pSize;
+  dataEx[3] = pID;
+  dataEx[4] = cmd;
+  dataEx[5] = ck1;
+  dataEx[6] = ck2;
+  dataEx[7] = data[0];
+  dataEx[8] = data[1];
+  
+	Serial1.write(dataEx, pSize);  // send directly, bypass clearBuffer
+  delay(5);                      // give servo time to respond
+  readData(12);
+  
+	int ck1_check = (dataEx[2]^dataEx[3]^dataEx[4]^
+                 dataEx[7]^dataEx[8]^dataEx[9]^
+                 dataEx[10]^dataEx[11]) & 0xFE;
+  int ck2_check = (~ck1_check) & 0xFE;
+  
+	if (ck1_check != dataEx[5]) return -1;
+  if (ck2_check != dataEx[6]) return -2;
+
+  return dataEx[9];
+}
+
+// getTorque - read current torque state from RAM register 0x34
+// Returns: 0x60 = Torque ON, 0x40 = Break ON, 0x00 = Torque Free
+// Returns -1 or -2 on checksum error
+byte HerkulexClass::getTorque(int servoID)
+{
+  // flush RX buffer before starting
+  while(Serial1.available()) Serial1.read();
+  delay(1);
+
+  pSize = 0x09;
+  pID   = servoID;
+  cmd   = HRAMREAD;
+  data[0] = 0x34;               // Address 52 = Torque Control register
+  data[1] = 0x01;               // Length: 1 byte
+  lenghtString = 2;
+
+  ck1 = checksum1(data, lenghtString);
+  ck2 = checksum2(ck1);
+
+  dataEx[0] = 0xFF;
+  dataEx[1] = 0xFF;
+  dataEx[2] = pSize;
+  dataEx[3] = pID;
+  dataEx[4] = cmd;
+  dataEx[5] = ck1;
+  dataEx[6] = ck2;
+  dataEx[7] = data[0];
+  dataEx[8] = data[1];
+
+  Serial1.write(dataEx, pSize);  // send directly, bypass clearBuffer
+  delay(2);                      // give servo time to respond
+  readData(12);
+
+  // Verify checksum on ACK packet
+  // ACK packet: [0xFF][0xFF][size][pID][cmd][ck1][ck2][addr][len][value][statusErr][statusDetail]
+  int ck1_check = (dataEx[2]^dataEx[3]^dataEx[4]^
+                   dataEx[7]^dataEx[8]^dataEx[9]^
+                   dataEx[10]^dataEx[11]) & 0xFE;
+  int ck2_check = (~ck1_check) & 0xFE;
+
+  if (ck1_check != dataEx[5]) return -1;   // checksum1 mismatch
+  if (ck2_check != dataEx[6]) return -2;   // checksum2 mismatch
+
+  return dataEx[9];   // Torque Control value: 0x60=ON, 0x40=Break, 0x00=Free
 }
 
 // get the speed for one servo - values betweeb -1023 <--> 1023

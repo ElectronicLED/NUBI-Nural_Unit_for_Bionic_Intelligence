@@ -1,6 +1,6 @@
 from PyQt6.QtCore import pyqtSignal, QObject
 from rclpy.node import Node
-from std_msgs.msg import Int16MultiArray, Bool, UInt8MultiArray
+from std_msgs.msg import Int16MultiArray
 from rclpy.publisher import Publisher
 
 servo_legs_sub_topic      = "/legs_feedback"
@@ -9,15 +9,26 @@ Legs                      = "Legs"
 servo_upperbody_sub_topic = "/upperbody_feedback"
 servo_upperbody_pub_topic = "/upperbody_command"
 Upperbody                 = "Upperbody"
-torque_pub_topic          = "/torque_command"
-torque_feedback_sub_topic = "/torque_feedback"
-motor_status_sub_topic    = "/motor_status"
+status_command_topic        = "/status_command"
+status_response_topic       = "/status_response"
+
+# Index protocol constants (PC -> STM via status_command, data[0])
+CMD_REQUEST_STATUS = 0   # request status array
+CMD_TORQUE_SET     = 2   # torque change  (data[1]: 1=ON, 0=OFF)
+CMD_REQUEST_TORQUE = 3   # request torque status array
+CMD_RESET_ERROR    = 6   # reset error
+
+# Index protocol constants (STM -> PC via status_response, data[0])
+RESP_STATUS_ARRAY  = 1   # status array  (data[1..40] = 20x[statusError, statusDetail])
+RESP_TORQUE_ARRAY  = 5   # torque array  (data[1..20] = 20x torque byte)
+
+STATUS_ARRAY_SIZE    = 41  # index byte + up to 40 data bytes
 
 
 class ServoControlROSNode(Node, QObject):
     angles_callback_signal = pyqtSignal(str, list)
-    torque_feedback_signal = pyqtSignal(int)
-    motor_status_signal    = pyqtSignal(list)  # full flat Int16MultiArray data
+    torque_feedback_signal = pyqtSignal(list)   # list of 20 torque bools (int 0/1)
+    motor_status_signal    = pyqtSignal(list)   # flat list of 40 ints [err0,det0, err1,det1, ...]
 
     def __init__(self):
         Node.__init__(self, 'servo_gui_ros_node')
@@ -35,14 +46,15 @@ class ServoControlROSNode(Node, QObject):
         self.upperbody_pub = self.create_publisher(
             Int16MultiArray, servo_upperbody_pub_topic, 10)
 
-        self.torque_feedback_sub = self.create_subscription(
-            UInt8MultiArray, torque_feedback_sub_topic, self.torque_feedback_callback, 10)
-        self.torque_pub = self.create_publisher(Bool, torque_pub_topic, 10)
+        # Unified command publisher (PC -> STM)
+        self.status_pub = self.create_publisher(
+            Int16MultiArray, status_command_topic, 10)
 
-        self.motor_status_sub = self.create_subscription(
-            Int16MultiArray, motor_status_sub_topic, self.motor_status_callback, 10)
+        # Unified response subscriber (STM -> PC)
+        self.status_sub = self.create_subscription(
+            Int16MultiArray, status_response_topic, self.status_response_callback, 10)
 
-    # ── Publishers ────────────────────────────────────────────────────────────
+    # Publishers
     def publish_generic(self, topic_name: str, data_type: type, msg) -> None:
         if topic_name not in self._dynamic_publishers:
             try:
@@ -63,18 +75,43 @@ class ServoControlROSNode(Node, QObject):
         msg = Int16MultiArray(); msg.data = num
         self.upperbody_pub.publish(msg)
 
-    def publish_torque(self, torque_lock: bool):
-        self.torque_pub.publish(Bool(data=torque_lock))
+    def _send_status_command(self, data: list[int]):
+        """Send a status_command array. data[0] is the index byte. Padded to STATUS_ARRAY_SIZE."""
+        padded = (data + [0] * STATUS_ARRAY_SIZE)[:STATUS_ARRAY_SIZE]
+        msg = Int16MultiArray()
+        msg.data = padded
+        self.status_pub.publish(msg)
 
-    # ── Subscribers ───────────────────────────────────────────────────────────
+    def request_status(self):
+        """Ask STM to read and send back current servo status array (index 0)."""
+        self._send_status_command([CMD_REQUEST_STATUS])
+
+    def publish_torque(self, torque_on: bool):
+        """Send torque set command (index 2). data[1]: 1=ON, 0=OFF."""
+        self._send_status_command([CMD_TORQUE_SET, 1 if torque_on else 0])
+
+    def request_torque_status(self):
+        """Ask STM to read and send back current torque status array (index 3)."""
+        self._send_status_command([CMD_REQUEST_TORQUE])
+
+    def reset_error(self):
+        """Send reset error command (index 6)."""
+        self._send_status_command([CMD_RESET_ERROR])
+
+    # Subscribers
     def legs_callback(self, msg: Int16MultiArray):
-        self.angles_callback_signal.emit(Legs, msg.data)
+        self.angles_callback_signal.emit(Legs, list(msg.data))
 
     def upperbody_callback(self, msg: Int16MultiArray):
-        self.angles_callback_signal.emit(Upperbody, msg.data)
+        self.angles_callback_signal.emit(Upperbody, list(msg.data))
 
-    def torque_feedback_callback(self, msg: UInt8MultiArray):
-        self.torque_feedback_signal.emit(msg.data[0])
-
-    def motor_status_callback(self, msg: Int16MultiArray):
-        self.motor_status_signal.emit(list(msg.data))
+    def status_response_callback(self, msg: Int16MultiArray):
+        if not msg.data:
+            return
+        resp_index = msg.data[0]
+        if resp_index == RESP_STATUS_ARRAY:
+            # data[1..40] = 20 x [statusError, statusDetail]
+            self.motor_status_signal.emit(list(msg.data[1:41]))
+        elif resp_index == RESP_TORQUE_ARRAY:
+            # data[1..20] = 20 x torque byte
+            self.torque_feedback_signal.emit(list(msg.data[1:21]))
