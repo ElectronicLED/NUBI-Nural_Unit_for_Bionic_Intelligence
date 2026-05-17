@@ -1,0 +1,45 @@
+running egg_info
+writing ../../build/view_robot_pkg/view_robot_pkg.egg-info/PKG-INFO
+writing dependency_links to ../../build/view_robot_pkg/view_robot_pkg.egg-info/dependency_links.txt
+writing entry points to ../../build/view_robot_pkg/view_robot_pkg.egg-info/entry_points.txt
+writing requirements to ../../build/view_robot_pkg/view_robot_pkg.egg-info/requires.txt
+writing top-level names to ../../build/view_robot_pkg/view_robot_pkg.egg-info/top_level.txt
+reading manifest file '../../build/view_robot_pkg/view_robot_pkg.egg-info/SOURCES.txt'
+writing manifest file '../../build/view_robot_pkg/view_robot_pkg.egg-info/SOURCES.txt'
+running build
+running build_py
+running install
+running install_lib
+running install_data
+copying urdf/robot_description.urdf -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/urdf
+copying meshes/hL_sh1.STL -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/meshes
+copying meshes/right_finger_1.STL -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/meshes
+copying meshes/hL_sh2.STL -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/meshes
+copying meshes/L_A_1.STL -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/meshes
+copying meshes/left_finger_3.STL -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/meshes
+copying meshes/L_W_1.STL -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/meshes
+copying meshes/hr_sh1.STL -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/meshes
+copying meshes/right_finger_3.STL -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/meshes
+copying meshes/L_W_2.STL -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/meshes
+copying meshes/Upper_body.STL -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/meshes
+copying meshes/left_finger_2.STL -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/meshes
+copying meshes/R_W_2.STL -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/meshes
+copying meshes/hL_e.STL -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/meshes
+copying meshes/R_A_1.STL -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/meshes
+copying meshes/L_A_2.STL -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/meshes
+copying meshes/R_W_3.STL -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/meshes
+copying meshes/hr_e.STL -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/meshes
+copying meshes/base_lin.STL -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/meshes
+copying meshes/L_N_1.STL -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/meshes
+copying meshes/L_W_3.STL -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/meshes
+copying meshes/hr_sh2.STL -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/meshes
+copying meshes/right_finger_2.STL -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/meshes
+copying meshes/left_finger_1.STL -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/meshes
+copying meshes/R_W_1.STL -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/meshes
+copying meshes/R_A_2.STL -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/meshes
+copying meshes/R_N_1.STL -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/meshes
+running install_egg_info
+removing '/home/yassa/NUBI3/install/view_robot_pkg/lib/python3.10/site-packages/view_robot_pkg-0.0.0-py3.10.egg-info' (and everything under it)
+Copying ../../build/view_robot_pkg/view_robot_pkg.egg-info to /home/yassa/NUBI3/install/view_robot_pkg/lib/python3.10/site-packages/view_robot_pkg-0.0.0-py3.10.egg-info
+running install_scripts
+writing list of installed files to '/home/yassa/NUBI3/build/view_robot_pkg/install.log'

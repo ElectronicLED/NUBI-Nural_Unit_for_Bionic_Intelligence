@@ -1,0 +1,53 @@
+moveit_controller_manager: moveit_simple_controller_manager/MoveItSimpleControllerManager
+
+moveit_simple_controller_manager:
+  controller_names:
+    - torso_controller
+    - left_arm_controller
+    - right_arm_controller
+    - left_hand_controller
+    - right_hand_controller
+
+  torso_controller:
+    type: FollowJointTrajectory
+    action_ns: follow_joint_trajectory
+    default: false
+    joints:
+      - Upper_body_joint
+
+  left_arm_controller:
+    type: FollowJointTrajectory
+    action_ns: follow_joint_trajectory
+    default: true
+    joints:
+      - Lshoulder_pitch
+      - Lshoulder_roll
+      - Lelbow_roll
+
+  right_arm_controller:
+    type: FollowJointTrajectory
+    action_ns: follow_joint_trajectory
+    default: true
+    joints:
+      - Rshoulder_pitch
+      - Rshoulder_roll
+      - Relbow_roll
+
+  left_hand_controller:
+    type: FollowJointTrajectory
+    action_ns: follow_joint_trajectory
+    default: false
+    joints:
+      - left_finger_1_j
+
+  right_hand_controller:
+    type: FollowJointTrajectory
+    action_ns: follow_joint_trajectory
+    default: false
+    joints:
+      - riggt_finger_1_j
+
+trajectory_execution:
+  allowed_start_tolerance: 0.05
+  allowed_execution_duration_scaling: 1.2
+  allowed_goal_duration_margin: 0.5

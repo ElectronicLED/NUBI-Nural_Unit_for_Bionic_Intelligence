@@ -1,0 +1,9 @@
+left_arm:
+  kinematics_solver: kdl_kinematics_plugin/KDLKinematicsPlugin
+  position_only_ik: true
+  kinematics_solver_timeout: 0.01
+
+right_arm:
+  kinematics_solver: kdl_kinematics_plugin/KDLKinematicsPlugin
+  position_only_ik: true
+  kinematics_solver_timeout: 0.01

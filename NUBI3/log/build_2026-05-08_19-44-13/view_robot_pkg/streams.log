@@ -1,0 +1,21 @@
+[0.520s] Invoking command in '/home/yassa/NUBI3/src/view_robot_pkg': PYTHONPATH=/home/yassa/NUBI3/build/view_robot_pkg/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/yassa/NUBI3/install/view_robot_pkg/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/view_robot_pkg build --build-base /home/yassa/NUBI3/build/view_robot_pkg/build install --record /home/yassa/NUBI3/build/view_robot_pkg/install.log --single-version-externally-managed install_data
+[0.687s] running egg_info
+[0.687s] writing ../../build/view_robot_pkg/view_robot_pkg.egg-info/PKG-INFO
+[0.697s] writing dependency_links to ../../build/view_robot_pkg/view_robot_pkg.egg-info/dependency_links.txt
+[0.697s] writing entry points to ../../build/view_robot_pkg/view_robot_pkg.egg-info/entry_points.txt
+[0.697s] writing requirements to ../../build/view_robot_pkg/view_robot_pkg.egg-info/requires.txt
+[0.697s] writing top-level names to ../../build/view_robot_pkg/view_robot_pkg.egg-info/top_level.txt
+[0.699s] reading manifest file '../../build/view_robot_pkg/view_robot_pkg.egg-info/SOURCES.txt'
+[0.699s] writing manifest file '../../build/view_robot_pkg/view_robot_pkg.egg-info/SOURCES.txt'
+[0.700s] running build
+[0.700s] running build_py
+[0.700s] running install
+[0.700s] running install_lib
+[0.702s] running install_data
+[0.702s] copying urdf/robot_description.urdf -> /home/yassa/NUBI3/install/view_robot_pkg/share/view_robot_pkg/urdf
+[0.703s] running install_egg_info
+[0.704s] removing '/home/yassa/NUBI3/install/view_robot_pkg/lib/python3.10/site-packages/view_robot_pkg-0.0.0-py3.10.egg-info' (and everything under it)
+[0.704s] Copying ../../build/view_robot_pkg/view_robot_pkg.egg-info to /home/yassa/NUBI3/install/view_robot_pkg/lib/python3.10/site-packages/view_robot_pkg-0.0.0-py3.10.egg-info
+[0.705s] running install_scripts
+[0.719s] writing list of installed files to '/home/yassa/NUBI3/build/view_robot_pkg/install.log'
+[0.739s] Invoked command in '/home/yassa/NUBI3/src/view_robot_pkg' returned '0': PYTHONPATH=/home/yassa/NUBI3/build/view_robot_pkg/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/yassa/NUBI3/install/view_robot_pkg/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/view_robot_pkg build --build-base /home/yassa/NUBI3/build/view_robot_pkg/build install --record /home/yassa/NUBI3/build/view_robot_pkg/install.log --single-version-externally-managed install_data
