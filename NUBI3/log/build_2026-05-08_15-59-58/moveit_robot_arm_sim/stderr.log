@@ -1,6 +1,0 @@
-[31mCMake Error at cmake_install.cmake:105 (file):
-  file INSTALL cannot find
-  "/home/yassa/NUBI3/src/moveit_robot_arm_sim/scripts/move_x_Y_Z.py": No such
-  file or directory.
-
-[0m

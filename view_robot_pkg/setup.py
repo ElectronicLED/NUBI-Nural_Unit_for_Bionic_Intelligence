@@ -1,5 +1,4 @@
 from setuptools import find_packages, setup
-import os # Added os import
 from glob import glob
 
 package_name = 'view_robot_pkg'
@@ -12,11 +11,10 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        # Using glob ensures ALL files in these folders are installed
-        (os.path.join('share', package_name, 'launch'), glob('launch/*.launch*')),
-        (os.path.join('share', package_name, 'urdf'), glob('urdf/*')),
-        (os.path.join('share', package_name, 'rviz'), glob('rviz/*.rviz')),
-        (os.path.join('share', package_name, 'meshes'), glob('meshes/*')),
+        ('share/' + package_name + '/launch', ['launch/view_robot.launch']),
+        ('share/' + package_name + '/urdf', ['urdf/robot_description.urdf']),
+        ('share/' + package_name + '/rviz', ['rviz/default_view.rviz']),
+        ('share/' + package_name + '/meshes', glob('meshes/*')), #include meshes
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -27,8 +25,6 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            # format: 'command_name = package_name.file_name:main_function'
-        'scene_manager = view_robot_pkg.node_add_attach_detach_objects_in_Rviz:main',
         ],
     },
 )
