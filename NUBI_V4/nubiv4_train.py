@@ -102,13 +102,13 @@ def get_cfgs():
             'LAnkle_pitch'
         ],
         # PD
-        "kp": 20.0,
-        "kd": 0.5,
+        "kp": 254.0,
+        "kd": 15.0,
         # termination
         "termination_if_roll_greater_than": 10,  # degree
         "termination_if_pitch_greater_than": 10,
         # base pose
-        "base_init_pos": [0.0, 0.0, 0.25],
+        "base_init_pos": [0.0, 0.0, 0.255],
         "base_init_quat": [0.0, 0.0, 0.0, 1.0],  # 90 degrees about z-axis
         "episode_length_s": 20.0,
         "resampling_time_s": 4.0,
@@ -187,5 +187,5 @@ if __name__ == "__main__":
     main()
 
 
-# python3 nubiv4_train.py --exp_name first_try --max_iterations 1001
+# python3 nubiv4_train.py --exp_name time_aware_PID --max_iterations 1001
 # tensorboard --logdir logs

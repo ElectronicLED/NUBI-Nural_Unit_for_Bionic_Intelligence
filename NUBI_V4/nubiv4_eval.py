@@ -21,8 +21,8 @@ from nubiv4_env import NubiEnv
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-e", "--exp_name", type=str, default="first_try")
-    parser.add_argument("--ckpt", type=int, default=100)
+    parser.add_argument("-e", "--exp_name", type=str, default="time_aware_PID")
+    parser.add_argument("--ckpt", type=int, default=1600)
     args = parser.parse_args()
 
     gs.init()
@@ -91,4 +91,4 @@ def main():
 if __name__ == "__main__":
     main()
 
-# python3 nubiv4_eval.py -e first_try --ckpt 900
+# python3 nubiv4_eval.py -e time_aware_P254_D15 --ckpt 200

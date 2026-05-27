@@ -16,13 +16,13 @@ except (metadata.PackageNotFoundError, ImportError) as e:
 from rsl_rl.runners import OnPolicyRunner
 
 import genesis as gs
-from NUBI_V4.nubiv4_env import NubiEnv
+from nubiv4_env import NubiEnv
 
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-e", "--exp_name", type=str, default="hyper_param4_reward")
-parser.add_argument("-B", "--num_envs", type=int, default=8)# default was 4096
+parser.add_argument("-e", "--exp_name", type=str, default="time_aware_replicate")
+parser.add_argument("-B", "--num_envs", type=int, default=4096)# default was 4096
 parser.add_argument("--max_iterations", type=int, default=501)
 args = parser.parse_args()
 
@@ -43,10 +43,11 @@ if os.path.exists(log_dir):
 
 env_cfg, obs_cfg, reward_cfg, command_cfg, train_cfg = pickle.load(open(f"logs/{args.exp_name}/cfgs.pkl", "rb"))
 
-#command_cfg["lin_vel_y_range"] = [-0.3, 0.0]
+command_cfg["lin_vel_y_range"] = [-0.1, 0.1]
+command_cfg["lin_vel_x_range"] = [0.0,0.0]
 #train_cfg["entropy_coef"] = 0.005# Decrease exploration rate
-#train_cfg["learning_rate"] = 3e-4  # Adjust learning rate if needed
-#train_cfg["schedule"] = "linear"  # Use linear learning rate decay
+train_cfg["learning_rate"] = 2e-4  # Adjust learning rate if needed
+train_cfg["schedule"] = "none"  # Use linear learning rate decay
 
 # Only remove the log directory if we are not resuming
 if not resume_path:
@@ -65,4 +66,4 @@ if resume_path:
 
 runner.learn(num_learning_iterations=args.max_iterations, init_at_random_ep_len=True)
 
-# python3 euflex_resume_training.py --exp_name feet_height_difference --max_iterations 501
+# python3 nubiv4_resume_training.py --exp_name first_try --max_iterations 501

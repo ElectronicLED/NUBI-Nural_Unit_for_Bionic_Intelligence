@@ -36,8 +36,8 @@ class NubiEnv:
             sim_options=gs.options.SimOptions(dt=self.dt, substeps=2),
             viewer_options=gs.options.ViewerOptions(
                 max_FPS=int(0.5 / self.dt),
-                camera_pos=(2.0, 2.0, 1.5),
-                camera_lookat=(0.0, 0.9, 0.5),
+                camera_pos=(-2.0, 1.0, 1.0),
+                camera_lookat=(0.0, 0.0, 0.5),
                 camera_fov=40,
             ),
             vis_options=gs.options.VisOptions(
@@ -80,10 +80,39 @@ class NubiEnv:
         # names to indices (use local dof indices for per-joint control)
         self.motors_dof_idx = [self.robot.get_joint(name).dof_idx_local for name in self.env_cfg["joint_names"]]
 
-        # PD control parameters
-        self.robot.set_dofs_kp([self.env_cfg["kp"]] * self.num_actions, self.motors_dof_idx)
-        self.robot.set_dofs_kv([self.env_cfg["kd"]] * self.num_actions, self.motors_dof_idx)
+        self.actions = torch.zeros((self.num_envs, self.num_actions), device=gs.device, dtype=gs.tc_float)
+        self.last_actions = torch.zeros_like(self.actions)
+        self.dof_pos = torch.zeros_like(self.actions)
+        self.dof_vel = torch.zeros_like(self.actions)
+        self.last_dof_vel = torch.zeros_like(self.actions)
+        self.base_pos = torch.zeros((self.num_envs, 3), device=gs.device, dtype=gs.tc_float)
+        self.base_quat = torch.zeros((self.num_envs, 4), device=gs.device, dtype=gs.tc_float)
+        self.default_dof_pos = torch.tensor(
+            [self.env_cfg["default_joint_angles"][name] for name in self.env_cfg["joint_names"]],
+            device=gs.device,
+            dtype=gs.tc_float,
+        )
 
+        # PD control parameters
+        # self.robot.set_dofs_kp([self.env_cfg["kp"]] * self.num_actions, self.motors_dof_idx)
+        # self.robot.set_dofs_kv([self.env_cfg["kd"]] * self.num_actions, self.motors_dof_idx)
+        ###############################ChatGPT Added###############################
+        # 1. Disable internal PD (set to 0 so physics engine doesn't interfere)
+        self.robot.set_dofs_kp([0.0] * self.num_actions, self.motors_dof_idx)
+        self.robot.set_dofs_kv([0.0] * self.num_actions, self.motors_dof_idx)
+
+        # 2. Store your config gains for manual calculation
+        # We create tensors of shape (num_envs, num_actions) for easy multiplication later
+        self.kp = torch.tensor([self.env_cfg["kp"]] * self.num_actions, device=gs.device)
+        self.kd = torch.tensor([self.env_cfg["kd"]] * self.num_actions, device=gs.device)
+
+        # 3. Buffer to store previous target position (needed to calculate target velocity)
+        self.prev_target_dof_pos = torch.zeros((self.num_envs, self.num_actions), device=gs.device, dtype=gs.tc_float)
+        # Initialize it to the default pose
+        self.prev_target_dof_pos[:] = self.default_dof_pos
+        #######################################################################
+        
+        
         # prepare reward functions and multiply reward scales by dt
         self.reward_functions, self.episode_sums = dict(), dict()
         for name in self.reward_scales.keys():
@@ -108,18 +137,6 @@ class NubiEnv:
             device=gs.device,
             dtype=gs.tc_float,
         )
-        self.actions = torch.zeros((self.num_envs, self.num_actions), device=gs.device, dtype=gs.tc_float)
-        self.last_actions = torch.zeros_like(self.actions)
-        self.dof_pos = torch.zeros_like(self.actions)
-        self.dof_vel = torch.zeros_like(self.actions)
-        self.last_dof_vel = torch.zeros_like(self.actions)
-        self.base_pos = torch.zeros((self.num_envs, 3), device=gs.device, dtype=gs.tc_float)
-        self.base_quat = torch.zeros((self.num_envs, 4), device=gs.device, dtype=gs.tc_float)
-        self.default_dof_pos = torch.tensor(
-            [self.env_cfg["default_joint_angles"][name] for name in self.env_cfg["joint_names"]],
-            device=gs.device,
-            dtype=gs.tc_float,
-        )
         self.extras = dict()  # extra information for logging
         self.extras["observations"] = dict()
         # For alternating feet height reward
@@ -133,12 +150,45 @@ class NubiEnv:
 
     def step(self, actions):
 
-        self.actions = torch.clip(actions, -self.env_cfg["clip_actions"], self.env_cfg["clip_actions"]) #sets a ceil and floor for actions
-        exec_actions = self.last_actions if self.simulate_action_latency else self.actions
-        target_dof_pos = exec_actions * self.env_cfg["action_scale"] + self.default_dof_pos
-        self.robot.control_dofs_position(target_dof_pos, self.motors_dof_idx)
-        self.scene.step()
+        # self.actions = torch.clip(actions, -self.env_cfg["clip_actions"], self.env_cfg["clip_actions"]) #sets a ceil and floor for actions
+        # exec_actions = self.last_actions if self.simulate_action_latency else self.actions
+        # target_dof_pos = exec_actions * self.env_cfg["action_scale"] + self.default_dof_pos
+        # self.robot.control_dofs_position(target_dof_pos, self.motors_dof_idx)
+        # self.scene.step()
 
+        #################################ChatGPT Added###############################
+        self.actions = torch.clip(actions, -self.env_cfg["clip_actions"], self.env_cfg["clip_actions"])
+        exec_actions = self.last_actions if self.simulate_action_latency else self.actions
+        
+        # 1. Calculate Target Position
+        target_dof_pos = exec_actions * self.env_cfg["action_scale"] + self.default_dof_pos
+
+        # 2. Calculate Target Velocity (Finite Difference)
+        # This is the "Velocity Feedforward" / "Derivative on Error" term your motor has
+        target_dof_vel = (target_dof_pos - self.prev_target_dof_pos) / self.dt
+        
+        # 3. Get Current State
+        current_dof_pos = self.robot.get_dofs_position(self.motors_dof_idx)
+        current_dof_vel = self.robot.get_dofs_velocity(self.motors_dof_idx)
+
+        # 4. Calculate Custom Torques
+        # Formula: Torque = Kp * (pos_err) + Kd * (vel_err)
+        pos_error = target_dof_pos - current_dof_pos
+        vel_error = target_dof_vel - current_dof_vel  # <--- The key difference!
+        
+        torques = (self.kp * pos_error) + (self.kd * vel_error)
+
+        # Optional: Clamp torques to real motor limits (e.g., 1.2 Nm for DRS-0101)
+        # torques = torch.clamp(torques, -1.2, 1.2) 
+
+        # 5. Apply Force
+        self.robot.control_dofs_force(torques, self.motors_dof_idx)
+        
+        # 6. Update History
+        self.prev_target_dof_pos[:] = target_dof_pos
+
+        self.scene.step()
+        #############################################################################
         # update buffers
         self.episode_length_buf += 1
         self.base_pos[:] = self.robot.get_pos()
@@ -246,6 +296,10 @@ class NubiEnv:
         # reset dofs
         self.dof_pos[envs_idx] = self.default_dof_pos
         self.dof_vel[envs_idx] = 0.0
+        ### new addition by ChatGPT ###
+        # Reset previous target to default (so velocity target starts at 0)
+        self.prev_target_dof_pos[envs_idx] = self.default_dof_pos
+        ###############################
         self.robot.set_dofs_position(
             position=self.dof_pos[envs_idx],
             dofs_idx_local=self.motors_dof_idx,

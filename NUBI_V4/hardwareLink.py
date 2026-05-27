@@ -41,8 +41,8 @@ from nubiv4_env import NubiEnv
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-e", "--exp_name", type=str, default="time_aware_replicate")
-    parser.add_argument("--ckpt", type=int, default=1600)
+    parser.add_argument("-e", "--exp_name", type=str, default="time_aware_P254_D25")
+    parser.add_argument("--ckpt", type=int, default=900)
     args = parser.parse_args()
 
     gs.init()
@@ -101,7 +101,7 @@ def main():
             print("Actions:", list(legs_pos_cmd[0]))
             legs_command(list(legs_pos_cmd[0]))
 
-            input("Press Enter to step.. ")
+            #input("Press Enter to step.. ")
             obs, rews, dones, infos = env.step(actions)
             
             # print(env.get_feet_pos())
