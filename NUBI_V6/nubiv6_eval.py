@@ -97,14 +97,19 @@ def main():
             
             actions = policy(obs)
             print("Actions:", np.rad2deg(list(actions.cpu().numpy()[0]* env_cfg["action_scale"])))
+            angles_rad = list(env.dof_pos.cpu().numpy()[0])
+            angles_deg = np.rad2deg(angles_rad)
+            #print("Joint Angles in radians:", angles_rad)
+            print("Joint Angles in degrees:", angles_deg.round(0))
 
-            # Log step if logging is enabled
-            if logger:
+            # Log step if logging is enabled (skip first step to avoid wrapped angles)
+            if logger and step_count > 0:
                 logger.log_step(
                     obs=obs,
                     action=actions,
-                    reward=None,  # Reward not available in eval mode
-                    done=False,
+                    angles=angles_deg,
+                    # reward=None,  # Reward not available in eval mode
+                    # done=False,
                     info={"step": step_count}
                 )
             
@@ -137,4 +142,4 @@ if __name__ == "__main__":
     main()
 
 # python3 nubiv6_eval.py -e kind_policy_fixed --ckpt 1000
-# python3 nubiv6_eval.py -e trapezoidel_200ms --ckpt 200 --log_actions --max_steps 1000
+# python3 nubiv6_eval.py -e kind_policy_fixed --ckpt 1000 --log_actions --max_steps 200
