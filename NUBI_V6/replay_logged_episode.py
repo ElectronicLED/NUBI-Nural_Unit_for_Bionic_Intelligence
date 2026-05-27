@@ -19,13 +19,14 @@ from pathlib import Path
 play_Time = 35
 
 
-def replay_episode_hardware(episode_path: str, action_scale: float = None, target_freq: float = 50.0):
+def replay_episode_hardware(episode_path: str, action_scale: float = None, target_freq: float = 50.0, publish_angles: bool = False):
     """Replay a logged episode on physical robot via ROS2.
     
     Args:
         episode_path: Path to the logged episode file
         action_scale: Scale factor for actions (default 1.0)
         target_freq: Publishing frequency in Hz (default 50Hz)
+        publish_angles: If True, publish recorded joint angles; if False, compute from actions (default False)
     """
     replayer = ActionReplayer(episode_path)
     
@@ -86,16 +87,26 @@ def replay_episode_hardware(episode_path: str, action_scale: float = None, targe
                 
                 # Get action and convert to joint positions in degrees
                 action = step_data["action"].cpu().numpy()
-                joints_rad = action[0] * action_scale  # shape: (num_joints,)
-                joints_deg = np.rad2deg(joints_rad)
+                
+                if publish_angles:
+                    # Use pre-recorded joint angles from the log
+                    angles_val = step_data["angles"]
+                    angles_np = angles_val.cpu().numpy() if hasattr(angles_val, 'cpu') else np.asarray(angles_val)
+                    joints_deg = np.atleast_1d(angles_np).flatten()
+                else:
+                    # Compute joint angles from actions
+                    action_np = np.atleast_1d(action).flatten()
+                    joints_rad = action_np * action_scale  # shape: (num_joints,)
+                    joints_deg = np.rad2deg(joints_rad)
                 
                 # Convert to int16 and clamp to valid range
-                joints_int = np.floor(joints_deg).astype(int)
+                joints_int = np.round(joints_deg).astype(int)
                 joints_int = np.clip(joints_int, -120, 120)
+                joints_int = np.atleast_1d(joints_int).flatten()  # Ensure 1D array
                 
-                # Publish message
+                # Publish message (12 joint positions + 1 play time = 13 total)
                 msg = Int16MultiArray()
-                msg.data = [int(x) for x in joints_int]+[play_Time]
+                msg.data = [int(x) for x in joints_int[:12]] + [play_Time]  # Take only first 12 values
                 publisher_legs.publish(msg)
                 
                 
@@ -165,6 +176,11 @@ def main():
         default=50.0,
         help="Publishing frequency for hardware replay in Hz (default: 50)"
     )
+    parser.add_argument(
+        "--publish-angles",
+        action="store_true",
+        help="Publish pre-recorded joint angles instead of computing from actions (default: compute from actions)"
+    )
     args = parser.parse_args()
 
     # If list flag is set, just list episodes
@@ -203,7 +219,7 @@ def main():
         return
 
     # Replay on hardware
-    replay_episode_hardware(episode_path, target_freq=args.freq)
+    replay_episode_hardware(episode_path, target_freq=args.freq, publish_angles=args.publish_angles)
 
 
 if __name__ == "__main__":
@@ -211,6 +227,7 @@ if __name__ == "__main__":
 
 # Usage examples:
 # python3 replay_logged_episode.py -l                                                    # List available episodes
-# python3 replay_logged_episode.py -f action_logs/episode_20250101_120000.pkl           # Replay on hardware at 50Hz
+# python3 replay_logged_episode.py -f action_logs/episode_20250101_120000.pkl           # Replay on hardware at 50Hz (compute angles from actions)
+# python3 replay_logged_episode.py -f action_logs/episode_20250101_120000.pkl --publish-angles  # Replay on hardware using recorded angles
 # python3 replay_logged_episode.py                                                       # Interactive selection (hardware at 50Hz)
 # python3 replay_logged_episode.py -f action_logs/episode_20250101_120000.pkl --freq 100 # Replay on hardware at 100Hz

@@ -23,8 +23,7 @@ class ActionLogger:
         self.episode_data = {
             "observations": [],
             "actions": [],
-            "rewards": [],
-            "dones": [],
+            "angles": [],
             "info": [],
             "metadata": {}
         }
@@ -39,22 +38,20 @@ class ActionLogger:
         self.episode_data = {
             "observations": [],
             "actions": [],
-            "rewards": [],
-            "dones": [],
+            "angles": [],
             "info": [],
             "metadata": metadata or {}
         }
         self.episode_started = True
         
-    def log_step(self, obs: torch.Tensor, action: torch.Tensor, reward: torch.Tensor = None, 
-                 done: bool = False, info: Dict = None):
+    def log_step(self, obs: torch.Tensor, action: torch.Tensor, angles: np.ndarray = None, 
+                 info: Dict = None):
         """Log a single step in the episode.
         
         Args:
             obs: Observation tensor
             action: Action tensor
-            reward: Reward value (optional)
-            done: Whether episode is done
+            angles: Joint angles array (optional)
             info: Additional info dict (optional)
         """
         if not self.episode_started:
@@ -67,11 +64,10 @@ class ActionLogger:
         self.episode_data["observations"].append(obs_np)
         self.episode_data["actions"].append(action_np)
         
-        if reward is not None:
-            reward_val = reward.cpu().item() if isinstance(reward, torch.Tensor) else float(reward)
-            self.episode_data["rewards"].append(reward_val)
+        if angles is not None:
+            angles_np = angles.cpu().detach().numpy() if isinstance(angles, torch.Tensor) else np.array(angles)
+            self.episode_data["angles"].append(angles_np)
         
-        self.episode_data["dones"].append(bool(done))
         self.episode_data["info"].append(info or {})
         
     def save_episode(self, filename: str = None) -> str:
@@ -96,8 +92,7 @@ class ActionLogger:
         episode_np = {
             "observations": np.array(self.episode_data["observations"]),
             "actions": np.array(self.episode_data["actions"]),
-            "rewards": np.array(self.episode_data["rewards"]) if self.episode_data["rewards"] else np.array([]),
-            "dones": np.array(self.episode_data["dones"]),
+            "angles": np.array(self.episode_data["angles"]) if self.episode_data["angles"] else np.array([]),
             "metadata": self.episode_data["metadata"]
         }
         
@@ -151,7 +146,7 @@ class ActionReplayer:
             step_idx: Step index (if None, uses current_step and increments)
             
         Returns:
-            Dictionary with obs, action, reward, done, info for the step
+            Dictionary with obs, action, angles, info for the step
         """
         if step_idx is None:
             step_idx = self.current_step
@@ -163,8 +158,7 @@ class ActionReplayer:
         return {
             "obs": torch.from_numpy(self.episode_data["observations"][step_idx]).float(),
             "action": torch.from_numpy(self.episode_data["actions"][step_idx]).float(),
-            "reward": torch.tensor(self.episode_data["rewards"][step_idx]).float() if len(self.episode_data["rewards"]) > 0 else None,
-            "done": bool(self.episode_data["dones"][step_idx]),
+            "angles": torch.from_numpy(self.episode_data["angles"][step_idx]).float() if len(self.episode_data["angles"]) > 0 else None,
             "step": step_idx,
             "total_steps": self.num_steps
         }
