@@ -43,11 +43,11 @@ if os.path.exists(log_dir):
 
 env_cfg, obs_cfg, reward_cfg, command_cfg, train_cfg = pickle.load(open(f"logs/{args.exp_name}/cfgs.pkl", "rb"))
 
-command_cfg["lin_vel_y_range"] = [-0.1, 0.1]
-command_cfg["lin_vel_x_range"] = [0.0,0.0]
+command_cfg["lin_vel_y_range"] = [-0.2, -0.2]
+# command_cfg["lin_vel_x_range"] = [-0.2,0.2]
 #train_cfg["entropy_coef"] = 0.005# Decrease exploration rate
-train_cfg["learning_rate"] = 2e-4  # Adjust learning rate if needed
-train_cfg["schedule"] = "none"  # Use linear learning rate decay
+#train_cfg["learning_rate"] = 2e-4  # Adjust learning rate if needed
+#train_cfg["schedule"] = "none"  # Use linear learning rate decay
 
 # Only remove the log directory if we are not resuming
 if not resume_path:
@@ -66,4 +66,4 @@ if resume_path:
 
 runner.learn(num_learning_iterations=args.max_iterations, init_at_random_ep_len=True)
 
-# python3 nubiv6_resume_training.py --exp_name first_try --max_iterations 501
+# python3 nubiv6_resume_training.py --exp_name JR_P254_D15 --max_iterations 10001

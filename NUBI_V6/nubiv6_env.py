@@ -40,7 +40,7 @@ class NubiEnv:
             sim_options=gs.options.SimOptions(dt=self.sim_dt, substeps=1, gravity=gravity),
             viewer_options=gs.options.ViewerOptions(
                 max_FPS=int(1.25 / self.dt),
-                camera_pos=(-1.0, 0.5, 1.0),
+                camera_pos=(-2.0, 1.5, 1.0),
                 camera_lookat=(0.0, 0.0, 0.5),
                 camera_fov=40,
             ),
@@ -85,6 +85,18 @@ class NubiEnv:
         # names to indices (use local dof indices for per-joint control)
         self.motors_dof_idx = [self.robot.get_joint(name).dof_idx_local for name in self.env_cfg["joint_names"]]
 
+        # Initialize all joints to default positions immediately after build
+        # This prevents Genesis's default initialization (±π) from being seen in the first step
+        self.default_dof_pos = torch.tensor(
+            [self.env_cfg["default_joint_angles"][name] for name in self.env_cfg["joint_names"]],
+            device=gs.device,
+            dtype=gs.tc_float,
+        )
+        self.robot.set_dofs_position(
+            self.default_dof_pos.unsqueeze(0).repeat(num_envs, 1),
+            self.motors_dof_idx
+        )
+
         self.actions = torch.zeros((self.num_envs, self.num_actions), device=gs.device, dtype=gs.tc_float)
         self.last_actions = torch.zeros_like(self.actions)
         self.dof_pos = torch.zeros_like(self.actions)
@@ -92,11 +104,6 @@ class NubiEnv:
         self.last_dof_vel = torch.zeros_like(self.actions)
         self.base_pos = torch.zeros((self.num_envs, 3), device=gs.device, dtype=gs.tc_float)
         self.base_quat = torch.zeros((self.num_envs, 4), device=gs.device, dtype=gs.tc_float)
-        self.default_dof_pos = torch.tensor(
-            [self.env_cfg["default_joint_angles"][name] for name in self.env_cfg["joint_names"]],
-            device=gs.device,
-            dtype=gs.tc_float,
-        )
 
         # PD control parameters
         # self.robot.set_dofs_kp([self.env_cfg["kp"]] * self.num_actions, self.motors_dof_idx)
