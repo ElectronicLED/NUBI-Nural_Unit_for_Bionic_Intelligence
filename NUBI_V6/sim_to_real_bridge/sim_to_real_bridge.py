@@ -24,6 +24,7 @@ from datetime import datetime
 from pathlib import Path
 import pickle
 import genesis as gs
+from threading import Thread
 
 # Import from parent directory
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -36,15 +37,16 @@ from nubiv6_train import get_cfgs
 # ===========================
 CONFIG = {
     # Sine wave parameters
-    "target_joint_idx": 10,  # LAnkle_pitch (index 10 in joint_names list)
-    "target_joint_name": "LAnkle_pitch",  # Easy to identify which joint
-    "sine_frequency_hz": 1.0,  # Hz
+    "target_joint_idx": 10,  # LAnkle_roll (index 10 in joint_names list)
+    "target_joint_name": "LAnkle_roll",  # Easy to identify which joint
+    "sine_frequency_hz": 0.5,  # Hz
     "sine_amplitude_deg": 45.0,  # degrees (will be converted to radians)
-    "test_duration_s": 3.0,  # seconds
+    "test_duration_s": 5.0,  # seconds
     "control_frequency_hz": 50.0,  # ROS command frequency
     
     # ROS parameters
-    "use_ros": False,  # Set to False to skip ROS testing
+    "use_ros": True,  # Set to False to skip ROS testing
+    "play_time_ms": 35,  # Command play time in milliseconds (20ms for 50Hz)
     "ros_timeout_s": 10.0,
     
     # Simulation parameters
@@ -88,39 +90,79 @@ def initialize_ros():
     """Initialize ROS node and create publishers/subscribers."""
     try:
         import rclpy
+        from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
         from std_msgs.msg import Int16MultiArray
         from sensor_msgs.msg import JointState
+            
+        if not rclpy.ok():
+            rclpy.init()
         
-        rclpy.init()
         node = rclpy.create_node("sim_to_real_bridge")
+        
+        # Debug: List available topics
+        print("[ROS] Discovering available topics...")
+        topic_names_and_types = node.get_topic_names_and_types()
+        feedback_topics = [name for name, types in topic_names_and_types if 'feedback' in name.lower()]
+        print(f"[ROS] Available feedback topics: {feedback_topics}")
+        
+        # Show message types for feedback topics
+        for topic_name, types in topic_names_and_types:
+            if 'feedback' in topic_name.lower():
+                print(f"[ROS] {topic_name}: {types}")
         
         # Publisher for leg commands
         publisher = node.create_publisher(Int16MultiArray, "legs_command", 10)
         
-        # Subscriber for feedback (optional, depends on your robot setup)
-        feedback_data = {"positions": [], "velocities": [], "timestamps": []}
+        # Subscriber for feedback with more permissive QoS
+        feedback_data = {
+            "positions": [],  # Will store int16 array values
+            "timestamps": [],
+            "latest_position": None,
+            "callback_count": 0,
+            "last_msg": None
+        }
         
         def feedback_callback(msg):
-            feedback_data["timestamps"].append(time.time())
-            if hasattr(msg, 'position'):
-                feedback_data["positions"].append(list(msg.position))
-            if hasattr(msg, 'velocity'):
-                feedback_data["velocities"].append(list(msg.velocity))
+            try:
+                feedback_data["callback_count"] += 1
+                # Update the buffer with the newest data. DO NOT append to lists here.
+                if hasattr(msg, 'data'):
+                    feedback_data["latest_position"] = list(msg.data)
+
+                feedback_data["last_msg"] = str(msg.data)[:100] if hasattr(msg, 'data') else "no data"
+
+                # Print every Nth callback to avoid spam
+                if feedback_data["callback_count"] % 10 == 0:
+                    print(f"[CALLBACK] Received message #{feedback_data['callback_count']}")
+            except Exception as e:
+                print(f"[ERROR] Callback exception: {e}")
+        
+        # Use BEST_EFFORT QoS to match the robot's publisher
+        qos_profile = QoSProfile(
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+            history=HistoryPolicy.KEEP_LAST,
+            depth=100  # Increased depth
+        )
         
         try:
             subscriber = node.create_subscription(
-                JointState, 
+                Int16MultiArray,  # Changed from JointState to Int16MultiArray
                 "legs_feedback", 
                 feedback_callback, 
-                10
+                qos_profile
             )
+            print("[ROS] Successfully subscribed to /legs_feedback with Int16MultiArray type")
         except Exception as e:
-            print(f"Warning: Could not subscribe to legs_feedback: {e}")
+            print(f"[WARNING] Could not subscribe with Int16MultiArray: {e}")
             subscriber = None
         
+        print("[ROS] Node initialized (synchronous mode)")
+        
         return node, publisher, feedback_data
-    except ImportError:
-        print("Warning: ROS not available. Skipping physical robot testing.")
+    except Exception as e:
+        print(f"[ERROR] ROS initialization failed: {e}")
+        import traceback
+        traceback.print_exc()
         return None, None, None
 
 def send_ros_command(publisher, node, joint_idx, command_value, all_joints_config):
@@ -138,11 +180,13 @@ def send_ros_command(publisher, node, joint_idx, command_value, all_joints_confi
         return
     
     try:
+        import rclpy
         from std_msgs.msg import Int16MultiArray
         
         # Create command array for all 12 joints (zeros except target joint)
         command_array = np.zeros(12)
-        command_array[joint_idx] = command_value
+        # Convert from radians to degrees for physical robot
+        command_array[joint_idx] = np.rad2deg(command_value)
         
         # Scale commands as per robot configuration
         action_scale = all_joints_config.get("action_scale", 0.25)
@@ -150,13 +194,16 @@ def send_ros_command(publisher, node, joint_idx, command_value, all_joints_confi
         
         # Convert to int16 (robot's native format)
         scaled_commands = np.clip(scaled_commands, -120, 120).astype(np.int16)
-        
+        data_list = [int(x) for x in scaled_commands]
+        data_list.append(CONFIG["play_time_ms"])
+
         msg = Int16MultiArray()
-        msg.data = [int(x) for x in scaled_commands]
+        msg.data = data_list
         publisher.publish(msg)
         
-        # Spin once to allow ROS callbacks
-        # rclpy.spin_once(node, timeout_sec=0.001)
+        
+        rclpy.spin_once(node, timeout_sec=0.00)  # 20ms timeout
+        
         
     except Exception as e:
         print(f"Error sending ROS command: {e}")
@@ -191,8 +238,23 @@ def test_physical_robot(env_cfg, commands, time_array):
     print(f"Amplitude: {CONFIG['sine_amplitude_deg']} degrees")
     print(f"Duration: {CONFIG['test_duration_s']} seconds")
     print(f"Number of samples: {len(commands)}")
+    
+    # Pre-spin to make sure subscriber is ready
+    print("\nPre-spinning node to initialize subscribers...")
+    import rclpy
+    for i in range(10):
+        rclpy.spin_once(node, timeout_sec=0.05)
+        time.sleep(0.01)
+    print("Subscriber ready.")
+    
     print("\nStarting test in 2 seconds...")
     time.sleep(2)
+
+    # Clear out the stationary data collected during pre-spin and sleep
+    feedback_data["positions"].clear()
+    feedback_data["timestamps"].clear()
+    feedback_data["latest_position"] = None
+    feedback_data["callback_count"] = 0
     
     start_time = time.time()
     commanded_values = []
@@ -201,32 +263,49 @@ def test_physical_robot(env_cfg, commands, time_array):
     try:
         for i, (t, cmd) in enumerate(zip(time_array, commands)):
             # Send command
-            send_ros_command(node, publisher, joint_idx, cmd, env_cfg)
+            send_ros_command(publisher, node, joint_idx, cmd, env_cfg)
             commanded_values.append(cmd)
             command_times.append(time.time() - start_time)
             
             if (i + 1) % 50 == 0:  # Print progress every second at 50Hz
                 print(f"  Sent {i+1}/{len(commands)} commands ({(i+1)*dt:.2f}s/{CONFIG['test_duration_s']}s)")
             
-            # Wait until next control step
+            # Wait until next control step, processing messages while waiting
+            import rclpy
             elapsed = time.time() - start_time - t
             if elapsed < 0:
-                time.sleep(-elapsed * 0.95)  # 95% of remaining time
+                remaining = -elapsed
+                # Break up the wait time to process messages multiple times
+                steps = max(1, int(remaining * 50))  # 50 steps per second
+                step_time = remaining / steps
+                for _ in range(steps):
+                    rclpy.spin_once(node, timeout_sec=0.001)
+                    time.sleep(step_time * 0.95)
+
+            # The wait time is over, meaning we are exactly at time `t`.
+            # Grab the freshest telemetry data from the callback buffer.
+            if feedback_data["latest_position"] is not None:
+                feedback_data["positions"].append(feedback_data["latest_position"])
+                # Lock the timestamp exactly to the ideal control time
+                feedback_data["timestamps"].append(start_time + t)
     
     except KeyboardInterrupt:
         print("\nTest interrupted by user")
     finally:
         # Send zero command at the end
-        send_ros_command(node, publisher, joint_idx, 0.0, env_cfg)
+        send_ros_command(publisher, node, joint_idx, 0.0, env_cfg)
         time.sleep(0.5)
     
-    print(f"\nPhysical test completed. Recorded {len(feedback_data['timestamps'])} feedback samples.")
+    print(f"\nPhysical test completed.")
+    print(f"  Callback invocations: {feedback_data.get('callback_count', 0)}")
+    print(f"  Feedback samples recorded: {len(feedback_data['timestamps'])}")
+    if feedback_data.get('last_msg'):
+        print(f"  Last message preview: {feedback_data['last_msg']}")
     
     physical_responses = {
         "commanded_values": np.array(commanded_values),
         "command_times": np.array(command_times),
         "feedback_positions": feedback_data["positions"],
-        "feedback_velocities": feedback_data["velocities"],
         "feedback_timestamps": feedback_data["timestamps"],
     }
     
@@ -328,7 +407,7 @@ def load_data(filename):
     print(f"Data loaded from {filepath}")
     return data
 
-def plot_comparison(commands, time_array, sim_responses, physical_responses=None):
+def plot_comparison(commands, time_array, sim_responses, physical_responses=None, env_cfg=None):
     """
     Create comparison plots of commands vs responses.
     
@@ -337,11 +416,11 @@ def plot_comparison(commands, time_array, sim_responses, physical_responses=None
         time_array: Time points
         sim_responses: Simulation response data
         physical_responses: Physical robot response data (optional)
+        env_cfg: Environment configuration for action_scale (optional)
     """
+    if env_cfg is None:
+        env_cfg = {"action_scale": 0.25}  # Default fallback
     fig, axes = plt.subplots(2, 1, figsize=(14, 10))
-    
-    # Prepare data for plotting
-    num_plots = 2 if physical_responses is None else 3
     
     # Plot 1: Position response
     ax = axes[0]
@@ -349,10 +428,32 @@ def plot_comparison(commands, time_array, sim_responses, physical_responses=None
     ax.plot(sim_responses["times"], sim_responses["positions"], 'r-', linewidth=2, label='Simulated Position', alpha=0.8)
     
     if physical_responses is not None:
-        if physical_responses["feedback_positions"]:
-            feedback_times = np.array(physical_responses["feedback_timestamps"]) - physical_responses["feedback_timestamps"][0]
-            feedback_positions = np.array(physical_responses["feedback_positions"])[:, CONFIG["target_joint_idx"]]
-            ax.plot(feedback_times, feedback_positions, 'g-', linewidth=2, label='Physical Position', alpha=0.8)
+        try:
+            positions_data = physical_responses.get("feedback_positions", [])
+            if positions_data and len(positions_data) > 0:
+                print(f"[DEBUG] Plotting physical data: {len(positions_data)} samples")
+                feedback_times = np.array(physical_responses["feedback_timestamps"]) - physical_responses["feedback_timestamps"][0]
+                # Extract position of target joint from the array
+                feedback_positions_raw = np.array(positions_data)[:, CONFIG["target_joint_idx"]]
+                # feedback_positions_raw is in scaled int16 format, convert back to degrees
+                action_scale = env_cfg.get("action_scale", 0.25)
+                feedback_positions = feedback_positions_raw * action_scale
+                # Convert from degrees to radians for comparison with simulation
+                feedback_positions = np.deg2rad(feedback_positions)
+                print(f"[DEBUG] Position range: {np.min(feedback_positions):.4f} to {np.max(feedback_positions):.4f} rad")
+                # Assuming the flatline lasts about 1.2 seconds based on your graph
+                queue_delay_s = 1.12 
+                adjusted_feedback_times = feedback_times - queue_delay_s
+
+                # Plot using the adjusted time
+                ax.plot(adjusted_feedback_times, feedback_positions, 'g-', linewidth=2, label='Physical Position')
+                #ax.plot(feedback_times, feedback_positions, 'g-', linewidth=2, label='Physical Position', alpha=0.8)
+            else:
+                print(f"[DEBUG] No physical position data to plot")
+        except Exception as e:
+            print(f"Warning: Could not plot physical position data: {e}")
+            import traceback
+            traceback.print_exc()
     
     ax.set_xlabel('Time (s)', fontsize=11)
     ax.set_ylabel('Joint Position (rad)', fontsize=11)
@@ -367,10 +468,7 @@ def plot_comparison(commands, time_array, sim_responses, physical_responses=None
     ax.plot(time_array, cmd_vel, 'b-', linewidth=2, label='Commanded Velocity', alpha=0.8)
     ax.plot(sim_responses["times"], sim_responses["velocities"], 'r-', linewidth=2, label='Simulated Velocity', alpha=0.8)
     
-    if physical_responses is not None and physical_responses["feedback_velocities"]:
-        feedback_times = np.array(physical_responses["feedback_timestamps"]) - physical_responses["feedback_timestamps"][0]
-        feedback_velocities = np.array(physical_responses["feedback_velocities"])[:, CONFIG["target_joint_idx"]]
-        ax.plot(feedback_times, feedback_velocities, 'g-', linewidth=2, label='Physical Velocity', alpha=0.8)
+    # Note: Physical feedback is Int16MultiArray, which doesn't include velocity data
     
     ax.set_xlabel('Time (s)', fontsize=11)
     ax.set_ylabel('Joint Velocity (rad/s)', fontsize=11)
@@ -461,7 +559,7 @@ def main():
     
     # Plot comparison
     print("\nGenerating comparison plots...")
-    plot_comparison(commands, time_array, sim_responses, physical_responses)
+    plot_comparison(commands, time_array, sim_responses, physical_responses, env_cfg)
     
     print("\n" + "="*60)
     print("SCRIPT COMPLETED SUCCESSFULLY")
@@ -504,7 +602,7 @@ def replay_simulation_only():
         )
         
         # Plot
-        plot_comparison(commands, time_array, sim_responses, data["physical_responses"])
+        plot_comparison(commands, time_array, sim_responses, data["physical_responses"], env_cfg)
     else:
         print("Invalid selection")
 
