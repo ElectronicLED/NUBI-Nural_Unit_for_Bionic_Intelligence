@@ -1,5 +1,6 @@
 import torch
 import math
+from pathlib import Path
 import genesis as gs
 from genesis.utils.geom import quat_to_xyz, transform_by_quat, inv_quat, transform_quat_by_quat
 
@@ -73,7 +74,7 @@ class NubiEnv:
         self.inv_base_init_quat = inv_quat(self.base_init_quat)
         self.robot = self.scene.add_entity(
             gs.morphs.URDF(
-                file="NUBI_V6.urdf",
+                file=str(Path(__file__).parent / "NUBI_V6.urdf"),
                 pos=self.base_init_pos.cpu().numpy(),
                 quat=self.base_init_quat.cpu().numpy(),
             ),
