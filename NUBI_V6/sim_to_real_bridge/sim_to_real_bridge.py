@@ -188,12 +188,9 @@ def send_ros_command(publisher, node, joint_idx, command_value, all_joints_confi
         # Convert from radians to degrees for physical robot
         command_array[joint_idx] = np.rad2deg(command_value)
         
-        # Scale commands as per robot configuration
-        action_scale = all_joints_config.get("action_scale", 0.25)
-        scaled_commands = command_array / action_scale
+        # Convert directly to int16 (robot's native format) without RL scaling
+        scaled_commands = np.clip(command_array, -120, 120).astype(np.int16)
         
-        # Convert to int16 (robot's native format)
-        scaled_commands = np.clip(scaled_commands, -120, 120).astype(np.int16)
         data_list = [int(x) for x in scaled_commands]
         data_list.append(CONFIG["play_time_ms"])
 
@@ -436,8 +433,7 @@ def plot_comparison(commands, time_array, sim_responses, physical_responses=None
                 # Extract position of target joint from the array
                 feedback_positions_raw = np.array(positions_data)[:, CONFIG["target_joint_idx"]]
                 # feedback_positions_raw is in scaled int16 format, convert back to degrees
-                action_scale = env_cfg.get("action_scale", 0.25)
-                feedback_positions = feedback_positions_raw * action_scale
+                feedback_positions = feedback_positions_raw 
                 # Convert from degrees to radians for comparison with simulation
                 feedback_positions = np.deg2rad(feedback_positions)
                 print(f"[DEBUG] Position range: {np.min(feedback_positions):.4f} to {np.max(feedback_positions):.4f} rad")
