@@ -1,4 +1,5 @@
 import genesis as gs
+from pathlib import Path
 from nubiv6_env import NubiEnv
 from nubiv6_train import get_cfgs
 import torch
@@ -60,7 +61,7 @@ class DebugNubiEnv(NubiEnv):
         
         self.robot = self.scene.add_entity(
             gs.morphs.URDF(
-                file="NUBI_V6.urdf",
+                file=str(Path(__file__).parent / "NUBI_V6.urdf"),
                 pos=self.base_init_pos.cpu().numpy(),
                 quat=self.base_init_quat.cpu().numpy(),
             ),
