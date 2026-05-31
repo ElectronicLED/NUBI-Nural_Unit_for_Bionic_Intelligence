@@ -117,8 +117,8 @@ def get_cfgs():
         "kp": 254.0,
         "kd": 15.0,
         # termination
-        "termination_if_roll_greater_than": 20,  # degree
-        "termination_if_pitch_greater_than": 20,
+        "termination_if_roll_greater_than": 35,  # degree
+        "termination_if_pitch_greater_than": 35,
         # base pose
         "base_init_pos": [0.0, 0.0, 0.23],
         "base_init_quat": [0.0, 0.0, 0.0, 1.0],  # 90 degrees about z-axis
@@ -129,7 +129,7 @@ def get_cfgs():
         "clip_actions": 100.0,
     }
     obs_cfg = {
-        "num_obs": 46,# originally was 46
+        "num_obs": 94,# originally was 46
         "obs_scales": {
             "lin_vel": 2.0,
             "ang_vel": 0.25,
@@ -144,7 +144,7 @@ def get_cfgs():
         "base_height_target": 0.23,
         "feet_height_target_difference": 0.025,
         "reward_scales": {
-            "tracking_lin_vel": 1.0,
+            "tracking_lin_vel": 1.5,
             "tracking_ang_vel": 0.2,
             "lin_vel_z": -1.0,
             "base_height": 0.5,
@@ -211,5 +211,5 @@ if __name__ == "__main__":
     playsound("/home/nour/Downloads/ring.mp3")
 
 
-# python3 nubiv6_train.py --exp_name JR_P254_D15 --max_iterations 1001
+# python3 nubiv6_train.py --exp_name kind_policy_tuned_sim --max_iterations 1001
 # tensorboard --logdir logs

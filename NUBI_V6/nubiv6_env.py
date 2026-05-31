@@ -100,6 +100,14 @@ class NubiEnv:
 
         self.actions = torch.zeros((self.num_envs, self.num_actions), device=gs.device, dtype=gs.tc_float)
         self.last_actions = torch.zeros_like(self.actions)
+        # --- NEW: Action History Buffer ---
+        self.history_length = 5
+        self.action_history = torch.zeros(
+            (self.num_envs, self.history_length * self.num_actions), 
+            device=gs.device, 
+            dtype=gs.tc_float
+        )
+        # ----------------------------------
         self.dof_pos = torch.zeros_like(self.actions)
         self.dof_vel = torch.zeros_like(self.actions)
         self.last_dof_vel = torch.zeros_like(self.actions)
@@ -229,6 +237,13 @@ class NubiEnv:
         # (Ensure self.default_dof_pos and self.action_scale are defined in your env)
         self.actions = torch.clip(actions, -self.env_cfg["clip_actions"], self.env_cfg["clip_actions"]) #sets a ceil and floor for actions
         exec_actions = self.last_actions if self.simulate_action_latency else self.actions
+
+        # --- NEW: Shift action history right and insert newest action at index 0 ---
+        self.action_history = torch.cat(
+            [self.actions, self.action_history[:, :-self.num_actions]], 
+            dim=-1
+        )
+        # ------------------------------------------------------------------
 
         target_dof_pos = exec_actions * self.env_cfg["action_scale"] + self.default_dof_pos
 
@@ -407,7 +422,8 @@ class NubiEnv:
                 self.commands * self.commands_scale,  # 3
                 (self.dof_pos - self.default_dof_pos) * self.obs_scales["dof_pos"],  # 12
                 self.dof_vel * self.obs_scales["dof_vel"],  # 12
-                self.actions,  # 12
+                #self.actions,  # 12
+                self.action_history, # 12 * history_length
                 time_progress * self.obs_scales["time"], # 1
             ],
             axis=-1,
@@ -470,6 +486,9 @@ class NubiEnv:
         self.herk_current_pos[envs_idx] = self.default_dof_pos
         self.herk_current_vel[envs_idx] = 0.0
         self.herk_start_vel[envs_idx] = 0.0
+
+        # --- NEW: Clear action history ---
+        self.action_history[envs_idx] = 0.0
         
         # Fast-forward the timer so the trapezoid math holds the default pose 
         # instead of trying to accelerate from zero.
