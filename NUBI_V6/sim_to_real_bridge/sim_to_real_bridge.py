@@ -43,6 +43,7 @@ CONFIG = {
     "sine_amplitude_deg": 45.0,  # degrees (will be converted to radians)
     "test_duration_s": 5.0,  # seconds
     "control_frequency_hz": 50.0,  # ROS command frequency
+    "zero_padding_duration_s": 10.0,  # Duration of zeros before sine wave starts (seconds)
     
     # ROS parameters
     "use_ros": True,  # Set to False to skip ROS testing
@@ -50,7 +51,7 @@ CONFIG = {
     "ros_timeout_s": 10.0,
     
     # Simulation parameters
-    "sim_show_viewer": False,
+    "sim_show_viewer": True,
     "sim_gravity": (0.0, 0.0, 0.0),  # No gravity for isolating joint response
     
     # Data save directory
@@ -66,15 +67,16 @@ def setup_data_directory():
     os.makedirs(CONFIG["data_dir"], exist_ok=True)
     return CONFIG["data_dir"]
 
-def generate_sine_commands(duration, frequency, amplitude_rad, control_freq):
+def generate_sine_commands(duration, frequency, amplitude_rad, control_freq, zero_padding_s=0.0):
     """
-    Generate sine wave commands.
+    Generate sine wave commands with optional zero padding at the start.
     
     Args:
         duration: Duration in seconds
         frequency: Frequency in Hz
         amplitude_rad: Amplitude in radians
         control_freq: Control frequency in Hz
+        zero_padding_s: Duration of zero padding before sine wave starts (seconds)
     
     Returns:
         time_array: Time points
@@ -84,6 +86,15 @@ def generate_sine_commands(duration, frequency, amplitude_rad, control_freq):
     num_samples = int(duration / dt) + 1
     time_array = np.arange(num_samples) * dt
     commands = amplitude_rad * np.sin(2 * np.pi * frequency * time_array)
+    
+    # Add zero padding at the beginning
+    if zero_padding_s > 0:
+        num_zero_samples = int(zero_padding_s / dt)
+        zero_padding = np.zeros(num_zero_samples)
+        commands = np.concatenate([zero_padding, commands])
+        # Adjust time array to account for added samples
+        time_array = np.arange(len(commands)) * dt
+    
     return time_array, commands
 
 def initialize_ros():
@@ -384,6 +395,8 @@ def test_simulation(env_cfg, obs_cfg, reward_cfg, command_cfg, commands, time_ar
         "positions": np.array(sim_positions),
         "velocities": np.array(sim_velocities),
         "commanded_values": np.array(commanded_values),
+        "kp_scale": env.kp_scale,
+        "kd_scale": env.kd_scale,
     }
     
     return sim_responses
@@ -438,7 +451,7 @@ def plot_comparison(commands, time_array, sim_responses, physical_responses=None
                 feedback_positions = np.deg2rad(feedback_positions)
                 print(f"[DEBUG] Position range: {np.min(feedback_positions):.4f} to {np.max(feedback_positions):.4f} rad")
                 # Assuming the flatline lasts about 1.2 seconds based on your graph
-                queue_delay_s = 1.12 
+                queue_delay_s = 0.0 
                 adjusted_feedback_times = feedback_times - queue_delay_s
 
                 # Plot using the adjusted time
@@ -474,9 +487,16 @@ def plot_comparison(commands, time_array, sim_responses, physical_responses=None
     
     plt.tight_layout()
     
-    # Save figure
+    # Save figure with kp_scale and kd_scale in filename
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    figpath = os.path.join(CONFIG["data_dir"], f"comparison_{timestamp}.png")
+    kp_scale = sim_responses.get("kp_scale", None)
+    kd_scale = sim_responses.get("kd_scale", None)
+    
+    if kp_scale is not None and kd_scale is not None:
+        figpath = os.path.join(CONFIG["data_dir"], f"comparison_{timestamp}_kp{kp_scale:.4f}_kd{kd_scale:.5f}.png")
+    else:
+        figpath = os.path.join(CONFIG["data_dir"], f"comparison_{timestamp}.png")
+    
     plt.savefig(figpath, dpi=150, bbox_inches='tight')
     print(f"Plot saved to {figpath}")
     
@@ -514,7 +534,8 @@ def main():
         CONFIG["test_duration_s"],
         CONFIG["sine_frequency_hz"],
         amplitude_rad,
-        CONFIG["control_frequency_hz"]
+        CONFIG["control_frequency_hz"],
+        CONFIG["zero_padding_duration_s"]
     )
     print(f"Generated {len(commands)} commands")
     print(f"  Min: {np.min(commands):.4f} rad ({np.rad2deg(np.min(commands)):.2f}°)")
