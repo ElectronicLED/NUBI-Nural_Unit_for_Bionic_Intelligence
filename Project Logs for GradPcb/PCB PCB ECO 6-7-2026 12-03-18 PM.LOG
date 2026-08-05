@@ -1,0 +1,14 @@
+Removed Pin From Net: NetName=A9_TX Pin=J1-1
+Removed Pin From Net: NetName=A10_RX Pin=J1-2
+Removed Pin From Net: NetName=A9_TX Pin=J3-1
+Removed Pin From Net: NetName=A10_RX Pin=J3-2
+Add Pin To Net: Unknown Pin: Pin *-0
+Add Pin To Net: Unknown Pin: Pin *-1
+Add Pin To Net: Unknown Pin: Pin *-2
+Add Pin To Net: Unknown Pin: Pin *-3
+Added Pin To Net: NetName=A2_TX2 Pin=J1-1
+Added Pin To Net: NetName=A3_RX2 Pin=J1-2
+Added Pin To Net: NetName=A2_TX2 Pin=J3-1
+Added Pin To Net: NetName=A3_RX2 Pin=J3-2
+Added Pin To Net: NetName=A2_TX2 Pin=P4-8
+Added Pin To Net: NetName=A3_RX2 Pin=P4-9

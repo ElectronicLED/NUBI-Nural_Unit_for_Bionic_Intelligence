@@ -1,0 +1,16 @@
+Removed Pin From Net: NetName=GND Pin=C1-1
+Removed Pin From Net: NetName=STM_PWR Pin=C1-2
+Change Component Footprint: Designator=C1 Old Footprint=CAPC0402(1005)60_L New Footprint=CAP Ceramic SMD 0603
+Change Component Comment : Designator=C1 Old Comment=Capacitor 100nF +/-20% 25V 0402 New Comment=
+Change Component Comment : Designator=J5 Old Comment=UART1 New Comment=JST 4
+Change Managed Component Library Link : Designator=C1 Old VaultGUID=5B42F5D8-478F-41B1-8B96-D3CE43C7CC4E New VaultGUID= Old ItemGUID=8ED92EE1-D8A1-410E-A557-9452F9664AEA New ItemGUID= Old RevisionGUID=3924CF9D-12CD-42EE-A98C-D9F3EC8C3A7F New RevisionGUID=
+Change component parameters: Designator = "C1" ("C1"); Footprint = "CAPC0402(1005)60_L"; UniqueID = "\TWVOTLCF" ("\TWVOTLCF")
+Change component parameters (AddParameter): Name = "Manufacturer"; Value = "Yageo"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Manufacturer Part Number"; Value = "CC0603KRX7R0BB104"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Supplier"; Value = "LCSC"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Supplier Part Number"; Value = "C113803"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Temperature Characteristics Code"; Value = "X7R"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "100nF"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Voltage"; Value = "100V"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=STM_PWR Pin=C1-1
+Added Pin To Net: NetName=GND Pin=C1-2

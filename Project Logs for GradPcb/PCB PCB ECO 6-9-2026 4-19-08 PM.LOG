@@ -1,0 +1,22 @@
+Removed Pin From Net: NetName=STM_PWR Pin=C1-1
+Removed Pin From Net: NetName=GND Pin=C1-2
+Change Component Footprint: Designator=C1 Old Footprint=Cap ceramic TH C025-024X044 New Footprint=CAPC0402(1005)60_L
+Change Component Comment : Designator=C1 Old Comment=100nF New Comment=Capacitor 100nF +/-20% 25V 0402
+Change Managed Component Library Link : Designator=C1 Old VaultGUID= New VaultGUID=5B42F5D8-478F-41B1-8B96-D3CE43C7CC4E Old ItemGUID= New ItemGUID=8ED92EE1-D8A1-410E-A557-9452F9664AEA Old RevisionGUID= New RevisionGUID=3924CF9D-12CD-42EE-A98C-D9F3EC8C3A7F
+Change component parameters: Designator = "C1" ("C1"); Footprint = "Cap ceramic TH C025-024X044"; UniqueID = "\ESZCHRKL" ("\ESZCHRKL")
+Change component parameters (AddParameter): Name = "Capacitor Type"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Case/Package"; Value = "0402"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Max Operating Temperature"; Value = "85°C"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Min Operating Temperature"; Value = "-55°C"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Mounting Technology"; Value = "SMT"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Pins"; Value = "2"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Ripple Current"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Ripple Current (AC)"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "RoHS Compliant"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Tolerance"; Value = "10%"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "100nF"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Voltage Rating"; Value = "25V"; VariantName = "[No Variations]"
+Add component: Footprint Not Found Header 2.54X17
+Added Pin To Net: NetName=GND Pin=C1-1
+Added Pin To Net: NetName=STM_PWR Pin=C1-2
+Add Class Member: Failed to add class member : Component P5 Connector Pinheader 1x17

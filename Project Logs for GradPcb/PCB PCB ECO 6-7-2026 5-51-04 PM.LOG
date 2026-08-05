@@ -1,0 +1,29 @@
+Removed Pin From Net: NetName=B12 Pin=P6-1
+Removed Pin From Net: NetName=B13 Pin=P6-2
+Removed Pin From Net: NetName=B14 Pin=P6-3
+Removed Pin From Net: NetName=B15 Pin=P6-4
+Removed Pin From Net: NetName=A8 Pin=P6-5
+Removed Pin From Net: NetName=A9_TX1 Pin=P6-6
+Removed Pin From Net: NetName=A10_RX1 Pin=P6-7
+Removed Member From Class: ClassName=Sheet Member=P6
+Add component: Footprint Not Found Header 2.54X17
+Added Pin To Net: NetName=STM_PWR Pin=C1-1
+Add Pin To Net: Unknown Pin: Pin P5-1
+Add Pin To Net: Unknown Pin: Pin P5-2
+Add Pin To Net: Unknown Pin: Pin P5-3
+Add Pin To Net: Unknown Pin: Pin P5-4
+Add Pin To Net: Unknown Pin: Pin P5-5
+Add Pin To Net: Unknown Pin: Pin P5-6
+Add Pin To Net: Unknown Pin: Pin P5-7
+Add Pin To Net: Unknown Pin: Pin P5-8
+Add Pin To Net: Unknown Pin: Pin P5-9
+Add Pin To Net: Unknown Pin: Pin P5-10
+Add Pin To Net: Unknown Pin: Pin P5-11
+Add Pin To Net: Unknown Pin: Pin P5-12
+Add Pin To Net: Unknown Pin: Pin P5-13
+Add Pin To Net: Unknown Pin: Pin P5-14
+Add Pin To Net: Unknown Pin: Pin P5-15
+Add Pin To Net: Unknown Pin: Pin P5-16
+Add Pin To Net: Unknown Pin: Pin P5-17
+Added Pin To Net: NetName=STM_PWR Pin=P11-1
+Add Class Member: Failed to add class member : Component P5 Connector Pinheader 1x17

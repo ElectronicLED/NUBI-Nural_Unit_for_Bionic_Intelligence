@@ -1,0 +1,15 @@
+Add Pin To Net: Unknown Pin: Pin *-IN+
+Add Pin To Net: Unknown Pin: Pin *-IN-
+Add Pin To Net: Unknown Pin: Pin *-OUT+
+Add Pin To Net: Unknown Pin: Pin *-OUT-
+Added Pin To Net: NetName=GND Pin=P3-5
+Added Pin To Net: NetName=GND Pin=P3-6
+Added Pin To Net: NetName=GND Pin=P3-7
+Added Pin To Net: NetName=GND Pin=P3-8
+Added Pin To Net: NetName=GND Pin=P7-2
+Added Pin To Net: NetName=GND Pin=P8-2
+Added Pin To Net: NetName=GND Pin=P9-2
+Added Pin To Net: NetName=GND Pin=P10-2
+Added Pin To Net: NetName=GND Pin=R3-1
+Change Net Name : Old Net Name=GND New Net Name=+5V
+Added Member To Class: ClassName=Sheet Member=Component L_7.4 WP710A10LGD

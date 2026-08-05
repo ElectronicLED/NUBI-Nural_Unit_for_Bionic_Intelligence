@@ -1,0 +1,21 @@
+Removed Pin From Net: NetName=GND Pin=P3-1
+Removed Pin From Net: NetName=GND Pin=P3-2
+Removed Pin From Net: NetName=GND Pin=P3-3
+Removed Pin From Net: NetName=GND Pin=P3-4
+Removed Pin From Net: NetName=+5V Pin=P3-5
+Removed Pin From Net: NetName=+5V Pin=P3-6
+Removed Pin From Net: NetName=+5V Pin=P3-7
+Removed Pin From Net: NetName=+5V Pin=P3-8
+Removed Member From Class: ClassName=Sheet Member=P3
+Change Footprint: Footprint Not Found Header F 2.54X20
+Change Component Designator: OldDesignator=P5 NewDesignator=P6
+Add Pin To Net: Unknown Pin: Pin P6-8
+Add Pin To Net: Unknown Pin: Pin P6-9
+Add Pin To Net: Unknown Pin: Pin P6-10
+Add Pin To Net: Unknown Pin: Pin P6-11
+Add Pin To Net: Unknown Pin: Pin P6-12
+Add Pin To Net: Unknown Pin: Pin P6-13
+Add Pin To Net: Unknown Pin: Pin P6-14
+Add Pin To Net: Unknown Pin: Pin P6-15
+Add Pin To Net: Unknown Pin: Pin P6-16
+Add Pin To Net: Unknown Pin: Pin P6-17

@@ -1,0 +1,33 @@
+Removed Pin From Net: NetName=B9 Pin=P5-1
+Removed Pin From Net: NetName=B8 Pin=P5-2
+Removed Pin From Net: NetName=B5 Pin=P5-3
+Removed Pin From Net: NetName=B4 Pin=P5-4
+Removed Pin From Net: NetName=B3 Pin=P5-5
+Removed Pin From Net: NetName=A15 Pin=P5-6
+Removed Pin From Net: NetName=5V_REG Pin=P6-1
+Removed Pin From Net: NetName=PWR Pin=P6-2
+Removed Pin From Net: NetName=5V_USB Pin=P6-3
+Removed Member From Class: ClassName=Sheet Member=P6
+Change Footprint: Footprint Not Found Header F 2.54X20
+Change Component Comment : Designator=P5 Old Comment=Connector Pinheader 1x7 New Comment=Connector Pinheader 1x20
+Add Pin To Net: Unknown Pin: Pin *-1
+Add Pin To Net: Unknown Pin: Pin *-2
+Add Pin To Net: Unknown Pin: Pin *-3
+Add Pin To Net: Unknown Pin: Pin *-4
+Added Pin To Net: NetName=B12 Pin=P5-1
+Added Pin To Net: NetName=B13 Pin=P5-2
+Added Pin To Net: NetName=B14 Pin=P5-3
+Added Pin To Net: NetName=B15 Pin=P5-4
+Added Pin To Net: NetName=A8 Pin=P5-5
+Added Pin To Net: NetName=A9_TX1 Pin=P5-6
+Added Pin To Net: NetName=A10_RX1 Pin=P5-7
+Add Pin To Net: Unknown Pin: Pin P5-8
+Add Pin To Net: Unknown Pin: Pin P5-9
+Add Pin To Net: Unknown Pin: Pin P5-10
+Add Pin To Net: Unknown Pin: Pin P5-11
+Add Pin To Net: Unknown Pin: Pin P5-12
+Add Pin To Net: Unknown Pin: Pin P5-13
+Add Pin To Net: Unknown Pin: Pin P5-14
+Add Pin To Net: Unknown Pin: Pin P5-15
+Add Pin To Net: Unknown Pin: Pin P5-16
+Add Pin To Net: Unknown Pin: Pin P5-17

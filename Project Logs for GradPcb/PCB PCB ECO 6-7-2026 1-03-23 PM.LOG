@@ -1,0 +1,15 @@
+Change Footprint: Footprint Not Found Header F 2.54X20
+Add Pin To Net: Unknown Pin: Pin P5-8
+Add Pin To Net: Unknown Pin: Pin P5-9
+Add Pin To Net: Unknown Pin: Pin P5-10
+Add Pin To Net: Unknown Pin: Pin P5-11
+Add Pin To Net: Unknown Pin: Pin P5-12
+Add Pin To Net: Unknown Pin: Pin P5-13
+Add Pin To Net: Unknown Pin: Pin P5-14
+Add Pin To Net: Unknown Pin: Pin P5-15
+Add Pin To Net: Unknown Pin: Pin P5-16
+Add Pin To Net: Unknown Pin: Pin P5-17
+Added Pin To Net: NetName=STM_PWR Pin=J7-1
+Added Pin To Net: NetName=STM_PWR Pin=P2-1
+Added Net: Name=STM_PWR
+Added Rule: Name=Schematic Supply Nets_5

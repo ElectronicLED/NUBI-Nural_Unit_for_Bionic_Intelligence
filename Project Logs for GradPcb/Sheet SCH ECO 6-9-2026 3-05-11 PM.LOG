@@ -1,0 +1,24 @@
+Remove Pin=J5-1 From Net=A9_TX1
+Remove Pin=J5-2 From Net=A10_RX1
+Remove Pin=P5-1 From Net=B12
+Remove Pin=P5-2 From Net=B13
+Remove Pin=P5-3 From Net=B14
+Remove Pin=P5-4 From Net=B15
+Remove Pin=P5-5 From Net=A8
+Remove Pin=P5-6 From Net=A9_TX1
+Remove Pin=P5-7 From Net=A10_RX1
+Remove Pin=P5-8 From Net=USB_N
+Remove Pin=P5-9 From Net=USB_P
+Remove Pin=P5-10 From Net=A15
+Remove Pin=P5-11 From Net=B3
+Remove Pin=P5-12 From Net=B4
+Remove Pin=P5-13 From Net=B5
+Remove Pin=P5-14 From Net=B6
+Remove Pin=P5-15 From Net=B7
+Remove Pin=P5-16 From Net=B8
+Remove Pin=P5-17 From Net=B9
+Change Component Comment: Designator=P7 Old Comment=Connector Pinheader 1x3 New Comment=L_gripper
+Change Component Comment: Designator=P9 Old Comment=Connector Pinheader 1x3 New Comment=R_gripper
+Change Component Comment: Designator=J6 Old Comment=connector screw terminal 1x2 New Comment=PWR IN
+Change Component Comment: Designator=DS1 Old Comment=TLMS1100-GS08 New Comment=5V
+Change Component Comment: Designator=DS2 Old Comment=TLMS1100-GS08 New Comment=7V4

@@ -1,0 +1,31 @@
+Removed Pin From Net: NetName=GND Pin=DS1-2
+Removed Pin From Net: NetName=GND Pin=DS2-2
+Removed Member From Class: ClassName=Sheet Member=DS2
+Added Component: Designator=D1(LED SMD 0805R)
+Add component (AddParameter): Name = "Category"; Value = "Uncategorized"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer"; Value = "FOSHAN Nationstar Optoelectronics"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer Part Number"; Value = "NCD0805R1"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Pricing 1"; Value = "50=0.01160, 500=0.00900, 3000=0.00780, 6000=0.00700, 24000=0.00660, 51000=0.00640 (USD)"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "RoHS"; Value = "No"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Stock 1"; Value = "1189900"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "LCSC"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier Part Number"; Value = "C84256"; VariantName = "[No Variations]"
+Added Component: Designator=D2(LED SMD 0805R)
+Add component (AddParameter): Name = "Category"; Value = "Uncategorized"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer"; Value = "FOSHAN Nationstar Optoelectronics"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer Part Number"; Value = "NCD0805R1"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Pricing 1"; Value = "50=0.01160, 500=0.00900, 3000=0.00780, 6000=0.00700, 24000=0.00660, 51000=0.00640 (USD)"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "RoHS"; Value = "No"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Stock 1"; Value = "1189900"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier"; Value = "LCSC"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Supplier Part Number"; Value = "C84256"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=GND Pin=D1-2
+Added Pin To Net: NetName=GND Pin=D2-2
+Added Pin To Net: NetName=NetD1_1 Pin=D1-1
+Added Pin To Net: NetName=NetD1_1 Pin=R3-2
+Added Net: Name=NetD1_1
+Added Pin To Net: NetName=NetD2_1 Pin=D2-1
+Added Pin To Net: NetName=NetD2_1 Pin=R1-2
+Added Net: Name=NetD2_1
+Added Member To Class: ClassName=Sheet Member=Component D1
+Added Member To Class: ClassName=Sheet Member=Component D2

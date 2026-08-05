@@ -1,0 +1,4 @@
+Add component: Footprint Not Found Header 2.54X17
+Added Pin To Net: NetName=A9_TX1 Pin=J5-1
+Added Pin To Net: NetName=A10_RX1 Pin=J5-2
+Add Class Member: Failed to add class member : Component P5 Connector Pinheader 1x17

@@ -1,0 +1,26 @@
+Change Component Comment : Designator=DS1 Old Comment=5V New Comment=TLMS1100-GS08
+Change Component Comment : Designator=DS2 Old Comment=7V4 New Comment=TLMS1100-GS08
+Change Component Comment : Designator=P7 Old Comment=L_gripper New Comment=Connector Pinheader 1x3
+Change Component Comment : Designator=J6 Old Comment=PWR IN New Comment=connector screw terminal 1x2
+Change Component Comment : Designator=P9 Old Comment=R_gripper New Comment=Connector Pinheader 1x3
+Add component: Footprint Not Found Header 2.54X17
+Added Pin To Net: NetName=A9_TX1 Pin=J5-1
+Added Pin To Net: NetName=A10_RX1 Pin=J5-2
+Add Pin To Net: Unknown Pin: Pin P5-1
+Add Pin To Net: Unknown Pin: Pin P5-2
+Add Pin To Net: Unknown Pin: Pin P5-3
+Add Pin To Net: Unknown Pin: Pin P5-4
+Add Pin To Net: Unknown Pin: Pin P5-5
+Add Pin To Net: Unknown Pin: Pin P5-6
+Add Pin To Net: Unknown Pin: Pin P5-7
+Add Pin To Net: Unknown Pin: Pin P5-8
+Add Pin To Net: Unknown Pin: Pin P5-9
+Add Pin To Net: Unknown Pin: Pin P5-10
+Add Pin To Net: Unknown Pin: Pin P5-11
+Add Pin To Net: Unknown Pin: Pin P5-12
+Add Pin To Net: Unknown Pin: Pin P5-13
+Add Pin To Net: Unknown Pin: Pin P5-14
+Add Pin To Net: Unknown Pin: Pin P5-15
+Add Pin To Net: Unknown Pin: Pin P5-16
+Add Pin To Net: Unknown Pin: Pin P5-17
+Add Class Member: Failed to add class member : Component P5 Connector Pinheader 1x17
