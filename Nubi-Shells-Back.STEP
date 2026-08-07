@@ -1,0 +1,28 @@
+ISO-10303-21;
+HEADER;
+FILE_DESCRIPTION (( 'STEP AP214' ),
+    '1' );
+FILE_NAME ('Nubi-Shells-Back.STEP',
+    '2026-05-06T11:10:07',
+    ( '' ),
+    ( '' ),
+    'SwSTEP 2.0',
+    'SolidWorks 2022',
+    '' );
+FILE_SCHEMA (( 'AUTOMOTIVE_DESIGN' ));
+ENDSEC;
+
+DATA;
+#1 = APPLICATION_PROTOCOL_DEFINITION ( 'draft international standard', 'automotive_design', 1998, #4 ) ;
+#2 = PRODUCT_DEFINITION_FORMATION_WITH_SPECIFIED_SOURCE ( 'ANY', '', #11, .NOT_KNOWN. ) ;
+#3 = APPLICATION_CONTEXT ( 'automotive_design' ) ;
+#4 = APPLICATION_CONTEXT ( 'automotive_design' ) ;
+#5 = PRODUCT_DEFINITION_SHAPE ( 'NONE', 'NONE',  #7 ) ;
+#6 = APPLICATION_PROTOCOL_DEFINITION ( 'draft international standard', 'automotive_design', 1998, #3 ) ;
+#7 = PRODUCT_DEFINITION ( 'UNKNOWN', '', #2, #10 ) ;
+#8 = PRODUCT_CONTEXT ( 'NONE', #4, 'mechanical' ) ;
+#9 = PRODUCT_RELATED_PRODUCT_CATEGORY ( 'part', '', ( #11 ) ) ;
+#10 = PRODUCT_DEFINITION_CONTEXT ( 'detailed design', #3, 'design' ) ;
+#11 = PRODUCT ( 'Nubi-Shells-Back', 'Nubi-Shells-Back', '', ( #8 ) ) ;
+ENDSEC;
+END-ISO-10303-21;
