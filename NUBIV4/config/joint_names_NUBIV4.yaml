@@ -1,1 +1,0 @@
-controller_joint_names: ['', 'RHip_yaw', 'RHip_roll', 'RHip_pitch', 'RKnee_pitch', 'RAnkle_pitch', 'RAnkle_roll', 'LHip_yaw', 'LHip_roll', 'LHip_pitch', 'LKnee_pitch', 'LAnkle_pitch', 'LAnkle_roll', 'core', 'RShoulder_pitch', 'RShoulder_roll', 'RElbow_pitch', 'LShoulder_pitch', 'LShoulder_roll', 'LElbow_pitch', ]
