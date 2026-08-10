@@ -1,13 +1,18 @@
 # NUBI-Neural_Unit_for_Bionic_Intelligence
 Born from the ancient ground, built for the future.
 
-<img width="720" height="720" alt="robot render" src="https://github.com/user-attachments/assets/82eff845-b6a8-4802-97d0-9c77a322867f" />
-<img width="720" height="357" alt="robot poses" src="https://github.com/user-attachments/assets/df82f7bc-78f8-4948-bc31-fe00531ac01d" />
+<p align="center">
+<!-- <img width="720" height="720" alt="robot render" src="https://github.com/user-attachments/assets/82eff845-b6a8-4802-97d0-9c77a322867f" /> -->
+<img width="720" height="720" alt="Adobe Express - file (1)" src="https://github.com/user-attachments/assets/badf7979-ae28-4629-807c-51f9562ef96e" />
+
+<!-- <img width="720" height="357" alt="robot poses" src="https://github.com/user-attachments/assets/df82f7bc-78f8-4948-bc31-fe00531ac01d" /> -->
+<img width="720" height="350" alt="Adobe Express - file" src="https://github.com/user-attachments/assets/117c91c9-ca59-41a4-b5e9-9127bad16e55" />
+
 
 # Key Features of Project N.U.B.I.
 
  A fully integrated, 20-Degree-of-Freedom (DoF) bipedal humanoid robot designed to operate autonomously in unstructured, human-centric environments. Below is a detailed summary of its primary engineering features across locomotion, hardware, perception, manipulation, human-robot interaction, and software architecture.
-
+</p>
 ---
 
 ## 1. Advanced Locomotion & Balance
